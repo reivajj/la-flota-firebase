@@ -1,17 +1,20 @@
-import React from 'react';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Link from '@material-ui/core/Link';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
+import React, { useEffect, useState } from 'react';
+import {
+  Avatar, Button, CssBaseline, TextField,
+  FormControlLabel, Checkbox, Link, Paper, Box, Grid
+} from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import Alert from '@material-ui/lab/Alert';
+import { useNavigate } from 'react-router-dom';
+// import { Link as RouterLink } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import * as actions from 'redux/actions/AuthActions';
+import firebase from 'firebaseConfig/firebase.js';
+import { SIGNUP_ERROR } from 'redux/actions/Types';
+
+const db = firebase.firestore();
 
 function Copyright() {
   return (
@@ -57,8 +60,114 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SignInSide() {
+const SignInSide = () => {
+
   const classes = useStyles();
+  const user = useSelector(store => store.auth.user);
+  const email = useSelector(store => store.auth.email);
+  const password = useSelector(store => store.auth.password);
+  const errorSignInStore = useSelector(store => store.auth.errorNoExisteUser);
+  const signUpInfo = useSelector(store => store.signUpInfo);
+
+  const dispatch = useDispatch();
+
+  const navigate = useNavigate();
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openMultiStep, setOpenMultiStep] = useState(false);
+  const [tipoUsuario, setTipoUsuario] = useState("");
+  const [errorSignIn, setErrorSignIn] = useState(false);
+
+  const [errorSignUpFirebase, setErrorSignUpFirebase] = useState(false);
+  const [userData, setUserData] = useState(false);
+
+  function to(promise) {
+    return promise.then(data => {
+      return [null, data];
+    })
+      .catch(err => [err]);
+  }
+
+  const onSubmit = async ({email, password}) => {
+
+    console.log("ON SUBMIT");
+
+    let [errorSignUp] = await to(dispatch(actions.signUp({ email, password })));
+    if (errorSignUp) {
+      setErrorSignUpFirebase(true);
+      return;
+    };
+
+    setUserData({ email, password });
+  };
+
+
+  useEffect(() => {
+
+    const uploadAllData = async newUserData => {
+      console.log("el newUSerData: ", newUserData);
+      let userPorMailRef = db.collection("usersPorMail").doc(newUserData.email);
+      let userGoogleIdRef = db.collection("users").doc(newUserData.id);
+      let [errorSettingUserInUsers] = await to(userGoogleIdRef.set(newUserData));
+      if (errorSettingUserInUsers) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserInUsers, newUserData } });
+
+      setUserData(newUserData);
+
+      let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: newUserData.email, password: newUserData.password })));
+      if (errorAddingInfoToStore) setErrorSignUpFirebase(true);
+      navigate("/admin/dashboard")
+    }
+
+    if (signUpInfo.userCreds && userData) {
+      console.log("UserCreds from create: ", signUpInfo.userCreds);
+      let rol = "admin";
+      let user = { ...signUpInfo.userCreds.user, rol };
+      let newUserData = userData;
+      newUserData.id = user.uid;
+
+      uploadAllData(newUserData)
+    }
+    else return;
+
+  }, [signUpInfo, userData])
+
+  // const handleClickOpen = () => {
+  //   setOpenDialog(true);
+  // };
+
+  const handleClose = () => {
+    setOpenDialog(false);
+  };
+
+  //ESTO DEBE IR A /Inicio
+  useEffect(() => {
+    user ? navigate("/admin/dashboard") : console.log("HEME AQUI DESLOGUEADO");
+  }, [user]);
+
+  const login = async () => {
+    let [errorSignIn, signInRespuesta] = await to(dispatch(actions.signIn({ email, password })));
+    //  REVEER: Dar una pantalla de error correspondiente
+    if (errorSignIn) console.log("Error realizando el signIn: ", errorSignIn);
+    console.log("SIGN IN OK:", signInRespuesta);
+  };
+
+  const changeEmail = (text) => {
+    dispatch(actions.emailChanged(text));
+  };
+
+  const handleCloseDialog = (tipoUser) => {
+    setTipoUsuario(tipoUser);
+    setOpenDialog(false);
+    setOpenMultiStep(true);
+  }
+
+  const changePassword = (text) => {
+    dispatch(actions.passwordChanged(text));
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') login();
+  }
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -73,6 +182,12 @@ export default function SignInSide() {
             Sign in
           </Typography>
           <form className={classes.form} noValidate>
+
+            {errorSignInStore &&
+              <Alert severity="error">
+                Combinacion Usuario/Constrasenia incorrecta o no estas registrado
+                </Alert>}
+
             <TextField
               variant="outlined"
               margin="normal"
@@ -83,6 +198,8 @@ export default function SignInSide() {
               name="email"
               autoComplete="email"
               autoFocus
+              value={email}
+              onChange={(evento) => changeEmail(evento.target.value)}
             />
             <TextField
               variant="outlined"
@@ -94,20 +211,35 @@ export default function SignInSide() {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={password}
+              onChange={(evento) => changePassword(evento.target.value)}
+              onKeyPress={handleKeyPress}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
+
             <Button
-              type="submit"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              onClick={login}
             >
-              Sign In
+              Iniciar Sesión
             </Button>
+
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+              onClick={() => onSubmit({email, password})}
+            >
+              Registro
+            </Button>
+
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
@@ -129,3 +261,5 @@ export default function SignInSide() {
     </Grid>
   );
 }
+
+export default SignInSide;

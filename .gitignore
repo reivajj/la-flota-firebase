@@ -1,3 +1,9 @@
+# Dep Functions
+functions/node_modules
+
+# Firebase Config
+src/firebaseConfig
+
 # Logs
 logs
 *.log

@@ -35,9 +35,14 @@ export const signIn = ({ email, password }) => {
     if (errorSignInFirebase) dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
 
     const { currentUser } = firebase.auth();
+    console.log("Current User: ", currentUser);
     let [errorGettingRol, userDoc] = await to(db.collection("users").doc(currentUser.uid).get());
-    if (errorGettingRol) dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    if (errorGettingRol) {
+      console.log("El error: ", errorGettingRol)
+      dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    }
 
+    console.log("UserDoc: ", userDoc, "/ ", userDoc.exists);
     if (!userDoc.exists) {
       console.log("No such document!");
       dispatch({ type: SIGN_IN_ERR, payload: true }, "NO EXISTE EL USER");

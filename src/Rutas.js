@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, BrowserRouter, Route } from "react-router-dom";
-import Admin from 'layouts/Admin';
+import AdminLayout from 'layouts/Admin.js';
 import DashboardPage from 'views/Dashboard/Dashboard.js';
 import UserProfile from 'views/UserProfile/UserProfile.js';
 import TableList from 'views/TableList/TableList.js';
@@ -9,47 +9,49 @@ import Icons from 'views/Icons/Icons.js';
 import Notifications from "views/Notifications/Notifications.js";
 import FileUpload from 'views/FileUpload/FileUpload';
 import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
+import AuthLayout from 'layouts/Auth.js';
+import SignInSide from './views/Login/SingInSide';
 
 const Rutas = () => {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* <AuthLayout>
-          <Route path="login" element={<Login />} />
-        </AuthLayout> */}
+        <AuthLayout>
+          <Route path="login" element={<SignInSide />} />
+        </AuthLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/dashboard" element={<DashboardPage />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/user" element={<UserProfile />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/table" element={<TableList />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/typography" element={<Typography />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/icons" element={<Icons />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/notifications" element={<Notifications />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/fileupload" element={<FileUpload />} />
-        </Admin>
+        </AdminLayout>
 
-        <Admin>
+        <AdminLayout>
           <Route path="admin/upgrade-to-pro" element={<UpgradeToPro />} />
-        </Admin>
+        </AdminLayout>
 
       </Routes>
     </BrowserRouter>

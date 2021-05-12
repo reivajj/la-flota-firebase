@@ -20,7 +20,7 @@ let ps;
 
 const useStyles = makeStyles(styles);
 
-export default function Admin({ ...rest }) {
+const AdminLayout = ({ ...rest }) => {
   // styles
   const { children } = { ...rest };
   const classes = useStyles();
@@ -90,3 +90,5 @@ export default function Admin({ ...rest }) {
     </div>
   );
 }
+
+export default AdminLayout;

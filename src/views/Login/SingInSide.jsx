@@ -10,9 +10,9 @@ import Alert from '@material-ui/lab/Alert';
 import { useNavigate } from 'react-router-dom';
 // import { Link as RouterLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import * as actions from 'redux/actions/AuthActions';
+import * as actions from 'redux/actions/AuthActions.js';
 import firebase from 'firebaseConfig/firebase.js';
-import { SIGNUP_ERROR } from 'redux/actions/Types';
+import { SIGNUP_ERROR } from 'redux/actions/Types.js';
 
 const db = firebase.firestore();
 

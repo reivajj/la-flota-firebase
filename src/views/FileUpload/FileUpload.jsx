@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import firebase from "firebaseConfig/firebase";
+import firebase from "firebaseConfig/firebase.js";
 import Button from "components/CustomButtons/Button.js";
 import { Grid } from '@material-ui/core';
 import Skeleton from "react-loading-skeleton";

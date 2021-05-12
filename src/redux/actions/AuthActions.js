@@ -3,7 +3,7 @@ import {
   , SIGN_OUT_ERROR, SIGN_IN_ERR, SIGN_OUT, SIGNUP_SUCCESS
 } from "redux/actions/Types";
 import * as UserDataActions from "redux/actions/UserDataActions";
-import firebase from "firebaseConfig/firebase";
+import firebase from "firebaseConfig/firebase.js";
 
 const db = firebase.firestore();
 

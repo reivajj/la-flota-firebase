@@ -11,6 +11,7 @@ import FileUpload from 'views/FileUpload/FileUpload';
 import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
 import SignInSide from './views/Login/SingInSide';
+import SignUp from './views/Login/SignUp';
 
 const Rutas = () => {
   return (
@@ -19,6 +20,10 @@ const Rutas = () => {
 
         <AuthLayout>
           <Route path="login" element={<SignInSide />} />
+        </AuthLayout>
+
+        <AuthLayout>
+          <Route path="sign-up" element={<SignUp />} />
         </AuthLayout>
 
         <AdminLayout>

@@ -29,28 +29,33 @@ export const passwordChanged = (text) => {
   };
 };
 
-export const signIn = ({ email, password }) => {
+export const signIn = ({ email, password, fromSignUp }) => {
   return async dispatch => {
-    let [errorSignInFirebase, userDocFirebase] = await to(firebase.auth().signInWithEmailAndPassword(email, password));
-    if (errorSignInFirebase) dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
-
-    const { currentUser } = firebase.auth();
-    console.log("Current User: ", currentUser);
-    let [errorGettingRol, userDoc] = await to(db.collection("users").doc(currentUser.uid).get());
-    if (errorGettingRol) {
-      console.log("El error: ", errorGettingRol)
-      dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    if (!fromSignUp) {
+      // Si vengo del SignUp quiere decir que ya estoy logueado
+      let [errorSignInFirebase] = await to(firebase.auth().signInWithEmailAndPassword(email, password));
+      if (errorSignInFirebase) dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
     }
 
-    console.log("UserDoc: ", userDoc, "/ ", userDoc.exists);
+    const { currentUser } = firebase.auth();
+    let userInDBRef = db.collection("users").doc(currentUser.uid);
+
+    let [errorGettingRol, userDoc] = await to(userInDBRef.get());
+    if (errorGettingRol) dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+
     if (!userDoc.exists) {
       console.log("No such document!");
       dispatch({ type: SIGN_IN_ERR, payload: true }, "NO EXISTE EL USER");
     } else {
       // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
-      dispatch({ type: SIGN_IN, payload: userDocFirebase });
-      // let [errorUploadingAllDataFromDbToStore] = await to(uploadAllDataFromDBToStore(currentUser.uid, { ...userDoc.data() }, dispatch));
-      // if (errorUploadingAllDataFromDbToStore) throw new Error("Error al subir toda la data de la db al store: ", errorUploadingAllDataFromDbToStore);
+      let userDocData = userDoc.data()
+      let date = new Date();
+      let lastTimeSignedInString = date.toLocaleString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires'});
+      let [errorUpdatingUserSignIn] = await to(userInDBRef.update({ lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+      if (errorUpdatingUserSignIn) dispatch({ type: SIGN_IN_ERR }, { errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" });
+
+      dispatch({ type: SIGN_IN, payload: userDocData });
+      dispatch(UserDataActions.userDataSignIn(userDocData));
     }
     return 'SignIn ok';
   }
@@ -76,7 +81,7 @@ export const signUp = userData => {
     if (errorSignUpFirebase) {
       // Aca deberia hacer algo! Indicando que hubo un problema, no deberia seguir! Puedo usar el SIGNUP_ERROR
       // de la misma manera que hago en el SignIn!
-      dispatch({ type: SIGNUP_ERROR, payload: "Hubo un problema al realizar el SignUp" });
+      dispatch({ type: SIGNUP_ERROR, payload: { msg: "Hubo un problema al realizar el SignUp", error: errorSignUpFirebase } });
       throw new Error("Hubo un problema al realizar el SignUp");
     }
     dispatch({ type: SIGNUP_SUCCESS, payload: userCreds });

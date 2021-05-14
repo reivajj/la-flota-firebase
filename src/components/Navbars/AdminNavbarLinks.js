@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import classNames from "classnames";
 import { useNavigate } from 'react-router-dom';
+import * as actions from 'redux/actions/AuthActions.js';
+import { useDispatch } from "react-redux";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import { MenuItem, MenuList, Grow, Paper, ClickAwayListener, Hidden
-  , Popper, Divider } from "@material-ui/core";
-
+import {
+  MenuItem, MenuList, Grow, Paper, ClickAwayListener, Hidden
+  , Popper, Divider
+} from "@material-ui/core";
 import { Person, Notifications, Dashboard, Search } from "@material-ui/icons";
 
 // core components
@@ -16,11 +19,20 @@ import styles from "assets/jss/material-dashboard-react/components/headerLinksSt
 
 const useStyles = makeStyles(styles);
 
-export default function AdminNavbarLinks() {
+function to(promise) {
+  return promise.then(data => {
+    return [null, data];
+  })
+    .catch(err => [err]);
+}
+
+const AdminNavbarLinks = () => {
   const classes = useStyles();
   const navigate = useNavigate()
-  const [openNotification, setOpenNotification] = React.useState(null);
-  const [openProfile, setOpenProfile] = React.useState(null);
+  const dispatch = useDispatch();
+
+  const [openNotification, setOpenNotification] = useState(null);
+  const [openProfile, setOpenProfile] = useState(null);
   const handleClickNotification = event => {
     if (openNotification && openNotification.contains(event.target)) {
       setOpenNotification(null);
@@ -38,8 +50,14 @@ export default function AdminNavbarLinks() {
       setOpenProfile(event.currentTarget);
     }
   };
-  const handleCloseProfile = () => {
+
+  const handleCloseProfile = async () => {
+    let [errorSignOut, signOutResponse] = await to(dispatch(actions.signOut()));
+    if (errorSignOut) console.log("Error al realizar signOut: ", errorSignOut);
+
     setOpenProfile(null);
+    console.log("SignOut OK: ", signOutResponse);
+    navigate("login");
   };
   return (
     <div>
@@ -216,3 +234,5 @@ export default function AdminNavbarLinks() {
     </div>
   );
 }
+
+export default AdminNavbarLinks;

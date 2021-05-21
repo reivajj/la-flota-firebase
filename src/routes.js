@@ -8,6 +8,7 @@ import Icons from "views/Icons/Icons.js";
 import NotificationsPage from "views/Notifications/Notifications.js";
 import UpgradeToPro from "views/UpgradeToPro/UpgradeToPro.js";
 import FileUpload from "views/FileUpload/FileUpload";
+import MyArtists from "views/Artistas/MyArtists";
 
 const dashboardRoutes = [
   {
@@ -50,6 +51,13 @@ const dashboardRoutes = [
     name: "Notifications",
     icon: Notifications,
     component: NotificationsPage,
+    layout: "/admin"
+  },
+  {
+    path: "/artists",
+    name: "Artistas",
+    icon: Person,
+    component: MyArtists,
     layout: "/admin"
   },
   {

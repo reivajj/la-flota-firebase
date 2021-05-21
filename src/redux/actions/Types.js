@@ -12,3 +12,4 @@ export const REVERT_SIGNUP_SUCCED = "revert_signup_succed";
 export const SIGN_OUT_ERROR = "sign_out_error";
 export const SIGN_IN_POST_SIGNUP = "sign_in_post_signup";
 export const USER_DATA_EDIT_PERFIL = "user_data_edit_perfil";
+export const USER_DATA_ADD_ARTIST = "user_data_add_artist";

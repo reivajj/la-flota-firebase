@@ -12,6 +12,8 @@ import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
 import SignInSide from './views/Login/SingInSide';
 import SignUp from './views/Login/SignUp';
+import MyArtists from './views/Artistas/MyArtists';
+import NewArtist from "views/Artistas/NewArtist";
 
 const Rutas = () => {
   return (
@@ -48,6 +50,14 @@ const Rutas = () => {
 
         <AdminLayout>
           <Route path="admin/notifications" element={<Notifications />} />
+        </AdminLayout>
+
+        <AdminLayout>
+          <Route path="admin/artists" element={<MyArtists />} />
+        </AdminLayout>
+
+        <AdminLayout>
+          <Route path="admin/new-artist" element={<NewArtist />} />
         </AdminLayout>
 
         <AdminLayout>

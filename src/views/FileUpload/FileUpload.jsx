@@ -7,7 +7,14 @@ import axios from "axios";
 
 firebase.functions().useEmulator("localhost", 5001);
 
-export default function FileUpload() {
+function to(promise) {
+  return promise.then(data => {
+    return [null, data];
+  })
+    .catch(err => [err]);
+}
+
+const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(undefined);
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress] = useState(0);
@@ -24,68 +31,10 @@ export default function FileUpload() {
     const file = event.target.files[0];
     console.log("El archivo: ", file);
     setCurrentFile(selectedFiles[0]);
-    // let fileType = file.type === "image/jpeg" ? "covers" : "tracks";
-    // let nameFileInStorage = fileType === "covers" ? "primerImagen" : "primerTrack";
-    // //console.log(file['name']);
-    // // if (file["size"] > 524288) {
-    // // _simpleAlertHandler("El archivo debe ser menor que 500 Kb");
-    // // } else {
-    // const storageRef = firebase
-    //   .storage()
-    //   .ref(`${fileType}/${file.name}`)
-    //   .put(file);
-    // storageRef.on(
-    //   "state_changed",
-    //   (snapshot) => {
-    //     //progress function
-    //     console.log("Snapshot file: ", snapshot);
-    //   },
-    //   (error) => {
-    //     //error function
-    //     console.log(error);
-    //   },
-    //   () => {
-    //     firebase
-    //       .storage()
-    //       .ref(`${fileType}`)
-    //       .child(`${file.name}`)
-    //       .getDownloadURL()
-    //       .then((url) => {
-    //         fileType === "covers" && guardarUrlImagen(url);
-    //         console.log("La url del File: ", url);
-    //         // // setImageLoaded(true);
-    //         const imageRef = firebase.storage().ref().child(`${fileType}/${file.name}`);
-    //         console.log("File REF: ", imageRef);
-    //         return "ok";
-    //         // setImageReference(imageRef);
-    //       })
-    //       .catch(error => console.log("Error!", error));
-    //   }
-    // );
   }
 
-  // const createAlbumToUpload = file => {
-  //   let formData = new FormData();
-
-  //   formData.append("artist_id", "98959");
-  //   formData.append("c_line", "2020 Tests");
-  //   formData.append("label_id", "18147");
-  //   formData.append("p_line", "2020 Tests");
-  //   formData.append("release_date", "2020-12-21");
-  //   formData.append("sale_start_date", "2021-12-10");
-  //   formData.append("title", "1.NewTestAlbum");
-  //   formData.append("cover", file);
-
-  //   console.log("Data album: ", formData);
-  //   console.log("File: ", file);
-
-  //   return formData;
-  // };
-
-  const uploadAlbumFromServer = async () => {
+  const createAlbumToUpload = coverFile => {
     let formData = new FormData();
-
-    let file = selectedFiles[0];
 
     formData.append("artist_id", "126185");
     formData.append("c_line", "2020 Tests");
@@ -94,13 +43,23 @@ export default function FileUpload() {
     formData.append("release_date", "2020-12-21");
     formData.append("sale_start_date", "2021-12-10");
     formData.append("title", "2Firebase");
-    formData.append("cover", file);
+    formData.append("cover", coverFile);
+
+    console.log("Data album: ", formData);
+    console.log("File: ", coverFile);
+
+    return formData;
+  };
+
+  const uploadAlbumFromServer = async () => {
+    let coverFile = selectedFiles[0];
+    let formData = createAlbumToUpload(coverFile);
 
     console.log("FormData: ", formData);
-    console.log("File: ", file);
+    console.log("File: ", coverFile);
 
     try {
-      const res = await axios.post("https://dashboard2.laflota.com.ar/filemanagerapp/api/uploadAlbum", formData, {
+      const res = await axios.post("https://dashboard2.laflota.com.ar/filemanagerapp/api/albums/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         },
@@ -141,41 +100,10 @@ export default function FileUpload() {
 
   // };
 
-
-
-  // const getAlbumsFromDashGo = () => {
-  //   let dashGoGetAlbums = firebase.functions().httpsCallable('dashGo-getAlbums');
-
-  //   dashGoGetAlbums({ msg: "Estoy pidiendo los albums" })
-  //     .then(result => {
-  //       console.log("Lo que devuelve la function getAlbums con result: ", result);
-  //       console.log("Lo que devuelve la function getAlbums con result.data: ", result.data);
-  //       return "OK";
-  //     })
-  //     .catch(error => console.log("Error al buscar los albumes desde DashGo: ", error));
-  // }
-
-  const getApiResponseFromServer = async () => {
-    try {
-      const res = await axios.get("https://dashboard2.laflota.com.ar/filemanagerapp/api");
-      return console.log("La respuesta: ", res);
-    } catch (error) {
-      return console.log("el error: ", error);
-    }
-  };
-
   const getAllAlbumsFromServer = async () => {
-    try {
-      const res = await axios.get("https://dashboard2.laflota.com.ar/filemanagerapp/api/getAllAlbums");
-      return console.log("La respuesta: ", res);
-    } catch (error) {
-      return console.log("el error: ", error);
-    }
-  };
-
-  const selectFile = (event) => {
-    setSelectedFiles(event.target.files);
-    console.log("selected files: ", event.target.files[0]);
+    const [errorGettingAlbums, albumsData] = await to(axios.get("https://dashboard2.laflota.com.ar/filemanagerapp/api/albums"));
+    if (errorGettingAlbums) throw new Error("Error al traer los albums: ", errorGettingAlbums);
+    console.log("La respuesta: ", albumsData);
   };
 
   useEffect(() => {
@@ -201,10 +129,6 @@ export default function FileUpload() {
           </div>
         </div>
       )}
-
-      <label className="btn btn-default">
-        <input type="file" onChange={selectFile} />
-      </label>
 
       <Button
         className="btn btn-success"
@@ -247,13 +171,6 @@ export default function FileUpload() {
         </Grid>
       )}
 
-      <Button
-        color="primary"
-        onClick={getApiResponseFromServer}
-      >
-        Get Response
-      </Button>
-
       {/* <div className="card">
         <div className="card-header">List of Files</div>
         <ul className="list-group list-group-flush">
@@ -268,3 +185,5 @@ export default function FileUpload() {
     </div>
   );
 }
+
+export default FileUpload;

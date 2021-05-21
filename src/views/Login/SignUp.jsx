@@ -68,7 +68,7 @@ const SignUp = () => {
     if (errorSignUp) {
       setErrorSignUpFirebase(true);
       return;
-    };
+    }
     setUserData({ email, password, nombre, apellido });
   };
 

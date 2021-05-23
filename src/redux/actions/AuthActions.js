@@ -2,8 +2,8 @@ import {
   EMAIL_CHANGED, PASSWORD_CHANGED, SIGNUP_ERROR, SIGN_IN
   , SIGN_OUT_ERROR, SIGN_IN_ERR, SIGN_OUT, SIGNUP_SUCCESS
 } from "redux/actions/Types";
-import * as UserDataActions from "redux/actions/UserDataActions";
-import firebase from "firebaseConfig/firebase.js";
+import * as UserDataActions from "../../redux/actions/UserDataActions";
+import firebase from "../../firebaseConfig/firebase";
 
 const db = firebase.firestore();
 

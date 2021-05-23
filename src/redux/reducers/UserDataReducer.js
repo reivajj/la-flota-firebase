@@ -9,9 +9,9 @@ const initialState = {
 
 const UserDataReducer = (state = initialState, action) => {
   let userData = action.payload;
+  console.log("USerData: ", userData);
   switch (action.type) {
     case USER_DATA_SIGN_IN:
-      console.log("USerData: ", userData);
       return {
         rol: userData.rol,
         email: userData.email,
@@ -19,13 +19,12 @@ const UserDataReducer = (state = initialState, action) => {
         ciudad: userData.ciudad,
         provincia: userData.provincia,
         telefono: userData.telefono,
-        direccion: userData.direccion,
         nombre: userData.nombre,
         apellido: userData.apellido,
         dni: userData.dni,
-        imagen: userData.imagen,
+        imagenUrl: userData.imagen,
         usuarioActivo: userData.usuario,
-        artists: userData.artists || [],
+        artists: userData.artists,
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;
@@ -34,7 +33,7 @@ const UserDataReducer = (state = initialState, action) => {
     case USER_DATA_ADD_IMAGE:
       return { ...state, imagen: action.payload };
     case USER_DATA_ADD_ARTIST:
-      return { ...state, artists: [ ...state.artists, userData.artist ] }  
+      return { ...state, artists: [ ...state.artists, action.payload ] }  
     default:
       return state;
   }

@@ -7,8 +7,6 @@ import Artist from 'views/Artistas/Artist';
 import { Grid } from '@material-ui/core';
 import { useNavigate } from "react-router";
 
-const useStyles = makeStyles(styles);
-
 const MyArtists = () => {
   const navigate = useNavigate();
   const classes = useStyles();
@@ -26,7 +24,7 @@ const MyArtists = () => {
     console.log("mis artistas: ", misArtistasData);
     return misArtistasData.length > 0
       ? misArtistasData.map((artista, index) =>
-        <Grid xs={6} key={index}>
+        <Grid item xs={6} key={index}>
           <Artist key={index} dataArtist={artista} index={index} />
         </Grid>
       )
@@ -65,6 +63,7 @@ const MyArtists = () => {
 
 export default MyArtists;
 
+
 const styles = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -83,3 +82,5 @@ const styles = {
     textDecoration: "none"
   }
 };
+
+const useStyles = makeStyles(styles);

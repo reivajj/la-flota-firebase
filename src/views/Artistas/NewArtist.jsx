@@ -14,9 +14,9 @@ import SimpleReactValidator from "simple-react-validator";
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import Danger from 'components/Typography/Danger.js';
 import { MenuItem, TextField, Grid } from "@material-ui/core";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { userDataCreateArtist } from 'redux/actions/UserDataActions';
+import { userDataCreateArtist } from '../../redux/actions/UserDataActions';
 
 const generosMusicales = [
   { value: "alt", nombre: "Alternativo" }, { value: "alt_indie", nombre: "ALTERNATIVO/INDIE ROCK" }, { value: "alt_hard", nombre: "ALTERNATIVO/PUNK" },
@@ -38,27 +38,30 @@ const NewArtist = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
+
+  const currentUserId = useSelector(store => store.userData.id);
 
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [biografia, setBiografia] = useState("");
   const [generoMusical, setGeneroMusical] = useState("");
 
-  const createArtist = () => {
+  const allFieldsValidCreateArtist = () => {
     if (simpleValidator.current.allValid()) {
-      goToCreateArtist();
+      createArtist();
     } else {
       simpleValidator.current.showMessages();
       forceUpdate();
     }
   }
 
-  const goToCreateArtist = async () => {
-    let [errorCreatingArtist] = await to(dispatch(userDataCreateArtist({ nombre, email, biografia, generoMusical })));
+  const createArtist = async () => {
+    let [errorCreatingArtist] = await to(dispatch(userDataCreateArtist({ nombre, email, biografia, generoMusical }, currentUserId)));
     if (errorCreatingArtist) throw new Error("Error creating artist: ", errorCreatingArtist);
+
+    navigate('admin/artists');
   }
 
   return (
@@ -157,7 +160,7 @@ const NewArtist = () => {
             </Grid>
           </CardBody>
           <CardFooter>
-            <Button color="primary" onClick={createArtist} >Finalizar</Button>
+            <Button color="primary" onClick={allFieldsValidCreateArtist} >Finalizar</Button>
           </CardFooter>
         </Card>
       </Grid>

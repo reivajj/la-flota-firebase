@@ -11,13 +11,14 @@ import { Link as RouterLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import SimpleReactValidator from "simple-react-validator";
 
-import * as actions from 'redux/actions/AuthActions.js';
+// import * as actions from 'redux/actions/AuthActions.js';
 import firebase from 'firebaseConfig/firebase.js';
 import { SIGNUP_ERROR } from 'redux/actions/Types.js';
 import Copyright from 'components/Copyright/Copyright.js';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 
 import Danger from 'components/Typography/Danger.js';
+import * as actions from '../../redux/actions/AuthActions';
 
 const db = firebase.firestore();
 
@@ -54,16 +55,16 @@ const SignUp = () => {
   const [errorSignUpFirebase, setErrorSignUpFirebase] = useState(false);
   const [userData, setUserData] = useState(false);
 
-  const signUp = () => {
+  const allFieldsValidSignUp = () => {
     if (simpleValidator.current.allValid()) {
-      goToSignUp();
+      signUp();
     } else {
       simpleValidator.current.showMessages();
       forceUpdate();
     }
   }
 
-  const goToSignUp = async () => {
+  const signUp = async () => {
     let [errorSignUp] = await to(dispatch(actions.signUp({ email, password })));
     if (errorSignUp) {
       setErrorSignUpFirebase(true);
@@ -72,6 +73,18 @@ const SignUp = () => {
     setUserData({ email, password, nombre, apellido });
   };
 
+  const assignEmptyValuesToUserData = userData => {
+    let newUserData = { ...userData };
+    newUserData.usuarioActivo = true;
+    newUserData.artists = [];
+    newUserData.rol = "";
+    newUserData.ciudad = "";
+    newUserData.provincia = "";
+    newUserData.telefono = "";
+    newUserData.dni = "";
+    newUserData.imagenUrl = "";
+    return newUserData;
+  }
 
   useEffect(() => {
 
@@ -79,18 +92,19 @@ const SignUp = () => {
       let userPorMailRef = db.collection("usersPorMail").doc(newUserData.email);
       let userGoogleIdRef = db.collection("users").doc(newUserData.id);
 
-      let [errorSettingUserInUsers] = await to(userGoogleIdRef.set(newUserData));
-      if (errorSettingUserInUsers) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserInUsers, newUserData } });
+      let userDataComplete = assignEmptyValuesToUserData(newUserData);
 
-      let [errorSettingUserByMail] = await to(userPorMailRef.set(newUserData));
-      if (errorSettingUserByMail) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserByMail, newUserData } });
+      let [errorSettingUserInUsers] = await to(userGoogleIdRef.set(userDataComplete));
+      if (errorSettingUserInUsers) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserInUsers, userDataComplete } });
 
-      let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: newUserData.email, password: newUserData.password, fromSignUp: true })));
+      let [errorSettingUserByMail] = await to(userPorMailRef.set(userDataComplete));
+      if (errorSettingUserByMail) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserByMail, userDataComplete } });
+
+      let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: userDataComplete.email, password: userDataComplete.password, fromSignUp: true })));
       if (errorAddingInfoToStore) {
-        dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, newUserData } })
+        dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userDataComplete } })
         setErrorSignUpFirebase(true);
       }
-
       navigate("/admin/dashboard");
     }
 
@@ -230,7 +244,7 @@ const SignUp = () => {
             variant="contained"
             color="primary"
             className={classes.submit}
-            onClick={signUp}
+            onClick={allFieldsValidSignUp}
           >
             Registrarse
           </Button>

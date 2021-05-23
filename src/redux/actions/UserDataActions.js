@@ -14,7 +14,7 @@ function to(promise) {
 }
 
 // ACTION CREATORS
-export const userDataSignIn = (userInfo) => {
+export const userDataSignIn = userInfo => {
   return {
     type: USER_DATA_SIGN_IN,
     payload: userInfo
@@ -40,15 +40,21 @@ export const editPerfil = () => {
   }
 };
 
-export const userDataCreateArtist = artist => {
-  return async () => {
+export const userDataCreateArtist = (artist, userId) => {
+  return async (dispatch) => {
     console.log("creando artista: ", artist);
-    let [errorCreatingArtistInDB] = await to(db.collection('artists').add(artist));
-    if (errorCreatingArtistInDB) throw new Error("Error al crear al artista en la DB: ", errorCreatingArtistInDB);
+    let id = Math.random().toString(36).substr(2, 15);
+    artist.id = id;
 
-    return {
+    let [errorCreatingArtistInArtistsCollection, artistSnapshot] = await to(db.collection('artists').doc(id).set(artist));
+    if (errorCreatingArtistInArtistsCollection) console.log("Error al crear al artista en la DB: ", errorCreatingArtistInArtistsCollection);
+
+    let [errorCreatingArtistInUser] = await to(db.collection('users').doc(userId).update({ artists: firebase.firestore.FieldValue.arrayUnion(artist) }));
+    if (errorCreatingArtistInUser) console.log("Error al crear al artista en la DB: ", errorCreatingArtistInUser);
+
+    return dispatch({
       type: USER_DATA_ADD_ARTIST,
       payload: artist
-    }
+    })
   } 
 }

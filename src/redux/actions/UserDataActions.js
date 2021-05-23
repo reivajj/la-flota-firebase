@@ -3,6 +3,7 @@ import {
 } from 'redux/actions/Types';
 import firebase from '../../firebaseConfig/firebase';
 import { USER_DATA_ADD_ARTIST } from 'redux/actions/Types';
+import axios from 'axios';
 
 const db = firebase.firestore();
 
@@ -42,11 +43,28 @@ export const editPerfil = () => {
 
 export const userDataCreateArtist = (artist, userId) => {
   return async (dispatch) => {
+    let formData = new FormData();
+    formData.append("genre", artist.generoMusical);
+    formData.append("name", artist.nombre);
+    formData.append("bio", artist.biografia);
+    formData.append("label_id", artist.labelId);
+
     console.log("creando artista: ", artist);
     let id = Math.random().toString(36).substr(2, 15);
     artist.id = id;
 
-    let [errorCreatingArtistInArtistsCollection, artistSnapshot] = await to(db.collection('artists').doc(id).set(artist));
+    let [uploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
+      axios.post("http://localhost:5000/filemanagerapp/api/artists/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }));
+    if (uploadingArtistInThirdWebApi) console.log("Error al subir el artista a DashGo", uploadingArtistInThirdWebApi);
+    console.log("La respues de DashGo", artistFromThirdWebApi);
+
+    artist.dashGoId = artistFromThirdWebApi.data.response.id;
+
+    let [errorCreatingArtistInArtistsCollection] = await to(db.collection('artists').doc(id).set(artist));
     if (errorCreatingArtistInArtistsCollection) console.log("Error al crear al artista en la DB: ", errorCreatingArtistInArtistsCollection);
 
     let [errorCreatingArtistInUser] = await to(db.collection('users').doc(userId).update({ artists: firebase.firestore.FieldValue.arrayUnion(artist) }));
@@ -56,5 +74,5 @@ export const userDataCreateArtist = (artist, userId) => {
       type: USER_DATA_ADD_ARTIST,
       payload: artist
     })
-  } 
+  }
 }

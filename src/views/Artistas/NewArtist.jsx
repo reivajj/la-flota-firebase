@@ -47,6 +47,7 @@ const NewArtist = () => {
   const [email, setEmail] = useState("");
   const [biografia, setBiografia] = useState("");
   const [generoMusical, setGeneroMusical] = useState("");
+  const [labelId, setLabelId] = useState("");
 
   const allFieldsValidCreateArtist = () => {
     if (simpleValidator.current.allValid()) {
@@ -58,7 +59,7 @@ const NewArtist = () => {
   }
 
   const createArtist = async () => {
-    let [errorCreatingArtist] = await to(dispatch(userDataCreateArtist({ nombre, email, biografia, generoMusical }, currentUserId)));
+    let [errorCreatingArtist] = await to(dispatch(userDataCreateArtist({ nombre, email, biografia, generoMusical, labelId }, currentUserId)));
     if (errorCreatingArtist) throw new Error("Error creating artist: ", errorCreatingArtist);
 
     navigate('admin/artists');

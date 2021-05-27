@@ -42,7 +42,7 @@ export const editPerfil = () => {
 };
 
 export const userDataCreateArtist = (artist, userId) => {
-  return async (dispatch) => {
+  return async dispatch => {
     let formData = new FormData();
     formData.append("genre", artist.generoMusical);
     formData.append("name", artist.nombre);

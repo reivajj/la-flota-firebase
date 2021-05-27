@@ -10,7 +10,7 @@ import Notifications from "views/Notifications/Notifications.js";
 import FileUpload from 'views/FileUpload/FileUpload';
 import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
-import SignInSide from './views/Login/SingInSide';
+import SignInSide from 'views/Login/SingInSide';
 import SignUp from './views/Login/SignUp';
 import MyArtists from './views/Artistas/MyArtists';
 import NewArtist from "views/Artistas/NewArtist";

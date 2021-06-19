@@ -33,6 +33,7 @@ const AdminNavbarLinks = () => {
 
   const [openNotification, setOpenNotification] = useState(null);
   const [openProfile, setOpenProfile] = useState(null);
+
   const handleClickNotification = event => {
     if (openNotification && openNotification.contains(event.target)) {
       setOpenNotification(null);
@@ -40,9 +41,11 @@ const AdminNavbarLinks = () => {
       setOpenNotification(event.currentTarget);
     }
   };
+
   const handleCloseNotification = () => {
     setOpenNotification(null);
   };
+  
   const handleClickProfile = event => {
     if (openProfile && openProfile.contains(event.target)) {
       setOpenProfile(null);
@@ -59,6 +62,7 @@ const AdminNavbarLinks = () => {
     console.log("SignOut OK: ", signOutResponse);
     navigate("login");
   };
+  
   return (
     <div>
       <div className={classes.searchWrapper}>

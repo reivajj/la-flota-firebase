@@ -1,4 +1,4 @@
-import { Dashboard, Person, LibraryBooks, BubbleChart, Notifications, Unarchive } from "@material-ui/icons";
+import { Dashboard, Person, LibraryBooks, BubbleChart, Notifications, Unarchive, PeopleAlt } from "@material-ui/icons";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/Dashboard.js";
 import UserProfile from "views/UserProfile/UserProfile.js";
@@ -7,8 +7,9 @@ import Typography from "views/Typography/Typography.js";
 import Icons from "views/Icons/Icons.js";
 import NotificationsPage from "views/Notifications/Notifications.js";
 import UpgradeToPro from "views/UpgradeToPro/UpgradeToPro.js";
-import FileUpload from "views/FileUpload/FileUpload";
-import MyArtists from "views/Artistas/MyArtists";
+import MyAlbums from "views/Albums/MyAlbums";
+import MyArtists from "views/Artists/MyArtists";
+import MyLabels from 'views/Labels/MyLabels';
 
 const dashboardRoutes = [
   {
@@ -58,13 +59,20 @@ const dashboardRoutes = [
     name: "Artistas",
     icon: Person,
     component: MyArtists,
+    layout: "/admin",
+  },
+  {
+    path: "/labels",
+    name: "Sellos",
+    icon: Person,
+    component: MyLabels,
     layout: "/admin"
   },
   {
-    path: "/fileUpload",
-    name: "File Upload",
+    path: "/albums",
+    name: "Mis Lanzamientos",
     icon: Notifications,
-    component: FileUpload,
+    component: MyAlbums,
     layout: "/admin"
   },
   {

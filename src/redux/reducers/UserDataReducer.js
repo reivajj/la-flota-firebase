@@ -1,10 +1,10 @@
 import {
-  USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE, USER_DATA_ADD_ARTIST
+  USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE,
 } from "redux/actions/Types";
 
 const initialState = {
   rol: '', email: '', userName: '', id: '', ciudad: '', telefono: '', direccion: '', nombre: '',
-  apellido: '', dni: '', imagen: '', artists: [],
+  apellido: '', dni: '', imagen: '',
 }
 
 const UserDataReducer = (state = initialState, action) => {
@@ -24,7 +24,6 @@ const UserDataReducer = (state = initialState, action) => {
         dni: userData.dni,
         imagenUrl: userData.imagen,
         usuarioActivo: userData.usuario,
-        artists: userData.artists,
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;
@@ -32,8 +31,6 @@ const UserDataReducer = (state = initialState, action) => {
     //   return { ...action.payload };
     case USER_DATA_ADD_IMAGE:
       return { ...state, imagen: action.payload };
-    case USER_DATA_ADD_ARTIST:
-      return { ...state, artists: [ ...state.artists, action.payload ] }  
     default:
       return state;
   }

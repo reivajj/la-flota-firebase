@@ -63,7 +63,7 @@ const AdminLayout = ({ ...rest }) => {
     <div className={classes.wrapper}>
       <Sidebar
         routes={routes}
-        logoText={"Creative Tim"}
+        logoText={"La Flota"}
         logo={logo}
         image={image}
         handleDrawerToggle={handleDrawerToggle}

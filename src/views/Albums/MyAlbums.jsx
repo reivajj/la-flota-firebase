@@ -3,66 +3,55 @@ import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Button from "components/CustomButtons/Button.js";
-import Artist from 'views/Artistas/Artist';
 import { Grid } from '@material-ui/core';
 import { useNavigate } from "react-router";
+import { useSelector } from 'react-redux';
+import Album from "views/Albums/Album";
 
-const MyArtists = () => {
+const MyAlbums = () => {
   const navigate = useNavigate();
   const classes = useStyles();
 
-  const misArtistasData = [
-    {
-      nombre: "Juano", apellido: "Lopez"
-    },
-    {
-      nombre: "Roman", apellido: "Gutierrez"
-    }
-  ];
+  const albumsFromStore = useSelector(store => store.albums.albums);
 
-  const misArtistasProfiles = () => {
-    console.log("mis artistas: ", misArtistasData);
-    return misArtistasData.length > 0
-      ? misArtistasData.map((artista, index) =>
+  const myAlbumsProfiles = () => {
+    return albumsFromStore.length > 0
+      ? albumsFromStore.map((label, index) =>
         <Grid item xs={6} key={index}>
-          <Artist key={index} dataArtist={artista} index={index} />
+          <Album key={index} dataAlbum={label} index={index} />
         </Grid>
       )
       : []
   }
 
-  let misArtistas = misArtistasProfiles();
+  let myAlbums = myAlbumsProfiles();
 
-  const agregarArtista = () => {
-    console.log("Agregar artista");
-    navigate("/admin/new-artist");
+  const newAlbum = () => {
+    navigate("/admin/new-album");
   }
 
   return (
     <div>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <h1 >Mis Artistas</h1>
-        </Grid>
-
-          {
-            misArtistas
-          }
-
-        <Grid item xs={12}>
-          {misArtistas.length === 0 &&
-            <h4 className={classes.cardTitleWhite}>No tienes Artistas</h4>}
-          <Button color="primary" round onClick={agregarArtista}>
-            Agregar Artista
+          <h1 >Mis Lanzamientos</h1>
+          <Button color="primary" round onClick={newAlbum}>
+            Nuevo Lanzamiento
           </Button>
+        </Grid>
+        {
+          myAlbums
+        }
+        <Grid item xs={12}>
+          {myAlbums.length === 0 &&
+            <h4 className={classes.cardTitleWhite}>No tienes Lanzamientos</h4>}
         </Grid>
       </Grid>
     </div >
   );
 }
 
-export default MyArtists;
-
+export default MyAlbums;
 
 const styles = {
   cardCategoryWhite: {

@@ -14,7 +14,7 @@ function to(promise) {
     .catch(err => [err]);
 }
 
-const FileUpload = () => {
+const NewAlbum = () => {
   const [selectedFiles, setSelectedFiles] = useState(undefined);
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress] = useState(0);
@@ -186,4 +186,4 @@ const FileUpload = () => {
   );
 }
 
-export default FileUpload;
+export default NewAlbum;

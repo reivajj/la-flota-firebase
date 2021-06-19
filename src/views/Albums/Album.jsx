@@ -2,8 +2,6 @@ import React from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
-import GridItem from "components/Grid/GridItem.js";
-import GridContainer from "components/Grid/GridContainer.js";
 import Button from "components/CustomButtons/Button.js";
 import Card from "components/Card/Card.js";
 import CardAvatar from "components/Card/CardAvatar.js";
@@ -12,9 +10,7 @@ import CardBody from "components/Card/CardBody.js";
 import avatar from "assets/img/faces/marc.jpg";
 import { Grid } from '@material-ui/core';
 
-const useStyles = makeStyles(styles);
-
-const Artist = ({ dataArtist, index }) => {
+const Album = ({ dataAlbum }) => {
   const classes = useStyles();
   return (
     <div>
@@ -27,11 +23,9 @@ const Artist = ({ dataArtist, index }) => {
               </a>
             </CardAvatar>
             <CardBody profile>
-              <h4 className={classes.cardTitle}>{dataArtist.nombre}</h4>
+              <h4 className={classes.cardTitle}>{dataAlbum.nombre}</h4>
               <p className={classes.description}>
-                Don{"'"}t be scared of the truth because we need to restart the
-                human foundation in truth And I love you like Kanye loves Kanye
-                I love Rick Owens’ bed design but the back is...
+                {dataAlbum.details}
               </p>
               <Button color="primary" round>
                 Editar
@@ -44,7 +38,7 @@ const Artist = ({ dataArtist, index }) => {
   );
 }
 
-export default Artist;
+export default Album;
 
 const styles = {
   cardCategoryWhite: {
@@ -64,3 +58,6 @@ const styles = {
     textDecoration: "none"
   }
 };
+
+const useStyles = makeStyles(styles);
+

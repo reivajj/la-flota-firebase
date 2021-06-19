@@ -8,11 +8,14 @@ import storage from 'redux-persist/lib/storage';
 import AuthReducer from "redux/reducers/AuthReducer";
 import UserDataReducer from "redux/reducers/UserDataReducer";
 import SignUpReducer from "redux/reducers/SignUpReducer";
+import ArtistsReducer from "redux/reducers/ArtistsReducer";
+import LabelsReducer from "redux/reducers/LabelsReducer";
+import AlbumsReducer from "redux/reducers/AlbumsReducer";
 
 const persistConfig = {
   key: 'root',
   storage: storage,
-  whitelist: ['userData', 'signUpInfo'] 
+  whitelist: ['userData', 'signUpInfo', 'artists', 'labels', 'albums'] 
 }
 
 // Si quiero agregar mas a la white list, osea, los reducers que quiero persistir en el storage, 
@@ -23,7 +26,10 @@ const rootReducer = combineReducers({
   firestore: firestoreReducer,
   auth: AuthReducer,
   userData: UserDataReducer,
-  signUpInfo: SignUpReducer
+  signUpInfo: SignUpReducer,
+  artists: ArtistsReducer,
+  labels: LabelsReducer,
+  albums: AlbumsReducer,
 });
 
 export default persistReducer(persistConfig, rootReducer);

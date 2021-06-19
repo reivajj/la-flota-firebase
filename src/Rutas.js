@@ -7,13 +7,16 @@ import TableList from 'views/TableList/TableList.js';
 import Typography from 'views/Typography/Typography.js';
 import Icons from 'views/Icons/Icons.js';
 import Notifications from "views/Notifications/Notifications.js";
-import FileUpload from 'views/FileUpload/FileUpload';
 import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
 import SignInSide from 'views/Login/SingInSide';
-import SignUp from './views/Login/SignUp';
-import MyArtists from './views/Artistas/MyArtists';
-import NewArtist from "views/Artistas/NewArtist";
+import SignUp from 'views/Login/SignUp';
+import MyArtists from 'views/Artists/MyArtists';
+import NewArtist from 'views/Artists/NewArtist';
+import MyLabels from 'views/Labels/MyLabels';
+import NewLabel from 'views/Labels/NewLabel';
+import MyAlbums from 'views/Albums/MyAlbums';
+import NewAlbum from 'views/Albums/NewAlbum';
 
 const Rutas = () => {
   return (
@@ -61,7 +64,19 @@ const Rutas = () => {
         </AdminLayout>
 
         <AdminLayout>
-          <Route path="admin/fileupload" element={<FileUpload />} />
+          <Route path="admin/labels" element={<MyLabels />} />
+        </AdminLayout>
+
+        <AdminLayout>
+          <Route path="admin/new-label" element={<NewLabel />} />
+        </AdminLayout>
+
+        <AdminLayout>
+          <Route path="admin/albums" element={<MyAlbums />} />
+        </AdminLayout>
+
+        <AdminLayout>
+          <Route path="admin/new-album" element={<NewAlbum />} />
         </AdminLayout>
 
         <AdminLayout>

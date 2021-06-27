@@ -74,10 +74,10 @@ const NewArtist = () => {
 
           <CardBody>
             <Grid>
-              <Grid item xs={12} sm={12} md={5}>
+              <Grid item xs={12}>
                 <TextField
                   name="nombre"
-                  // variant="outlined"
+                  variant="outlined"
                   required
                   fullWidth
                   id="nombre"
@@ -95,9 +95,9 @@ const NewArtist = () => {
             </Grid>
 
             <Grid>
-              <Grid item xs={12} sm={12} md={12}>
+              <Grid item xs={12}>
                 <TextField
-                  // variant="outlined"
+                  variant="outlined"
                   margin="normal"
                   id="bio"
                   name="bio"

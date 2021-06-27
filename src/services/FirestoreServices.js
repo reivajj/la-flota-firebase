@@ -26,3 +26,11 @@ export const createLabel = async (label, userId) => {
   let [errorCreatingLabelInUser] = await to(db.collection('users').doc(userId).update({ labels: firebase.firestore.FieldValue.arrayUnion(label) }));
   if (errorCreatingLabelInUser) console.log("Error al agregar al Sello en la DB, coleccion del users: ", errorCreatingLabelInUser);
 }
+
+export const createAlbum = async (album, userId) => {
+  let [errorCreatingAlbumInAlbumsCollection] = await to(db.collection('albums').doc(album.id).set(album));
+  if (errorCreatingAlbumInAlbumsCollection) console.log("Error al crear al Sello en la DB, coleccion de albums: ", errorCreatingAlbumInAlbumsCollection);
+
+  let [errorCreatingAlbumInUser] = await to(db.collection('users').doc(userId).update({ albums: firebase.firestore.FieldValue.arrayUnion(album) }));
+  if (errorCreatingAlbumInUser) console.log("Error al agregar al Sello en la DB, coleccion del users: ", errorCreatingAlbumInUser);
+}

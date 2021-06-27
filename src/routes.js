@@ -4,9 +4,9 @@ import DashboardPage from "views/Dashboard/Dashboard.js";
 import UserProfile from "views/UserProfile/UserProfile.js";
 import TableList from "views/TableList/TableList.js";
 import Typography from "views/Typography/Typography.js";
-import Icons from "views/Icons/Icons.js";
-import NotificationsPage from "views/Notifications/Notifications.js";
-import UpgradeToPro from "views/UpgradeToPro/UpgradeToPro.js";
+// import Icons from "views/Icons/Icons.js";
+// import NotificationsPage from "views/Notifications/Notifications.js";
+// import UpgradeToPro from "views/UpgradeToPro/UpgradeToPro.js";
 import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
@@ -40,20 +40,20 @@ const dashboardRoutes = [
     component: Typography,
     layout: "/admin"
   },
-  {
-    path: "/icons",
-    name: "Icons",
-    icon: BubbleChart,
-    component: Icons,
-    layout: "/admin"
-  },
-  {
-    path: "/notifications",
-    name: "Notifications",
-    icon: Notifications,
-    component: NotificationsPage,
-    layout: "/admin"
-  },
+  // {
+  //   path: "/icons",
+  //   name: "Icons",
+  //   icon: BubbleChart,
+  //   component: Icons,
+  //   layout: "/admin"
+  // },
+  // {
+  //   path: "/notifications",
+  //   name: "Notifications",
+  //   icon: Notifications,
+  //   component: NotificationsPage,
+  //   layout: "/admin"
+  // },
   {
     path: "/artists",
     name: "Artistas",
@@ -75,13 +75,13 @@ const dashboardRoutes = [
     component: MyAlbums,
     layout: "/admin"
   },
-  {
-    path: "/upgrade-to-pro",
-    name: "Upgrade To PRO",
-    icon: Unarchive,
-    component: UpgradeToPro,
-    layout: "/admin"
-  }
+  // {
+  //   path: "/upgrade-to-pro",
+  //   name: "Upgrade To PRO",
+  //   icon: Unarchive,
+  //   component: UpgradeToPro,
+  //   layout: "/admin"
+  // }
 ];
 
 export default dashboardRoutes;

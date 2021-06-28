@@ -12,6 +12,7 @@ export const createArtistRedux = (artist, userId) => {
     if(artist.spotify_uri) formDataArtist.append("spotify_uri", artist.spotify_uri);
 
     artist.id = uuidv4();
+    artist.ownerId = userId;
 
     let artistFromThirdWebApi = await BackendCommunication.createArtistDashGo(formDataArtist);
     artist.dashGoId = artistFromThirdWebApi.data.response.id;

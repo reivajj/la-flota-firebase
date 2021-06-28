@@ -29,8 +29,16 @@ export const createLabel = async (label, userId) => {
 
 export const createAlbum = async (album, userId) => {
   let [errorCreatingAlbumInAlbumsCollection] = await to(db.collection('albums').doc(album.id).set(album));
-  if (errorCreatingAlbumInAlbumsCollection) console.log("Error al crear al Sello en la DB, coleccion de albums: ", errorCreatingAlbumInAlbumsCollection);
+  if (errorCreatingAlbumInAlbumsCollection) console.log("Error al crear al Album en la DB, coleccion de albums: ", errorCreatingAlbumInAlbumsCollection);
 
   let [errorCreatingAlbumInUser] = await to(db.collection('users').doc(userId).update({ albums: firebase.firestore.FieldValue.arrayUnion(album) }));
-  if (errorCreatingAlbumInUser) console.log("Error al agregar al Sello en la DB, coleccion del users: ", errorCreatingAlbumInUser);
+  if (errorCreatingAlbumInUser) console.log("Error al agregar al Album en la DB, coleccion del users: ", errorCreatingAlbumInUser);
+}
+
+export const createTrack = async (track, userId) => {
+  let [errorCreatingTrackInTrackssCollection] = await to(db.collection('tracks').doc(track.id).set(track));
+  if (errorCreatingTrackInTrackssCollection) console.log("Error al crear al Sello en la DB, coleccion de albums: ", errorCreatingTrackInTrackssCollection);
+
+  let [errorCreatingTrackInUser] = await to(db.collection('users').doc(userId).update({ tracks: firebase.firestore.FieldValue.arrayUnion(track) }));
+  if (errorCreatingTrackInUser) console.log("Error al agregar al Track en la DB, coleccion del users: ", errorCreatingTrackInUser);
 }

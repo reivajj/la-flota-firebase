@@ -32,7 +32,7 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
             aria-label="save"
             color="primary"
             className={buttonClassname}
-            onClick={onClickHandler}
+            component="span"
           >
             {buttonState === "none" ? <SaveIcon />
               : buttonState === "success" ? <CheckIcon /> : <ErrorIcon />}

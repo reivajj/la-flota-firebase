@@ -9,6 +9,7 @@ export const createAlbumRedux = (album, userId) => {
     let formDataAlbum = createAlbumModel(album);
 
     album.id = uuidv4();
+    album.ownerId = userId;
 
     let albumFromThirdWebApi = await BackendCommunication.createAlbumDashGo(formDataAlbum);
     album.dashGoId = albumFromThirdWebApi.data.response.id;

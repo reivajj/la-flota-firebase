@@ -29,3 +29,15 @@ export const createAlbumDashGo = async formDataAlbum => {
 
   return albumFromThirdWebApi;
 }
+
+export const createTrackDashGo = async formDataTrack => {
+  // let [uploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(
+  //   axios.post("http://localhost:5000/filemanagerapp/api/albums/upload", formDataAlbum)
+  // )
+  // if (uploadingAlbumInThirdWebApi) console.log("Error al subir el album a DashGo", uploadingAlbumInThirdWebApi);
+  // console.log("La respuesta de crear el album en dashGo: ", albumFromThirdWebApi);
+
+  // return albumFromThirdWebApi;
+  return console.log("Crenado track en DG")
+}
+

@@ -29,3 +29,8 @@ export const LABELS_SIGN_OUT = "labels_sign_out";
 //Albums Types
 export const ADD_ALBUMS = "add_albums";
 export const ALBUMS_SIGN_OUT = "albums_sign_out";
+
+//Tracks Types
+export const ADD_TRACKS = "add_tracks";
+export const TRACKS_SIGN_OUT = "tracks_sign_out";
+export const EDIT_TRACK = "edit_track";

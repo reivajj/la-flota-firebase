@@ -11,5 +11,4 @@ admin.initializeApp();
 
 // The Firebase Admin SDK to access Cloud Firestore.
 
-exports.dashGo = require("./dashgo/album");
 exports.storage = require("./storage/files");

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, IconButton } from '@material-ui/core';
+import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, IconButton, CircularProgress } from '@material-ui/core';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux } from "redux/actions/AlbumsActions";
@@ -14,8 +14,10 @@ import Danger from 'components/Typography/Danger.js';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import CardFooter from "components/Card/CardFooter.js";
 import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButtonWithInputFile';
+import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { generosMusicales, languages } from 'services/DatosVarios';
+import NewTrackDialog from "views/Tracks/NewTrackDialog";
 
 import Table from "components/Table/Table.js";
 import Card from "components/Card/Card.js";
@@ -57,7 +59,10 @@ const NewAlbum = () => {
   // const [fileInfos, setFileInfos] = useState([]);
 
   // const [imageLoaded, setImageLoaded] = useState(false);
+  const [tracksDataTable, setTracksDataTable] = useState([]);
   const [imageReference, setImageReference] = useState('');
+  const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
+
   const [albumData, setAlbumData] = useState({
     nombreArtist: "", urlImagen: "", label_name: "", title: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "",
@@ -79,6 +84,13 @@ const NewAlbum = () => {
 
     navigate('admin/albums');
   }
+
+  const getTrackFromLocal = (event) => {
+    const trackFile = event.target.files[0];
+    setCurrentFile(trackFile);
+    console.log("El audio: ", trackFile);
+  }
+
 
   const fileChangedHandler = (event) => {
     const file = event.target.files[0];
@@ -132,6 +144,15 @@ const NewAlbum = () => {
     // });
   }, []);
 
+  const handleCancelDialog = () => {
+    setOpenNewTrackDialog(false);
+  }
+
+  const handleSubscribeDialog = () => {
+    setOpenNewTrackDialog(false);
+    setTracksDataTable(["1", "1", "1", "1", "1", "1", "1", "1"]);
+  }
+
   // formDataAlbum.append("c_line", dataAlbum.c_line);
   // formDataAlbum.append("label_name", dataAlbum.label_name);
   // formDataAlbum.append("p_line", dataAlbum.p_line);
@@ -168,6 +189,12 @@ const NewAlbum = () => {
         </Grid>
       </Grid>
     );
+  };
+
+  const trackUploadProgress = () => {
+    return (
+      <CircularProgress variant="determinate" value={progress} size={24} className={classes.buttonProgress} />
+    )
   }
 
   return (
@@ -390,13 +417,14 @@ const NewAlbum = () => {
         <Typography variant="h3">Fecha del Lanzamiento</Typography>
       </Grid>
 
-      <Grid item xs={12} style={{ textAlign: '-moz-center' }}>
+      {/* <Grid item xs={12} style={{ textAlign: '-moz-center' }}>
         <p style={{ width: '800px', textAlign: 'justify' }}>
           Elegí la fecha en la que querés que este lanzamiento sea publicado en las tiendas. Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente. Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1-2 días en aprobarse y procesarse, a la vez las tiendas tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.
           <br />Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro (por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las tiendas principales a la vez.
-          <br />Si es tu primer lanzamiento (y aún no tenés perfil en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
+          <br />Si es tu primer lanzamimport {CircularProgress} from '@material-ui/core/CircularProgress';
+          iento (y aún no tenés perfil en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
         </p>
-      </Grid>
+      </Grid> */}
 
       <SelectDateInputDDMMYYYY dayValue={albumData.dayOfMonth} monthValue={albumData.month} yearValue={albumData.year}
         setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={simpleValidator} />
@@ -469,26 +497,28 @@ const NewAlbum = () => {
           <CardBody>
             <Table
               tableHeaderColor="primary"
-              tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje inapropiado?", "Acciones"]}
-              tableData={[
-                ["1", "Dakota Rice", "120302-3232", "Oud-Turnhout", "NO", "NO", trackActions()],
-              ]}
+              tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje inapropiado?", "Acciones", "Carga"]}
+              tableData={tracksDataTable}
             />
           </CardBody>
         </Card>
       </Grid>
 
-      {/* <div className="card">
-        <div className="card-header">List of Files</div>
-        <ul className="list-group list-group-flush">
-          {fileInfos &&
-            fileInfos.map((file, index) => (
-              <li className="list-group-item" key={index}>
-                <a href={file.url}>{file.name}</a>
-              </li>
-            ))}
-        </ul>
-      </div> */}
+      <Grid item xs={12}>
+        <Button color="primary" onClick={() => setOpenNewTrackDialog(true)} >Agregar Canción</Button>
+      </Grid>
+
+      <Grid item xs={12}>
+        <NewTrackDialog openDialog={openNewTrackDialog} handleCancelDialog={handleCancelDialog} handleSubscribeDialog={handleSubscribeDialog} />
+      </Grid>
+
+      {/* <Grid item xs={12}>
+        <ButtonWithInputFile textButton="Agregar Canción" onClickHandler={getTrackFromLocal} fileType="audio/wav, audio/x-wav" />
+      </Grid> */}
+
+      {/* <Grid item xs={12}>
+        <Button color="primary" onClick={getTrackFromLocal} style={{ textAlign: "center" }}>Agregar Canción</Button>
+      </Grid> */}
 
       <Grid item xs={12}>
         <CardFooter style={{ display: 'inline-flex' }}>

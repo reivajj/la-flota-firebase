@@ -14,7 +14,7 @@ import Danger from 'components/Typography/Danger.js';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import CardFooter from "components/Card/CardFooter.js";
 import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButtonWithInputFile';
-import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
+// import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { generosMusicales, languages } from 'services/DatosVarios';
 import NewTrackDialog from "views/Tracks/NewTrackDialog";
@@ -51,6 +51,9 @@ const NewAlbum = () => {
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
 
+  // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
+  const cantAlbumsFromUser = 1;
+
   // const [selectedFiles, setSelectedFiles] = useState(undefined);
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress, setProgress] = useState(0);
@@ -66,7 +69,14 @@ const NewAlbum = () => {
   const [albumData, setAlbumData] = useState({
     nombreArtist: "", urlImagen: "", label_name: "", title: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "",
-    month: "", year: "", genre: "", language: "Spanish"
+    month: "", year: "", genre: "", language: "Spanish", disc_number: cantAlbumsFromUser
+  });
+
+  const [trackData, setTrackData] = useState({
+    album_id: "", disc_number: cantAlbumsFromUser, explicit: 0,
+    position: tracksDataTable.length + 1, title: "", track: "",
+    price: "", lyrics: "", isrc: "", track_language: "",
+    other_artists: "", composers: "", producers: "", primary_artist: "",
   });
 
   const allFieldsValidCreateAlbum = () => {
@@ -161,7 +171,10 @@ const NewAlbum = () => {
   // formDataAlbum.append("title", dataAlbum.title);
   // formDataAlbum.append("cover", dataAlbum.cover);
 
-  const handlerArtistChoose = event => setAlbumData({ ...albumData, nombreArtist: event.target.value });
+  const handlerArtistChoose = event => {
+    setAlbumData({ ...albumData, nombreArtist: event.target.value });
+    setTrackData({ ...trackData, primary_artist: event.target.value });
+  };
   const handlerLabelChoose = event => setAlbumData({ ...albumData, label_name: event.target.value });
   const handlerAlbumTitle = event => setAlbumData({ ...albumData, title: event.target.value });
   const handlerPYearChoose = event => setAlbumData({ ...albumData, p_year: event.target.value });
@@ -509,7 +522,8 @@ const NewAlbum = () => {
       </Grid>
 
       <Grid item xs={12}>
-        <NewTrackDialog openDialog={openNewTrackDialog} handleCancelDialog={handleCancelDialog} handleSubscribeDialog={handleSubscribeDialog} />
+        <NewTrackDialog openDialog={openNewTrackDialog} handleCancelDialog={handleCancelDialog} handleSubscribeDialog={handleSubscribeDialog}
+          trackData={trackData} setTrackData={setTrackData} />
       </Grid>
 
       {/* <Grid item xs={12}>

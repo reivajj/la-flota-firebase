@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { green, red } from '@material-ui/core/colors';
 import Button from "components/CustomButtons/Button.js";
 
-const ButtonWithInputFile = ({ textButton, onClickHandler, fileType }) => {
+const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) => {
   const classes = useStyles();
 
   return (
@@ -19,7 +19,7 @@ const ButtonWithInputFile = ({ textButton, onClickHandler, fileType }) => {
             onChange={onClickHandler}
           />
           <Button
-            color="primary"
+            color={color}
             variant="contained"
             component="span">
             {textButton}

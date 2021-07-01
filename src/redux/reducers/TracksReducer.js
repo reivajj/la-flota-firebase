@@ -5,7 +5,8 @@ const checkNewTracks = (oldTracks, tracks) => {
     .includes({ provisionalId: track.provisionalId, id: track.id || "" }))
 }
 
-const editTrack = (oldTracks, newTrack) => {
+// el newTrack tendrá del album_id y album_dashgo_id;
+const editTrackPostUploadInDB = (oldTracks, newTrack) => {
   return oldTracks.map(oldTrack => {
     if (oldTrack.provisionalId === newTrack.provisionalId) {
       oldTrack = { ...newTrack };
@@ -25,7 +26,7 @@ const TracksReducer = (state = initialState, action) => {
       const newTracks = checkNewTracks(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...newTracks] }
     case ReducerTypes.EDIT_TRACK:
-      const editedTracks = editTrack(state.tracks, action.payload);
+      const editedTracks = editTrackPostUploadInDB(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...editedTracks] }
     case ReducerTypes.TRACKS_SIGN_OUT:
       return initialState;

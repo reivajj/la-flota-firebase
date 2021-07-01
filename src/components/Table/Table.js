@@ -15,6 +15,7 @@ const useStyles = makeStyles(styles);
 export default function CustomTable(props) {
   const classes = useStyles();
   const { tableHead, tableData, tableHeaderColor } = props;
+  console.log("Table:", tableData);
   return (
     <div className={classes.tableResponsive}>
       <Table className={classes.table}>
@@ -69,5 +70,8 @@ CustomTable.propTypes = {
     "gray"
   ]),
   tableHead: PropTypes.arrayOf(PropTypes.string),
-  tableData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string))
+  tableData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.element
+  ])))
 };

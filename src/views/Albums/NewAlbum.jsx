@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, IconButton, CircularProgress } from '@material-ui/core';
+import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, CircularProgress } from '@material-ui/core';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux } from "redux/actions/AlbumsActions";
@@ -17,15 +17,14 @@ import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButton
 // import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { generosMusicales, languages } from 'services/DatosVarios';
-import NewTrackDialog from "views/Tracks/NewTrackDialog";
+// import NewTrackDialog from "views/Tracks/NewTrackDialog";
 
 import Table from "components/Table/Table.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
+import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
 
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
 
 // firebase.functions().useEmulator("localhost", 5001);
 
@@ -47,24 +46,36 @@ const NewAlbum = () => {
   const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
-  const currentUserId = useSelector(store => store.userData.id);
+  const currentUserData = useSelector(store => store.userData);
+  const currentUserId = currentUserData.id;
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
+  const myTracks = useSelector(store => store.tracks.tracks);
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
 
-  // const [selectedFiles, setSelectedFiles] = useState(undefined);
+  const checkIfExistsProvisionalTracks = () => {
+    return myTracks.filter(track => track.provisionalId)
+      .map(trackWithAllInfo => [
+          `${trackWithAllInfo.position}`,
+          `${trackWithAllInfo.title}`,
+          `${trackWithAllInfo.isrc}`,
+          `${trackWithAllInfo.other_artists}`,
+          "NO",
+          `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
+          trackActions(),
+          "0"
+      ]);
+  }
+
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
-
-  // const [fileInfos, setFileInfos] = useState([]);
-
-  // const [imageLoaded, setImageLoaded] = useState(false);
-  const [tracksDataTable, setTracksDataTable] = useState([]);
+  const [tracksDataTable, setTracksDataTable] = useState(checkIfExistsProvisionalTracks());
   const [imageReference, setImageReference] = useState('');
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
+  const [artistForm, setArtistForm] = useState("");
 
   const [albumData, setAlbumData] = useState({
     nombreArtist: "", urlImagen: "", label_name: "", title: "",
@@ -77,6 +88,7 @@ const NewAlbum = () => {
     position: tracksDataTable.length + 1, title: "", track: "",
     price: "", lyrics: "", isrc: "", track_language: "",
     other_artists: "", composers: "", producers: "", primary_artist: "",
+    artistId: ""
   });
 
   const allFieldsValidCreateAlbum = () => {
@@ -154,15 +166,6 @@ const NewAlbum = () => {
     // });
   }, []);
 
-  const handleCancelDialog = () => {
-    setOpenNewTrackDialog(false);
-  }
-
-  const handleSubscribeDialog = () => {
-    setOpenNewTrackDialog(false);
-    setTracksDataTable(["1", "1", "1", "1", "1", "1", "1", "1"]);
-  }
-
   // formDataAlbum.append("c_line", dataAlbum.c_line);
   // formDataAlbum.append("label_name", dataAlbum.label_name);
   // formDataAlbum.append("p_line", dataAlbum.p_line);
@@ -172,8 +175,9 @@ const NewAlbum = () => {
   // formDataAlbum.append("cover", dataAlbum.cover);
 
   const handlerArtistChoose = event => {
-    setAlbumData({ ...albumData, nombreArtist: event.target.value });
-    setTrackData({ ...trackData, primary_artist: event.target.value });
+    setArtistForm(event.target.value);
+    setAlbumData({ ...albumData, nombreArtist: event.target.value.nombre, artistId: event.target.value.id });
+    setTrackData({ ...trackData, primary_artist: event.target.value.nombre, artistId: event.target.value.id });
   };
   const handlerLabelChoose = event => setAlbumData({ ...albumData, label_name: event.target.value });
   const handlerAlbumTitle = event => setAlbumData({ ...albumData, title: event.target.value });
@@ -186,23 +190,6 @@ const NewAlbum = () => {
   const handlerYear = event => setAlbumData({ ...albumData, year: event.target.value });
   const handlerLanguageChoose = event => setAlbumData({ ...albumData, language: event.target.value });
   const handlerGenreChoose = event => setAlbumData({ ...albumData, genre: event.target.value });
-
-  const trackActions = () => {
-    return (
-      <Grid container direction="row">
-        <Grid item xs={6}>
-          <IconButton color="inherit" size="small" onClick={() => console.log("Elimino")}>
-            <DeleteIcon fontSize="inherit" />
-          </IconButton>
-        </Grid>
-        <Grid item xs={6}>
-          <IconButton color="inherit" size="small" onClick={() => console.log("Edito")}>
-            <EditIcon fontSize="inherit" />
-          </IconButton>
-        </Grid>
-      </Grid>
-    );
-  };
 
   const trackUploadProgress = () => {
     return (
@@ -227,16 +214,16 @@ const NewAlbum = () => {
           margin="normal"
           select
           label="Artista"
-          value={albumData.nombreArtist}
+          value={artistForm}
           onChange={handlerArtistChoose}
           helperText="Selecciona al Artista, si es que ya lo tienes en el sistema. Si no, primero debés crear un Artista."
         >
           {myArtists.map((artist) => (
-            <MenuItem key={artist.nombre} value={artist.nombre}>
+            <MenuItem key={artist.id} value={artist}>
               {artist.nombre}
             </MenuItem>
           ))}
-          {simpleValidator.current.message('nombreArtist', albumData.nombreArtist, 'required', {
+          {simpleValidator.current.message('nombreArtist', artistForm, 'required', {
             className: 'text-danger',
             messages: { default: "Debes seleccionar al Artista del Nuevo Lanzamiento." },
             element: (message) => errorFormat(message)
@@ -255,9 +242,8 @@ const NewAlbum = () => {
           onChange={handlerAlbumTitle}
           helperText="No pueden ir nombres de Productores, Compositores, Artistas invitados (feat.), 
             etc. Se completan más adelante en los campos correspondientes."
-        >
-        </TextField>
-        {simpleValidator.current.message('title', albumData.title, 'required', {
+        />
+        {simpleValidator.current.message('title', albumData.title, 'required|max:50', {
           className: 'text-danger',
           messages: { default: "Debes ingresar el Título del Lanzamiento." },
           element: (message) => errorFormat(message)
@@ -287,7 +273,7 @@ const NewAlbum = () => {
             </MenuItem>
           ))}
         </TextField>
-        {simpleValidator.current.message('label_name', albumData.label_name, 'required', {
+        {simpleValidator.current.message('label_name', albumData.label_name, 'required|max:50', {
           className: 'text-danger',
           messages: { default: "Debes seleccionar un sello para el Lanzamiento." },
           element: (message) => errorFormat(message)
@@ -368,9 +354,8 @@ const NewAlbum = () => {
           onChange={handlerPLineChoose}
           helperText="El dueño de los Derechos de Publicación de esta grabación.
           → Ej. 1: Fito Paez | Ej. 2: Sony Music"
-        >
-        </TextField>
-        {simpleValidator.current.message('p_line', albumData.p_line, 'required', {
+        />
+        {simpleValidator.current.message('p_line', albumData.p_line, 'required|max:50', {
           className: 'text-danger',
           messages: { default: "Por favor indicá el publicador del lanzamiento." },
           element: (message) => errorFormat(message)
@@ -390,7 +375,7 @@ const NewAlbum = () => {
           label="(C) Año de Copyright"
           value={albumData.c_year}
           onChange={handlerCYearChoose}
-          helperText="Año en que el Álbum/Single (puede haber sido otra grabación del mismo) fue publicado por primera vez."
+          helperText="Año en que el Álbum/Single fue publicado por primera vez."
         >
           {Array.from({ length: 30 }, (x, i) => 2021 - i).map(year => (
             <MenuItem key={year} value={year}>
@@ -418,7 +403,7 @@ const NewAlbum = () => {
           → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
         >
         </TextField>
-        {simpleValidator.current.message('c_line', albumData.c_line, 'required', {
+        {simpleValidator.current.message('c_line', albumData.c_line, 'required|max:50', {
           className: 'text-danger',
           messages: { default: "Por favor indicá el dueño de los derechos de autor del lanzamiento." },
           element: (message) => errorFormat(message)
@@ -435,7 +420,8 @@ const NewAlbum = () => {
           Elegí la fecha en la que querés que este lanzamiento sea publicado en las tiendas. Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente. Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1-2 días en aprobarse y procesarse, a la vez las tiendas tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.
           <br />Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro (por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las tiendas principales a la vez.
           <br />Si es tu primer lanzamimport {CircularProgress} from '@material-ui/core/CircularProgress';
-          iento (y aún no tenés perfil en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
+          iento (y aún no tenés perfilimport MyAlbums from './MyAlbums';
+ en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
         </p>
       </Grid> */}
 
@@ -522,17 +508,9 @@ const NewAlbum = () => {
       </Grid>
 
       <Grid item xs={12}>
-        <NewTrackDialog openDialog={openNewTrackDialog} handleCancelDialog={handleCancelDialog} handleSubscribeDialog={handleSubscribeDialog}
-          trackData={trackData} setTrackData={setTrackData} />
+        <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
+          tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} />
       </Grid>
-
-      {/* <Grid item xs={12}>
-        <ButtonWithInputFile textButton="Agregar Canción" onClickHandler={getTrackFromLocal} fileType="audio/wav, audio/x-wav" />
-      </Grid> */}
-
-      {/* <Grid item xs={12}>
-        <Button color="primary" onClick={getTrackFromLocal} style={{ textAlign: "center" }}>Agregar Canción</Button>
-      </Grid> */}
 
       <Grid item xs={12}>
         <CardFooter style={{ display: 'inline-flex' }}>

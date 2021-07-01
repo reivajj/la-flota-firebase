@@ -11,6 +11,7 @@ import SignUpReducer from "redux/reducers/SignUpReducer";
 import ArtistsReducer from "redux/reducers/ArtistsReducer";
 import LabelsReducer from "redux/reducers/LabelsReducer";
 import AlbumsReducer from "redux/reducers/AlbumsReducer";
+import TracksReducer from "redux/reducers/TracksReducer";
 
 const persistConfig = {
   key: 'root',
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
   artists: ArtistsReducer,
   labels: LabelsReducer,
   albums: AlbumsReducer,
+  tracks: TracksReducer
 });
 
 export default persistReducer(persistConfig, rootReducer);

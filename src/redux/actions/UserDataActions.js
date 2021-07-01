@@ -7,23 +7,27 @@ export const userDataSignIn = userInfo => {
     dispatch({
       type: ReducerTypes.USER_DATA_SIGN_IN,
       payload: userInfo
-    })
+    });
 
     dispatch({
       type: ReducerTypes.ADD_ARTISTS,
       payload: userInfo.artists
-    })
+    });
 
     dispatch({
       type: ReducerTypes.ADD_ALBUMS,
       payload: userInfo.albums
-    })
+    });
 
     dispatch({
       type: ReducerTypes.ADD_LABELS,
       payload: userInfo.labels
-    })
+    });
 
+    dispatch({
+      type: ReducerTypes.ADD_TRACKS,
+      payload: userInfo.tracks
+    });
   };
 };
 

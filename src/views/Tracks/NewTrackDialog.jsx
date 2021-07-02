@@ -12,7 +12,7 @@ import {
   TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton
 } from "@material-ui/core";
 import { useDispatch, useSelector } from 'react-redux';
-import { createTrackLocalRedux } from '../../redux/actions/TrackActions';
+import { createTrackLocalRedux } from '../../redux/actions/TracksActions';
 import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -224,7 +224,7 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
               variant="outlined"
               margin="normal"
               label="Productor/es"
-              value={trackData.composers}
+              value={trackData.producers}
               onChange={(event) => setTrackData({ ...trackData, producers: event.target.value })}
               helperText="Ingresá el nombre completo y real de el/los Productor/es, separados por coma. "
             />

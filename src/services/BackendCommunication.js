@@ -24,20 +24,20 @@ export const createAlbumDashGo = async formDataAlbum => {
   let [uploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(
     axios.post("http://localhost:5000/filemanagerapp/api/albums/upload", formDataAlbum)
   )
-  if (uploadingAlbumInThirdWebApi) console.log("Error al subir el album a DashGo", uploadingAlbumInThirdWebApi);
+  if (uploadingAlbumInThirdWebApi) throw new Error("Error al subir el album a DashGo", uploadingAlbumInThirdWebApi);
   console.log("La respuesta de crear el album en dashGo: ", albumFromThirdWebApi);
 
   return albumFromThirdWebApi;
 }
 
 export const createTrackDashGo = async formDataTrack => {
-  // let [uploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(
-  //   axios.post("http://localhost:5000/filemanagerapp/api/albums/upload", formDataAlbum)
+  // let [uploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(
+  //   axios.post("http://localhost:5000/filemanagerapp/api/tracks/", formDataTrack)
   // )
-  // if (uploadingAlbumInThirdWebApi) console.log("Error al subir el album a DashGo", uploadingAlbumInThirdWebApi);
-  // console.log("La respuesta de crear el album en dashGo: ", albumFromThirdWebApi);
+  // if (uploadingTrackInThirdWebApi) console.log("Error al subir el track a DashGo", uploadingTrackInThirdWebApi);
+  // console.log("La respuesta de crear el track en dashGo: ", trackFromThirdWebApi);
 
-  // return albumFromThirdWebApi;
-  return console.log("Crenado track en DG")
+  // return trackFromThirdWebApi;
+  return { data: { response: { id: 123456 } } };
 }
 

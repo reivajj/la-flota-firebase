@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
@@ -21,7 +20,6 @@ const useStyles = makeStyles(styles);
 const TracksTable = ({tracksTableData}) => {
   const classes = useStyles();
 
-
   return (
     <Grid item xs={12}>
       <Card className={classes.tableCard}>
@@ -35,7 +33,7 @@ const TracksTable = ({tracksTableData}) => {
           <Table
             tableHeaderColor="primary"
             tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje inapropiado?", "Acciones", "Carga"]}
-            tableData={tracksTableData || []}
+            tableData={tracksTableData}
           />
         </CardBody>
       </Card>

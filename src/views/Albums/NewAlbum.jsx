@@ -18,13 +18,9 @@ import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButton
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { generosMusicales, languages } from 'services/DatosVarios';
 // import NewTrackDialog from "views/Tracks/NewTrackDialog";
-
-import Table from "components/Table/Table.js";
-import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
+import TracksTable from "components/Table/TracksTable";
 import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
-
+import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
 
 // firebase.functions().useEmulator("localhost", 5001);
 
@@ -55,31 +51,34 @@ const NewAlbum = () => {
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
 
-  const checkIfExistsProvisionalTracks = () => {
-    return myTracks.filter(track => track.provisionalId)
-      .map(trackWithAllInfo => [
-          `${trackWithAllInfo.position}`,
-          `${trackWithAllInfo.title}`,
-          `${trackWithAllInfo.isrc}`,
-          `${trackWithAllInfo.other_artists}`,
-          "NO",
-          `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
-          trackActions(),
-          "0"
-      ]);
+  const getProvisionalTracks = () => {
+    return myTracks.filter(track => track.provisionalId);
+  }
+
+  const getTracksAsDataTable = tracksTotalInfo => {
+    return tracksTotalInfo.map(trackWithAllInfo => [
+      `${trackWithAllInfo.position}`,
+      `${trackWithAllInfo.title}`,
+      `${trackWithAllInfo.isrc}`,
+      `${trackWithAllInfo.other_artists}`,
+      "NO",
+      `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
+      trackActions(),
+      "0"
+    ]);
   }
 
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
-  const [tracksDataTable, setTracksDataTable] = useState(checkIfExistsProvisionalTracks());
+  const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(getProvisionalTracks()) || [[]]);
   const [imageReference, setImageReference] = useState('');
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [artistForm, setArtistForm] = useState("");
 
   const [albumData, setAlbumData] = useState({
-    nombreArtist: "", urlImagen: "", label_name: "", title: "",
-    p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "",
+    nombreArtist: "", urlImagen: "", label_name: "", title: "", album_id: "", id: "",
+    p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
     month: "", year: "", genre: "", language: "Spanish", disc_number: cantAlbumsFromUser
   });
 
@@ -101,18 +100,25 @@ const NewAlbum = () => {
   }
 
   const createAlbum = async () => {
-    let [errorCreatingAlbum] = await to(dispatch(createAlbumRedux({}, currentUserId)));
-    if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
+    // let [errorCreatingAlbum, albumDataFromDashGo] = await to(dispatch(createAlbumRedux(albumData, currentUserId)));
+    // if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
 
+    console.log("Entro al create Album");
+    let trackInfoMock = [{
+      disc_number: 1, explicit: 0, position: tracksDataTable.length + 1, 
+      title: "First Mock Track", track: "",
+      price: "", lyrics: "", isrc: "", track_language: "",
+      other_artists: "", composers: "Fito", producers: "Hola", primary_artist: "Juano Perez",
+      artistId: "dnlvn7v1a4n"
+    }];
+
+    let albumDashGoIdMock = "12312";
+    let albumIdMock = "214230909ds09v0s9v2039";
+
+    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(trackInfoMock, albumIdMock, albumDashGoIdMock, currentUserId)));
+    if (errorCreatingTracksInAlbum) throw new Error("Error creating tracks in Album: ", errorCreatingTracksInAlbum);
     navigate('admin/albums');
   }
-
-  const getTrackFromLocal = (event) => {
-    const trackFile = event.target.files[0];
-    setCurrentFile(trackFile);
-    console.log("El audio: ", trackFile);
-  }
-
 
   const fileChangedHandler = (event) => {
     const file = event.target.files[0];
@@ -142,7 +148,7 @@ const NewAlbum = () => {
             .child(`${imageUuid}`)
             .getDownloadURL()
             .then((url) => {
-              setAlbumData({ ...albumData, urlImagen: url });
+              setAlbumData({ ...albumData, urlImagen: url, cover: file });
               const imageRef = firebase.storage().ref().child(`covers/${imageUuid}`);
               setImageReference(imageRef);
             });
@@ -158,21 +164,6 @@ const NewAlbum = () => {
         .catch(error => console.log("Dio ERROR: ", error)))
       : navigate(-1);
   };
-
-  useEffect(() => {
-    console.log("El FormData: ", currentFile);
-    // UploadService.getFiles().then((response) => {
-    //   setFileInfos(response.data);
-    // });
-  }, []);
-
-  // formDataAlbum.append("c_line", dataAlbum.c_line);
-  // formDataAlbum.append("label_name", dataAlbum.label_name);
-  // formDataAlbum.append("p_line", dataAlbum.p_line);
-  // formDataAlbum.append("release_date", dataAlbum.release_date);
-  // formDataAlbum.append("sale_start_date", dataAlbum.sale_start_date);
-  // formDataAlbum.append("title", dataAlbum.title);
-  // formDataAlbum.append("cover", dataAlbum.cover);
 
   const handlerArtistChoose = event => {
     setArtistForm(event.target.value);
@@ -421,7 +412,8 @@ const NewAlbum = () => {
           <br />Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro (por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las tiendas principales a la vez.
           <br />Si es tu primer lanzamimport {CircularProgress} from '@material-ui/core/CircularProgress';
           iento (y aún no tenés perfilimport MyAlbums from './MyAlbums';
- en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
+ en las tiendas) recomendamos que elijimport TracksTable from '../../components/Table/TracksTable';
+as una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
         </p>
       </Grid> */}
 
@@ -485,23 +477,7 @@ const NewAlbum = () => {
         </p>
       </Grid>
 
-      <Grid item xs={12}>
-        <Card className={classes.tableCard}>
-          <CardHeader color="primary">
-            <h4 className={classes.cardTitleWhite}>Simple Table</h4>
-            <p className={classes.cardCategoryWhite}>
-              Here is a subtitle for this table
-            </p>
-          </CardHeader>
-          <CardBody>
-            <Table
-              tableHeaderColor="primary"
-              tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje inapropiado?", "Acciones", "Carga"]}
-              tableData={tracksDataTable}
-            />
-          </CardBody>
-        </Card>
-      </Grid>
+      <TracksTable tracksTableData={tracksDataTable} />
 
       <Grid item xs={12}>
         <Button color="primary" onClick={() => setOpenNewTrackDialog(true)} >Agregar Canción</Button>
@@ -514,7 +490,7 @@ const NewAlbum = () => {
 
       <Grid item xs={12}>
         <CardFooter style={{ display: 'inline-flex' }}>
-          <Button color="primary" onClick={allFieldsValidCreateAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
+          <Button color="primary" onClick={createAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
         </CardFooter>
       </Grid>
     </Grid>
@@ -532,10 +508,6 @@ const styles = {
   },
   centerGrid: {
     textAlign: "center"
-  },
-  tableCard: {
-    display: "inline-flex",
-    width: "60%"
   }
 };
 

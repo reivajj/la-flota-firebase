@@ -34,3 +34,4 @@ export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ADD_TRACKS = "add_tracks";
 export const TRACKS_SIGN_OUT = "tracks_sign_out";
 export const EDIT_TRACK = "edit_track";
+export const EDIT_TRACK_POST_UPLOAD_IN_DB = "edit_track_post_upload_in_db";

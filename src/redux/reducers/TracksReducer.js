@@ -25,7 +25,7 @@ const TracksReducer = (state = initialState, action) => {
     case ReducerTypes.ADD_TRACKS:
       const newTracks = checkNewTracks(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...newTracks] }
-    case ReducerTypes.EDIT_TRACK:
+    case ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB:
       const editedTracks = editTrackPostUploadInDB(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...editedTracks] }
     case ReducerTypes.TRACKS_SIGN_OUT:

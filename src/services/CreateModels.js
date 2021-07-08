@@ -22,10 +22,10 @@ export const createTrackModel = dataTrack => {
   formDataTrack.append("position", dataTrack.position);
   formDataTrack.append("title", dataTrack.title);
   formDataTrack.append("track", dataTrack.track);
+  formDataTrack.append("track_language", dataTrack.track_language);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
-  // formDataTrack.append("price", 1.29);
-  // formDataTrack.append("track_lenguage", dataTrack.track_lenguage);
-  // formDataTrack.lyrics("lyrics", dataTrack.lyrics);
+  if (dataTrack.price) formDataTrack.append("price", 1.29);
+  if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
 
   return formDataTrack;
 }

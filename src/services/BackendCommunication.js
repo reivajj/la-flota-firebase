@@ -31,13 +31,13 @@ export const createAlbumDashGo = async formDataAlbum => {
 }
 
 export const createTrackDashGo = async formDataTrack => {
-  // let [uploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(
-  //   axios.post("http://localhost:5000/filemanagerapp/api/tracks/", formDataTrack)
-  // )
-  // if (uploadingTrackInThirdWebApi) console.log("Error al subir el track a DashGo", uploadingTrackInThirdWebApi);
-  // console.log("La respuesta de crear el track en dashGo: ", trackFromThirdWebApi);
+  let [uploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(
+    axios.post("http://localhost:5000/filemanagerapp/api/tracks/", formDataTrack)
+  )
+  if (uploadingTrackInThirdWebApi) console.log("Error al subir el track a DashGo", uploadingTrackInThirdWebApi);
+  console.log("La respuesta de crear el track en dashGo: ", trackFromThirdWebApi);
 
-  // return trackFromThirdWebApi;
-  return { data: { response: { id: 123456 } } };
+  return trackFromThirdWebApi;
+  // return { data: { response: { id: 123456 } } };
 }
 

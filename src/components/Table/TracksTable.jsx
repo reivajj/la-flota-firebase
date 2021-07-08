@@ -32,7 +32,7 @@ const TracksTable = ({tracksTableData}) => {
         <CardBody>
           <Table
             tableHeaderColor="primary"
-            tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje inapropiado?", "Acciones", "Carga"]}
+            tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje", "Lenguaje inapropiado?", "Acciones", "Carga"]}
             tableData={tracksTableData}
           />
         </CardBody>

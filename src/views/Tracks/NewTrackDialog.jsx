@@ -54,11 +54,12 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
 
   const currentUserId = useSelector(store => store.userData.id);
 
+  // Luego sacar Spanish y pedirlo en el Form.
   useEffect(() => {
     setTrackData({
       ...trackData, explicit: 0,
       position: tracksDataTable.length + 1, title: "", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "",
+      price: "", lyrics: "", isrc: "", track_language: "Spanish",
       other_artists: "", composers: "", producers: "",
     });
   }, [tracksDataTable]);
@@ -82,6 +83,7 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
       `${trackData.isrc}`,
       `${trackData.other_artists}`,
       "NO",
+      `${trackData.track_language}`,
       `${trackData.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
       "0"

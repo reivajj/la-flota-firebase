@@ -23,10 +23,7 @@ const Album = ({ dataAlbum }) => {
               </a>
             </CardAvatar>
             <CardBody profile>
-              <h4 className={classes.cardTitle}>{dataAlbum.nombre}</h4>
-              <p className={classes.description}>
-                {dataAlbum.details}
-              </p>
+              <h4 className={classes.cardTitle}>{dataAlbum.title}</h4>
               <Button color="primary" round>
                 Editar
               </Button>

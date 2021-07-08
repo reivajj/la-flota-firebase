@@ -62,6 +62,7 @@ const NewAlbum = () => {
       `${trackWithAllInfo.isrc}`,
       `${trackWithAllInfo.other_artists}`,
       "NO",
+      `${trackWithAllInfo.track_language}`,
       `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
       "0"
@@ -83,15 +84,16 @@ const NewAlbum = () => {
   });
 
   const [trackData, setTrackData] = useState({
-    album_id: "", disc_number: cantAlbumsFromUser, explicit: 0,
+    disc_number: cantAlbumsFromUser, explicit: 0,
     position: tracksDataTable.length + 1, title: "", track: "",
-    price: "", lyrics: "", isrc: "", track_language: "",
+    price: "", lyrics: "", isrc: "", track_language: "Spanish",
     other_artists: "", composers: "", producers: "", primary_artist: "",
-    artistId: ""
+    artistId: "", 
   });
 
+  // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
-    if (simpleValidator.current.allValid()) {
+    if (simpleValidator.current.allValid() && albumData.cover) {
       createAlbum();
     } else {
       simpleValidator.current.showMessages();
@@ -100,22 +102,10 @@ const NewAlbum = () => {
   }
 
   const createAlbum = async () => {
-    // let [errorCreatingAlbum, albumDataFromDashGo] = await to(dispatch(createAlbumRedux(albumData, currentUserId)));
-    // if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
+    let [errorCreatingAlbum, albumDataFromDashGo] = await to(dispatch(createAlbumRedux(albumData, currentUserId)));
+    if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
 
-    console.log("Entro al create Album");
-    let trackInfoMock = [{
-      disc_number: 1, explicit: 0, position: tracksDataTable.length + 1, 
-      title: "First Mock Track", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "",
-      other_artists: "", composers: "Fito", producers: "Hola", primary_artist: "Juano Perez",
-      artistId: "dnlvn7v1a4n"
-    }];
-
-    let albumDashGoIdMock = "12312";
-    let albumIdMock = "214230909ds09v0s9v2039";
-
-    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(trackInfoMock, albumIdMock, albumDashGoIdMock, currentUserId)));
+    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(getProvisionalTracks(), albumDataFromDashGo.id, albumDataFromDashGo.dashGoId, currentUserId)));
     if (errorCreatingTracksInAlbum) throw new Error("Error creating tracks in Album: ", errorCreatingTracksInAlbum);
     navigate('admin/albums');
   }
@@ -490,7 +480,7 @@ as una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correct
 
       <Grid item xs={12}>
         <CardFooter style={{ display: 'inline-flex' }}>
-          <Button color="primary" onClick={createAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
+          <Button color="primary" onClick={allFieldsValidCreateAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
         </CardFooter>
       </Grid>
     </Grid>

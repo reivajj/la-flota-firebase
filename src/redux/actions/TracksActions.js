@@ -20,20 +20,22 @@ export const createTrackLocalRedux = (trackData, userId) => {
   };
 }
 
-
 const createTrackInAlbumDashGoAndFireStore = async dataTrack => {
   console.log("entro al create track:", dataTrack);
   let formDataTrack = createTrackModel(dataTrack);
   let trackFromThirdWebApi = await BackendCommunication.createTrackDashGo(formDataTrack);
   dataTrack.dashGoId = trackFromThirdWebApi.data.response.id;
-
+  dataTrack.isrc = dataTrack.isrc || trackFromThirdWebApi.data.response.isrc;
+  dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;
+  delete dataTrack.track;
+  
   await FirestoreServices.createTrack(dataTrack).catch(error => { console.log("Error en Firestore: ", error) });
 
   return `Track de nombre: ${dataTrack.title} creado correctamente en posicion: ${dataTrack.position}`;
 }
 
 export const uploadAllTracksToAlbum = (tracksData, albumId, albumDashGoId, userId) => {
-  return async () => {
+  return async (dispatch) => {
     const uploadTracksOneByOne = tracksData.map(async (dataTrack) => {
       dataTrack.albumId = albumId; dataTrack.albumDashGoId = albumDashGoId; dataTrack.ownerId = userId; dataTrack.id = uuidv4();
       return createTrackInAlbumDashGoAndFireStore(dataTrack).catch(error => { console.log("Error en Firestore al crear tracks en album:", error) });
@@ -43,9 +45,10 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumDashGoId, userI
     if (errorCreatingAllTracksToAlbum) console.log("Error en el Promise All, crenado todos los tracks en el album: ", errorCreatingAllTracksToAlbum);
     console.log("Success creando los tracks en el album: ", successCreatingAllTracksToAlbum);
 
-    return {
-      type: ReducerTypes.ADD_TRACKS,
+    console.log("Los tracks despues de agregar todo: ", tracksData);
+    return dispatch({
+      type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,
       payload: tracksData
-    };
+    });
   }
 }

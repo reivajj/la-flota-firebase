@@ -53,7 +53,7 @@ export const createAlbum = async (album, userId) => {
   };
 }
 
-export const createTrack = async (track) => {
+export const createTrack = async track => {
   let [errorCreatingTrackInTrackssCollection] = await to(db.collection('tracks').doc(track.id).set(track));
   if (errorCreatingTrackInTrackssCollection) {
     console.log("Error al crear al Sello en la DB, coleccion de albums: ", errorCreatingTrackInTrackssCollection);

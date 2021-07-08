@@ -6,14 +6,11 @@ const checkNewTracks = (oldTracks, tracks) => {
 }
 
 // el newTrack tendrá del album_id y album_dashgo_id;
-const editTrackPostUploadInDB = (oldTracks, newTrack) => {
-  return oldTracks.map(oldTrack => {
-    if (oldTrack.provisionalId === newTrack.provisionalId) {
-      oldTrack = { ...newTrack };
-      delete oldTrack.provisionalId;
-    }
-    return oldTrack;
-  })
+const editTrackPostUploadInDB = newTracks => {
+  return newTracks.map(track => {
+    delete track.provisionalId;
+    return track;
+  });
 }
 
 const initialState = {
@@ -26,7 +23,7 @@ const TracksReducer = (state = initialState, action) => {
       const newTracks = checkNewTracks(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...newTracks] }
     case ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB:
-      const editedTracks = editTrackPostUploadInDB(state.tracks, action.payload);
+      const editedTracks = editTrackPostUploadInDB(action.payload);
       return { ...state, tracks: [...state.tracks, ...editedTracks] }
     case ReducerTypes.TRACKS_SIGN_OUT:
       return initialState;

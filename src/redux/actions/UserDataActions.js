@@ -33,7 +33,6 @@ export const userDataSignIn = userInfo => {
 
 export const userDataSignOut = () => {
   return async (dispatch) => {
-
     dispatch({
       type: ReducerTypes.USER_DATA_SIGN_OUT
     })
@@ -48,6 +47,10 @@ export const userDataSignOut = () => {
 
     dispatch({
       type: ReducerTypes.LABELS_SIGN_OUT
+    })
+
+    dispatch({
+      type: ReducerTypes.TRACKS_SIGN_OUT
     })
   };
 };

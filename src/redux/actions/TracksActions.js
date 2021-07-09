@@ -12,10 +12,9 @@ function to(promise) {
 }
 
 export const createTrackLocalRedux = (trackData, userId) => {
-  trackData.provisionalId = uuidv4();
   trackData.ownerId = userId;
   return {
-    type: ReducerTypes.ADD_TRACKS,
+    type: ReducerTypes.ADD_UPLOADING_TRACKS,
     payload: [trackData]
   };
 }
@@ -27,7 +26,7 @@ const createTrackInAlbumDashGoAndFireStore = async dataTrack => {
   dataTrack.dashGoId = trackFromThirdWebApi.data.response.id;
   dataTrack.isrc = dataTrack.isrc || trackFromThirdWebApi.data.response.isrc;
   dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;
-  delete dataTrack.track;
+  delete dataTrack.track; 
   
   await FirestoreServices.createTrack(dataTrack).catch(error => { console.log("Error en Firestore: ", error) });
 

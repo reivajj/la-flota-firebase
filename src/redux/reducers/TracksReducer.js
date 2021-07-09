@@ -5,16 +5,8 @@ const checkNewTracks = (oldTracks, tracks) => {
     .includes({ provisionalId: track.provisionalId, id: track.id || "" }))
 }
 
-// el newTrack tendrá del album_id y album_dashgo_id;
-const editTrackPostUploadInDB = newTracks => {
-  return newTracks.map(track => {
-    delete track.provisionalId;
-    return track;
-  });
-}
-
 const initialState = {
-  tracks: []
+  tracks: [], uploadingTracks: []
 }
 
 const TracksReducer = (state = initialState, action) => {
@@ -22,9 +14,10 @@ const TracksReducer = (state = initialState, action) => {
     case ReducerTypes.ADD_TRACKS:
       const newTracks = checkNewTracks(state.tracks, action.payload);
       return { ...state, tracks: [...state.tracks, ...newTracks] }
+    case ReducerTypes.ADD_UPLOADING_TRACKS:
+      return { ...state, uploadingTracks: [...state.uploadingTracks, ...action.payload] }  
     case ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB:
-      const editedTracks = editTrackPostUploadInDB(action.payload);
-      return { ...state, tracks: [...state.tracks, ...editedTracks] }
+      return { ...state, tracks: [...state.tracks, ...action.payload], uploadingTracks: [] }
     case ReducerTypes.TRACKS_SIGN_OUT:
       return initialState;
     default:

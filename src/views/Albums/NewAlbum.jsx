@@ -46,14 +46,10 @@ const NewAlbum = () => {
   const currentUserId = currentUserData.id;
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
-  const myTracks = useSelector(store => store.tracks.tracks);
+  const myTracks = useSelector(store => store.tracks.uploadingTracks);
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
-
-  const getProvisionalTracks = () => {
-    return myTracks.filter(track => track.provisionalId);
-  }
 
   const getTracksAsDataTable = tracksTotalInfo => {
     return tracksTotalInfo.map(trackWithAllInfo => [
@@ -72,7 +68,7 @@ const NewAlbum = () => {
   const [currentFile, setCurrentFile] = useState(undefined);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
-  const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(getProvisionalTracks()) || [[]]);
+  const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks) || [[]]);
   const [imageReference, setImageReference] = useState('');
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [artistForm, setArtistForm] = useState("");
@@ -105,7 +101,7 @@ const NewAlbum = () => {
     let [errorCreatingAlbum, albumDataFromDashGo] = await to(dispatch(createAlbumRedux(albumData, currentUserId)));
     if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
 
-    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(getProvisionalTracks(), albumDataFromDashGo.id, albumDataFromDashGo.dashGoId, currentUserId)));
+    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromDashGo.id, albumDataFromDashGo.dashGoId, currentUserId)));
     if (errorCreatingTracksInAlbum) throw new Error("Error creating tracks in Album: ", errorCreatingTracksInAlbum);
     navigate('admin/albums');
   }

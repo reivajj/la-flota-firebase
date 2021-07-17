@@ -22,16 +22,16 @@ let errorFormat = (message) => (
   <Danger color="error" variant="h6">{message}</Danger>
 );
 
-export const trackActions = () => {
+export const trackActions = track => {
   return (
     <Grid container direction="row">
       <Grid item xs={6}>
-        <IconButton color="inherit" size="small" onClick={() => console.log("Elimino")}>
+        <IconButton color="inherit" size="small" onClick={() => console.log("Elimino track: ", track)}>
           <DeleteIcon fontSize="inherit" />
         </IconButton>
       </Grid>
       <Grid item xs={6}>
-        <IconButton color="inherit" size="small" onClick={() => console.log("Edito")}>
+        <IconButton color="inherit" size="small" onClick={() => console.log("Edito track: ", track)}>
           <EditIcon fontSize="inherit" />
         </IconButton>
       </Grid>
@@ -78,8 +78,8 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
       "NO",
       `${trackData.track_language}`,
       `${trackData.explicit === 0 ? "NO" : "SI"}`,
-      trackActions(),
-      circularProgress()
+      trackActions(trackData),
+      circularProgress(trackData.progress)
     ]]);
   }
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, CircularProgress } from '@material-ui/core';
+import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, CircularProgress, Fab } from '@material-ui/core';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux } from "redux/actions/AlbumsActions";
@@ -21,6 +21,9 @@ import { generosMusicales, languages } from 'services/DatosVarios';
 import TracksTable from "components/Table/TracksTable";
 import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
+import CheckIcon from '@material-ui/icons/Check';
+import { green } from '@material-ui/core/colors';
+import { SET_TRACK_UPLOAD_PROGRESS } from "redux/actions/Types";
 
 // firebase.functions().useEmulator("localhost", 5001);
 
@@ -50,17 +53,18 @@ const NewAlbum = () => {
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
-  const [myTracksProgress, setMyTracksProgress] = useState([]);
 
   useEffect(() => {
-    console.log("MyTracks: ", myTracks)
-    setMyTracksProgress(myTracks.map(track => track.progress || 0));
+    setTracksDataTable(getTracksAsDataTable(myTracks) || [[]]);
   }, [myTracks])
 
   const trackUploadProgress = progressTrack => {
-    console.log("progressTrack: ", progressTrack)
     return (
-      <CircularProgress variant="determinate" value={progressTrack} size={24} className={classes.buttonProgress} />
+      progressTrack < 100
+        ? <CircularProgress variant="determinate" value={progressTrack} size={24} className={classes.buttonProgress} />
+        : <Fab aria-label="uploadSucces" color="primary" className={classes.buttonSuccess} component="span">
+          <CheckIcon size={24} />
+        </Fab>
     )
   }
 
@@ -74,7 +78,7 @@ const NewAlbum = () => {
       `${trackWithAllInfo.track_language}`,
       `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
-      `${trackWithAllInfo.progress}`
+      trackUploadProgress(trackWithAllInfo.progress),
     ]);
   }
 
@@ -97,7 +101,7 @@ const NewAlbum = () => {
     position: tracksDataTable.length + 1, title: "", track: "",
     price: "", lyrics: "", isrc: "", track_language: "Spanish",
     other_artists: "", composers: "", producers: "", primary_artist: "",
-    artistId: "", progress: 25
+    artistId: "", progress: 0
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -408,7 +412,8 @@ const NewAlbum = () => {
           <br />Si es tu primer lanzamimport {CircularProgress} from '@material-ui/core/CircularProgress';
           iento (y aún no tenés perfilimport MyAlbums from './MyAlbums';
  en las tiendas) recomendamos que elijimport TracksTable from '../../components/Table/TracksTable';
-as una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
+as una fecha de acá a 5-7 días en el fimport { Fab } from '@material-ui/core/Fab';
+uturo para que tu perfil se cree correctamente.
         </p>
       </Grid> */}
 
@@ -480,7 +485,7 @@ as una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correct
 
       <Grid item xs={12}>
         <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
-          tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={() => trackUploadProgress(trackData.progress)} />
+          tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />
       </Grid>
 
       <Grid item xs={12}>
@@ -503,7 +508,15 @@ const styles = {
   },
   centerGrid: {
     textAlign: "center"
-  }
+  },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+    width: "35px",
+    height: "35px"
+  },
 };
 
 const useStyles = makeStyles(styles);

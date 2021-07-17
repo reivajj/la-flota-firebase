@@ -44,6 +44,10 @@ function AuthIsLoaded({ children }) {
     );
   return children;
 }
+//
+if (module.hot) {
+  module.hot.accept()
+}
 
 ReactDOM.render(
   <Provider store={store}>

@@ -496,7 +496,7 @@ uturo para que tu perfil se cree correctamente.
     </Grid>
   );
 }
-
+//prube git
 export default NewAlbum;
 
 const styles = {

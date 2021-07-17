@@ -33,9 +33,9 @@ export const createAlbumDashGo = async formDataAlbum => {
   return albumFromThirdWebApi;
 }
 
-export const createTrackDashGo = async formDataTrack => {
+export const createTrackDashGo = async (formDataTrack, onUploadProgress) => {
   let [uploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(
-    axios.post(`${webUrl}tracks/`, formDataTrack)
+    axios.post(`${webUrl}tracks/`, formDataTrack, { onUploadProgress })
   )
   if (uploadingTrackInThirdWebApi) console.log("Error al subir el track a DashGo", uploadingTrackInThirdWebApi);
   console.log("La respuesta de crear el track en dashGo: ", trackFromThirdWebApi);

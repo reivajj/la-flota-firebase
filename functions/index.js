@@ -11,4 +11,4 @@ admin.initializeApp();
 
 // The Firebase Admin SDK to access Cloud Firestore.
 
-exports.storage = require("./storage/files");
+exports.storage = require("./storage/images");

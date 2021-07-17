@@ -50,6 +50,19 @@ const NewAlbum = () => {
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
+  const [myTracksProgress, setMyTracksProgress] = useState([]);
+
+  useEffect(() => {
+    console.log("MyTracks: ", myTracks)
+    setMyTracksProgress(myTracks.map(track => track.progress || 0));
+  }, [myTracks])
+
+  const trackUploadProgress = progressTrack => {
+    console.log("progressTrack: ", progressTrack)
+    return (
+      <CircularProgress variant="determinate" value={progressTrack} size={24} className={classes.buttonProgress} />
+    )
+  }
 
   const getTracksAsDataTable = tracksTotalInfo => {
     return tracksTotalInfo.map(trackWithAllInfo => [
@@ -61,7 +74,7 @@ const NewAlbum = () => {
       `${trackWithAllInfo.track_language}`,
       `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
-      "0"
+      `${trackWithAllInfo.progress}`
     ]);
   }
 
@@ -84,7 +97,7 @@ const NewAlbum = () => {
     position: tracksDataTable.length + 1, title: "", track: "",
     price: "", lyrics: "", isrc: "", track_language: "Spanish",
     other_artists: "", composers: "", producers: "", primary_artist: "",
-    artistId: "", 
+    artistId: "", progress: 25
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -120,11 +133,11 @@ const NewAlbum = () => {
       storageRef.on(
         "state_changed",
         (snapshot) => {
-          console.log("La Snapshot: ", snapshot);
           setProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
         },
         (error) => {
           //error function
+          setMessage("Error al subir la imagen: ", error);
           console.log(error);
         },
         () => {
@@ -133,8 +146,10 @@ const NewAlbum = () => {
             .ref('covers')
             .child(`${imageUuid}`)
             .getDownloadURL()
-            .then((url) => {
+            .then(url => {
+              // let thumbCoverUrl = getThumbnailUrl(url);
               setAlbumData({ ...albumData, urlImagen: url, cover: file });
+              console.log("URL: ", url);
               const imageRef = firebase.storage().ref().child(`covers/${imageUuid}`);
               setImageReference(imageRef);
             });
@@ -167,12 +182,6 @@ const NewAlbum = () => {
   const handlerYear = event => setAlbumData({ ...albumData, year: event.target.value });
   const handlerLanguageChoose = event => setAlbumData({ ...albumData, language: event.target.value });
   const handlerGenreChoose = event => setAlbumData({ ...albumData, genre: event.target.value });
-
-  const trackUploadProgress = () => {
-    return (
-      <CircularProgress variant="determinate" value={progress} size={24} className={classes.buttonProgress} />
-    )
-  }
 
   return (
     <Grid container spacing={2} style={{ textAlign: "center" }}>
@@ -471,7 +480,7 @@ as una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correct
 
       <Grid item xs={12}>
         <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
-          tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} />
+          tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={() => trackUploadProgress(trackData.progress)} />
       </Grid>
 
       <Grid item xs={12}>

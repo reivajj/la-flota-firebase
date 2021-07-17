@@ -18,13 +18,6 @@ import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
-}
-
 let errorFormat = (message) => (
   <Danger color="error" variant="h6">{message}</Danger>
 );
@@ -46,7 +39,7 @@ export const trackActions = () => {
   );
 };
 
-export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData }) => {
+export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData, circularProgress }) => {
   // const classes = useStyles();
   const dispatch = useDispatch();
   const simpleValidator = useRef(new SimpleReactValidator());
@@ -70,7 +63,7 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
       ...trackData, explicit: 0,
       position: tracksDataTable.length + 1, title: "", track: "",
       price: "", lyrics: "", isrc: "", track_language: "",
-      other_artists: "", composers: "", producers: "",
+      other_artists: "", composers: "", producers: "", progress: 0
     });
   }
 
@@ -86,7 +79,7 @@ export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDat
       `${trackData.track_language}`,
       `${trackData.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
-      "0"
+      circularProgress()
     ]]);
   }
 

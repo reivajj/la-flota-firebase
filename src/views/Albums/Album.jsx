@@ -7,11 +7,12 @@ import Card from "components/Card/Card.js";
 import CardAvatar from "components/Card/CardAvatar.js";
 import CardBody from "components/Card/CardBody.js";
 
-import avatar from "assets/img/faces/marc.jpg";
+// import avatar from "assets/img/faces/marc.jpg";
 import { Grid } from '@material-ui/core';
 
 const Album = ({ dataAlbum }) => {
   const classes = useStyles();
+
   return (
     <div>
       <Grid container>
@@ -19,7 +20,7 @@ const Album = ({ dataAlbum }) => {
           <Card profile>
             <CardAvatar profile>
               <a href="#pablo" onClick={e => e.preventDefault()}>
-                <img src={avatar} alt="..." />
+                <img src={dataAlbum.urlImagen} alt="..." />
               </a>
             </CardAvatar>
             <CardBody profile>

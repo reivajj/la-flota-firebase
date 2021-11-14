@@ -4,7 +4,11 @@ import {
   container
 } from "assets/jss/material-dashboard-react.js";
 
-const appStyle = theme => ({
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
+
+const appStyle = () => ({
   wrapper: {
     position: "relative",
     top: "0",

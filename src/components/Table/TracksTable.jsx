@@ -1,8 +1,7 @@
 import React from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 // core components
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import Table from "components/Table/Table";
 import Card from 'components/Card/Card.js';
 import CardHeader from 'components/Card/CardHeader.js';

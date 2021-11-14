@@ -6,7 +6,11 @@ import {
 
 import dropdownStyle from "assets/jss/material-dashboard-react/dropdownStyle.js";
 
-const headerLinksStyle = theme => ({
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
+
+const headerLinksStyle = () => ({
   ...dropdownStyle(theme),
   search: {
     "& > div": {

@@ -1,6 +1,5 @@
 import React from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 // core components
 import Button from "components/CustomButtons/Button.js";
 import Card from "components/Card/Card.js";
@@ -8,7 +7,7 @@ import CardAvatar from "components/Card/CardAvatar.js";
 import CardBody from "components/Card/CardBody.js";
 
 import avatar from "assets/img/faces/marc.jpg";
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 
 const Label = ({ dataLabel }) => {
   const classes = useStyles();

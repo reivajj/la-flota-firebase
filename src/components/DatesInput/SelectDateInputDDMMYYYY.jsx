@@ -1,6 +1,6 @@
 import React from "react";
-// @material-ui/core components
-import { MenuItem, TextField, Grid } from "@material-ui/core";
+// @mui/material components
+import { MenuItem, TextField, Grid } from "@mui/material";
 import Danger from 'components/Typography/Danger.js';
 
 let errorFormat = (message) => (
@@ -15,7 +15,7 @@ const yearsRange = Array.from({ length: 50 }, (_, i) => i + (actualDate.getFullY
 
 const SelectDateInputDDMMYYYY = ({ dayValue, monthValue, yearValue, setDayOfMonth, setMonth, setYear, simpleValidator }) => {
   return (
-    <Grid container spacing={2} item xs={12} justify="center">
+    <Grid container spacing={2} item xs={12} justifyContent="center">
       <Grid item xs={6} sm={2}>
         <TextField
           name='monthDay'

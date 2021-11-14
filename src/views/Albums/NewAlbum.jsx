@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, MenuItem, TextField, makeStyles, Typography, Divider, CircularProgress, Fab } from '@material-ui/core';
+import { Grid, MenuItem, TextField, Typography, Divider, CircularProgress, Fab } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux } from "redux/actions/AlbumsActions";
@@ -21,8 +22,8 @@ import { generosMusicales, languages } from 'services/DatosVarios';
 import TracksTable from "components/Table/TracksTable";
 import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
-import CheckIcon from '@material-ui/icons/Check';
-import { green } from '@material-ui/core/colors';
+import CheckIcon from '@mui/icons-material/Check';
+import { green } from '@mui/material/colors';
 import { SET_TRACK_UPLOAD_PROGRESS } from "redux/actions/Types";
 
 // firebase.functions().useEmulator("localhost", 5001);
@@ -286,7 +287,7 @@ const NewAlbum = () => {
         {!albumData.urlImagen && (
           <Grid>
             <SkeletonTheme color="aliceblue" >
-              <Skeleton variant="rect" width={250} height={220} />
+              <Skeleton variant="rectangular" width={250} height={220} />
             </SkeletonTheme>
           </Grid>
         )}
@@ -409,10 +410,10 @@ const NewAlbum = () => {
         <p style={{ width: '800px', textAlign: 'justify' }}>
           Elegí la fecha en la que querés que este lanzamiento sea publicado en las tiendas. Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente. Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1-2 días en aprobarse y procesarse, a la vez las tiendas tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.
           <br />Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro (por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las tiendas principales a la vez.
-          <br />Si es tu primer lanzamimport {CircularProgress} from '@material-ui/core/CircularProgress';
+          <br />Si es tu primer lanzamimport {CircularProgress} from '@mui/material/CircularProgress';
           iento (y aún no tenés perfilimport MyAlbums from './MyAlbums';
  en las tiendas) recomendamos que elijimport TracksTable from '../../components/Table/TracksTable';
-as una fecha de acá a 5-7 días en el fimport { Fab } from '@material-ui/core/Fab';
+as una fecha de acá a 5-7 días en el fimport { Fab } from '@mui/material/Fab';
 uturo para que tu perfil se cree correctamente.
         </p>
       </Grid> */}
@@ -420,7 +421,7 @@ uturo para que tu perfil se cree correctamente.
       <SelectDateInputDDMMYYYY dayValue={albumData.dayOfMonth} monthValue={albumData.month} yearValue={albumData.year}
         setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={simpleValidator} />
 
-      <Grid container item spacing={2} xs={12} justify="center">
+      <Grid container item spacing={2} xs={12} justifyContent="center">
         <Grid item xs={3}>
           <TextField
             name="language"

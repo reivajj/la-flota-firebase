@@ -1,9 +1,8 @@
 import React from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 // core components
 import Button from "components/CustomButtons/Button.js";
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 import Album from "views/Albums/Album";
@@ -34,7 +33,7 @@ const MyAlbums = () => {
     <div>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <h1 >Mis Lanzamientos</h1>
+          <h1>Lanzamientos</h1>
           <Button color="primary" round onClick={newAlbum}>
             Nuevo Lanzamiento
           </Button>

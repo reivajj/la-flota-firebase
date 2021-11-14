@@ -3,13 +3,12 @@ import classNames from "classnames";
 import { useNavigate } from 'react-router-dom';
 import * as actions from 'redux/actions/AuthActions.js';
 import { useDispatch } from "react-redux";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 import {
   MenuItem, MenuList, Grow, Paper, ClickAwayListener, Hidden
   , Popper, Divider
-} from "@material-ui/core";
-import { Person, Notifications, Dashboard, Search } from "@material-ui/icons";
+} from "@mui/material";
+import { Person, Notifications, Dashboard, Search } from "@mui/icons-material";
 
 // core components
 import CustomInput from "components/CustomInput/CustomInput.js";

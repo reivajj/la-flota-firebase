@@ -1,10 +1,9 @@
 import React from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 // core components
 import Button from "components/CustomButtons/Button.js";
 import Label from 'views/Labels/Label';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 

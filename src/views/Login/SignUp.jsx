@@ -1,11 +1,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  Avatar, Button, CssBaseline, TextField, Typography,
-  FormControlLabel, Checkbox, Link, Box, Grid, Container, ThemeProvider
-} from '@material-ui/core';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import { makeStyles } from '@material-ui/core/styles';
-import Alert from '@material-ui/lab/Alert';
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  Typography,
+  FormControlLabel,
+  Checkbox,
+  Link,
+  Box,
+  Grid,
+  Container,
+  ThemeProvider,
+  StyledEngineProvider,
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,6 +30,8 @@ import useForceUpdate from 'components/Varios/ForceUpdate.js';
 
 import Danger from 'components/Typography/Danger.js';
 import * as actions from '../../redux/actions/AuthActions';
+
+import { createTheme } from '@mui/material/styles';
 
 const db = firebase.firestore();
 
@@ -248,9 +261,9 @@ const SignUp = () => {
           >
             Registrarse
           </Button>
-          <Grid container justify="flex-end">
+          <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link component={RouterLink} to="/login" variant="body2">
+              <Link component={RouterLink} to="/login" variant="body2" underline="hover">
                 Ya tiene una cuenta? Ingresa
               </Link>
             </Grid>
@@ -264,7 +277,25 @@ const SignUp = () => {
   );
 }
 
-const useStyles = makeStyles((theme) => ({
+const theme = createTheme({
+  palette: {
+    primary: {
+      light: '#757ce8',
+      main: '#3f50b5',
+      dark: '#002884',
+      contrastText: '#fff',
+    },
+    secondary: {
+      light: '#ff7961',
+      main: '#f44336',
+      dark: '#ba000d',
+      contrastText: '#000',
+    },
+    mode: 'light'
+  },
+});
+
+const useStyles = makeStyles(() => ({
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',

@@ -3,14 +3,13 @@ import React, { useState } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import Hidden from "@material-ui/core/Hidden";
-import List from "@material-ui/core/List";
-import { ListItem, ListItemIcon, ListItemText, Collapse } from "@material-ui/core";
-import Icon from "@material-ui/core/Icon";
-import { ExpandLess, ExpandMore, PeopleAlt } from '@material-ui/icons';
+import makeStyles from '@mui/styles/makeStyles';
+import Drawer from "@mui/material/Drawer";
+import Hidden from "@mui/material/Hidden";
+import List from "@mui/material/List";
+import { ListItem, ListItemIcon, ListItemText, Collapse } from "@mui/material";
+import Icon from "@mui/material/Icon";
+import { ExpandLess, ExpandMore, PeopleAlt } from '@mui/icons-material';
 // core components
 import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
 
@@ -117,7 +116,7 @@ const Sidebar = props => {
           ) : null}
         </Drawer>
       </Hidden>
-      <Hidden smDown implementation="css">
+      <Hidden mdDown implementation="css">
         <Drawer
           anchor={"left"}
           variant="permanent"

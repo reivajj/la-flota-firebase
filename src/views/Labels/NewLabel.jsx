@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// import InputLabel from "@material-ui/core/InputLabel";
+import makeStyles from '@mui/styles/makeStyles';
+// import InputLabel from "@mui/material/InputLabel";
 // core components
 import Button from "components/CustomButtons/Button.js";
 import Card from "components/Card/Card.js";
@@ -13,7 +12,7 @@ import CardFooter from "components/Card/CardFooter.js";
 import SimpleReactValidator from "simple-react-validator";
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import Danger from 'components/Typography/Danger.js';
-import { TextField, Grid } from "@material-ui/core";
+import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createLabelRedux } from '../../redux/actions/LabelsActions';
@@ -106,7 +105,7 @@ const NewLabel = () => {
                   value={details}
                   multiline={true}
                   inputProps={{ maxLength: 100 }}
-                  rowsMax="3"
+                  maxRows="3"
                   rows="3"
                   onChange={(evento) => setDetails(evento.target.value)} />
               </Grid>

@@ -8,7 +8,11 @@ import {
   hexToRgb
 } from "assets/jss/material-dashboard-react.js";
 
-const dropdownStyle = theme => ({
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
+
+const dropdownStyle = () => ({
   buttonLink: {
     [theme.breakpoints.down("md")]: {
       display: "flex",

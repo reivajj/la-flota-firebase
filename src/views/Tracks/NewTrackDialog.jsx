@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// import InputLabel from "@material-ui/core/InputLabel";
+import makeStyles from '@mui/styles/makeStyles';
+// import InputLabel from "@mui/material/InputLabel";
 // core components
 import Button from "components/CustomButtons/Button.js";
 import SimpleReactValidator from "simple-react-validator";
@@ -10,13 +9,13 @@ import Danger from 'components/Typography/Danger.js';
 import Success from "components/Typography/Success";
 import {
   TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton
-} from "@material-ui/core";
+} from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { createTrackLocalRedux } from '../../redux/actions/TracksActions';
 import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 let errorFormat = (message) => (
   <Danger color="error" variant="h6">{message}</Danger>

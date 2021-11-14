@@ -9,7 +9,11 @@ import {
   defaultFont
 } from "assets/jss/material-dashboard-react.js";
 
-const tableStyle = theme => ({
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
+
+const tableStyle = () => ({
   warningTableHeader: {
     color: warningColor[0]
   },

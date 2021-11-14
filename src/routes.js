@@ -70,7 +70,7 @@ const dashboardRoutes = [
   },
   {
     path: "/albums",
-    name: "Mis Lanzamientos",
+    name: "Lanzamientos",
     icon: Notifications,
     component: MyAlbums,
     layout: "/admin"

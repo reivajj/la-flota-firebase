@@ -2,15 +2,16 @@ import React, { useEffect } from 'react';
 import {
   Avatar, Button, CssBaseline, TextField, Typography,
   FormControlLabel, Checkbox, Link, Paper, Box, Grid
-} from '@material-ui/core';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import { makeStyles } from '@material-ui/core/styles';
-import Alert from '@material-ui/lab/Alert';
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import * as actions from 'redux/actions/AuthActions.js';
 import Copyright from 'components/Copyright/Copyright.js';
+import { createTheme } from '@mui/material/styles';
 
 function to(promise) {
   return promise.then(data => {
@@ -116,12 +117,12 @@ const SignInSide = () => {
 
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" underline="hover">
                   Olvidaste tu contraseña?
                 </Link>
               </Grid>
               <Grid item>
-                <Link component={RouterLink} to="/sign-up" variant="body2">
+                <Link component={RouterLink} to="/sign-up" underline="hover" variant="body2">
                   {"No tienes una cuenta? Regístrate"}
                 </Link>
               </Grid>
@@ -138,7 +139,38 @@ const SignInSide = () => {
 
 export default SignInSide;
 
-const useStyles = makeStyles((theme) => ({
+const theme = createTheme({
+  palette: {
+    primary: {
+      light: '#757ce8',
+      main: '#3f50b5',
+      dark: '#002884',
+      contrastText: '#fff',
+    },
+    secondary: {
+      light: '#ff7961',
+      main: '#f44336',
+      dark: '#ba000d',
+      contrastText: '#000',
+    },
+    mode: 'light'
+  },
+});
+
+// const rootStyle = {
+//   height: '100vh',
+// };
+
+// const imageStyle = {
+//   backgroundImage: 'url(https://source.unsplash.com/random)',
+//   backgroundRepeat: 'no-repeat',
+//   backgroundColor:
+//     modeTheme === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
+//   backgroundSize: 'cover',
+//   backgroundPosition: 'center',
+// }
+
+const useStyles = makeStyles(() => ({
   root: {
     height: '100vh',
   },
@@ -146,7 +178,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundImage: 'url(https://source.unsplash.com/random)',
     backgroundRepeat: 'no-repeat',
     backgroundColor:
-      theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
+      theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
     backgroundSize: 'cover',
     backgroundPosition: 'center',
   },

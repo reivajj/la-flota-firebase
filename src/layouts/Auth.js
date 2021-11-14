@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { makeStyles } from "@mui/styles";
+import { Outlet } from "react-router-dom";
 
 const useStyles = makeStyles(({
   root: {
@@ -20,6 +21,7 @@ const AuthLayout = props => {
       <main className={classes.content}>
         {children}
       </main>
+      <Outlet />
     </div>
   );
 };

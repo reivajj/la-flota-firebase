@@ -14,15 +14,17 @@ import { ExpandLess, ExpandMore, PeopleAlt } from '@mui/icons-material';
 import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
 
 import styles from "assets/jss/material-dashboard-react/components/sidebarStyle.js";
+import { useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles(styles);
 
 const Sidebar = props => {
   const classes = useStyles();
+  const url = useLocation();
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = routeName => {
-    return window.location.href.indexOf(routeName) > -1 ? true : false;
+    return url.pathname === routeName;
   }
 
   const { color, logo, image, logoText, routes } = props;
@@ -50,7 +52,6 @@ const Sidebar = props => {
           <NavLink
             to={prop.layout + prop.path}
             className={activePro + classes.item}
-            activeClassName="active"
             key={key}
           >
             <ListItem button className={classes.itemLink + listItemClasses}>

@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+// import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import firebase from 'firebaseConfig/firebase.js';
 import { Provider } from "react-redux";
 import { ReactReduxFirebaseProvider } from "react-redux-firebase";
@@ -50,17 +50,15 @@ if (module.hot) {
   module.hot.accept()
 }
 
-const theme = createMuiTheme();
+// const theme = createMuiTheme();
 
 ReactDOM.render(
   <Provider store={store}>
     <ReactReduxFirebaseProvider {...rrfProps}>
       <AuthIsLoaded>
-        <ThemeProvider theme={theme}>
-          <PersistGate persistor={persistor}>
-            <Rutas />
-          </PersistGate>
-        </ThemeProvider>
+        <PersistGate persistor={persistor}>
+          <Rutas />
+        </PersistGate>
       </AuthIsLoaded>
     </ReactReduxFirebaseProvider>
   </Provider>,

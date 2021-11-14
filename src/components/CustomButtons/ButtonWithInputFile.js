@@ -1,6 +1,6 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { green, red } from '@material-ui/core/colors';
+import makeStyles from '@mui/styles/makeStyles';
+import { green, red } from '@mui/material/colors';
 import Button from "components/CustomButtons/Button.js";
 
 const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) => {

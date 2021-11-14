@@ -13,16 +13,17 @@ import AdminNavbarLinks from "./AdminNavbarLinks.js";
 import Button from "components/CustomButtons/Button.js";
 
 import styles from "assets/jss/material-dashboard-react/components/headerStyle.js";
+import { useLocation } from "react-router-dom";
 
 const useStyles = makeStyles(styles);
-
 export default function Header(props) {
   const classes = useStyles();
-
+  const url = useLocation();
+  
   const makeBrand = () => {
     var name;
     props.routes.map(prop => {
-      if (window.location.href.indexOf(prop.layout + prop.path) !== -1) {
+      if (url.pathname === prop.layout + prop.path) {
         name = prop.name;
       }
       return null;
@@ -34,28 +35,28 @@ export default function Header(props) {
     [" " + classes[color]]: color
   });
   return (
-    <AppBar className={classes.appBar + appBarClasses}>
-      <Toolbar className={classes.container}>
-        <div className={classes.flex}>
-          {/* Here we create navbar brand, based on route name */}
-          <Button color="transparent" href="#" className={classes.title}>
-            {makeBrand()}
-          </Button>
-        </div>
-        <Hidden mdDown implementation="css">
-          {<AdminNavbarLinks />}
-        </Hidden>
-        <Hidden mdUp implementation="css">
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={props.handleDrawerToggle}
-            size="large">
-            <Menu />
-          </IconButton>
-        </Hidden>
-      </Toolbar>
-    </AppBar>
+      <AppBar className={classes.appBar + appBarClasses}>
+        <Toolbar className={classes.container}>
+          <div className={classes.flex}>
+            {/* Here we create navbar brand, based on route name */}
+            <Button color="transparent" href="#" className={classes.title}>
+              {makeBrand()}
+            </Button>
+          </div>
+          <Hidden mdDown implementation="css">
+            {<AdminNavbarLinks />}
+          </Hidden>
+          <Hidden mdUp implementation="css">
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={props.handleDrawerToggle}
+              size="large">
+              <Menu />
+            </IconButton>
+          </Hidden>
+        </Toolbar>
+      </AppBar>
   );
 }
 

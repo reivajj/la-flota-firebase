@@ -74,7 +74,6 @@ const SignInSide = () => {
               </Alert>}
 
             <TextField
-              variant="outlined"
               margin="normal"
               required
               fullWidth
@@ -87,7 +86,6 @@ const SignInSide = () => {
               onChange={(evento) => changeEmail(evento.target.value)}
             />
             <TextField
-              variant="outlined"
               margin="normal"
               required
               fullWidth
@@ -115,7 +113,7 @@ const SignInSide = () => {
               Iniciar Sesión
             </Button>
 
-            <Grid container>
+            <Grid container padding={1}>
               <Grid item xs>
                 <Link href="#" variant="body2" underline="hover">
                   Olvidaste tu contraseña?

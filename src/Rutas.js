@@ -21,69 +21,38 @@ import NewAlbum from 'views/Albums/NewAlbum';
 const Rutas = () => {
   return (
     <BrowserRouter>
+
       <Routes>
 
-        <AuthLayout>
+        <Route path="/" element={<AuthLayout />}>
+          <Route path="" element={<SignInSide />} />
           <Route path="login" element={<SignInSide />} />
-        </AuthLayout>
-
-        <AuthLayout>
           <Route path="sign-up" element={<SignUp />} />
-        </AuthLayout>
+        </Route>
 
-        <AdminLayout>
-          <Route path="admin/dashboard" element={<DashboardPage />} />
-        </AdminLayout>
+        <Route path="/admin/" element={<AdminLayout />}>
 
-        <AdminLayout>
-          <Route path="admin/user" element={<UserProfile />} />
-        </AdminLayout>
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="user" element={<UserProfile />} />
+          <Route path="table" element={<TableList />} />
+          <Route path="typography" element={<Typography />} />
+          <Route path="icons" element={<Icons />} />
+          <Route path="notifications" element={<Notifications />} />
 
-        <AdminLayout>
-          <Route path="admin/table" element={<TableList />} />
-        </AdminLayout>
+          <Route path="artists" element={<MyArtists />} />
+          <Route path="new-artist" element={<NewArtist />} />
 
-        <AdminLayout>
-          <Route path="admin/typography" element={<Typography />} />
-        </AdminLayout>
+          <Route path="labels" element={<MyLabels />} />
+          <Route path="new-label" element={<NewLabel />} />
 
-        <AdminLayout>
-          <Route path="admin/icons" element={<Icons />} />
-        </AdminLayout>
+          <Route path="albums" element={<MyAlbums />} />
+          <Route path="new-album" element={<NewAlbum />} />
 
-        <AdminLayout>
-          <Route path="admin/notifications" element={<Notifications />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/artists" element={<MyArtists />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/new-artist" element={<NewArtist />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/labels" element={<MyLabels />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/new-label" element={<NewLabel />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/albums" element={<MyAlbums />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/new-album" element={<NewAlbum />} />
-        </AdminLayout>
-
-        <AdminLayout>
-          <Route path="admin/upgrade-to-pro" element={<UpgradeToPro />} />
-        </AdminLayout>
+          <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
+        </Route>
 
       </Routes>
+
     </BrowserRouter>
   );
 };

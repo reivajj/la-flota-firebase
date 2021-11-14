@@ -8,11 +8,14 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme();
 
-const appStyle = () => ({
+const appStyle = {
   wrapper: {
     position: "relative",
-    top: "0",
-    height: "100vh"
+    // top: "10",
+    // height: "100vh",
+    // marginTop: "80px",
+    marginLeft: "0px",
+    // marginRight: "30px"
   },
   mainPanel: {
     [theme.breakpoints.up("md")]: {
@@ -32,6 +35,6 @@ const appStyle = () => ({
     minHeight: "calc(100vh - 123px)"
   },
   container,
-});
+};
 
 export default appStyle;

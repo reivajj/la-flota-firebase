@@ -1,13 +1,13 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { green, red } from '@material-ui/core/colors';
-import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import CheckIcon from '@material-ui/icons/Check';
-import SaveIcon from '@material-ui/icons/Save';
-import ErrorIcon from '@material-ui/icons/Error';
+import makeStyles from '@mui/styles/makeStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import { green, red } from '@mui/material/colors';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import CheckIcon from '@mui/icons-material/Check';
+import SaveIcon from '@mui/icons-material/Save';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClickHandler, progress }) => {
   const classes = useStyles();

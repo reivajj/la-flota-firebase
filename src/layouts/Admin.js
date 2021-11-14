@@ -1,4 +1,5 @@
 import React, { useState, useEffect, createRef } from "react";
+import { Outlet } from "react-router-dom";
 // creates a beautiful scrollbar
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
@@ -59,7 +60,8 @@ const AdminLayout = ({ ...rest }) => {
   }, [mainPanel]);
 
   return (
-    <div className={classes.wrapper}>
+    <div style={mainStyle}>
+      
       <Sidebar
         routes={routes}
         logoText={"La Flota"}
@@ -78,6 +80,8 @@ const AdminLayout = ({ ...rest }) => {
           {...rest}
         />
 
+        <Outlet />
+
         <div className={classes.content}>
           <div className={classes.container}>
             {children}
@@ -91,3 +95,8 @@ const AdminLayout = ({ ...rest }) => {
 }
 
 export default AdminLayout;
+
+const mainStyle = {
+  paddingLeft: "15px",
+  paddingRight: "15px",
+}

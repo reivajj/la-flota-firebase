@@ -59,7 +59,7 @@ const AdminNavbarLinks = () => {
 
     setOpenProfile(null);
     console.log("SignOut OK: ", signOutResponse);
-    navigate("login");
+    navigate("/login");
   };
   
   return (

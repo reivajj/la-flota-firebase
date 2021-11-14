@@ -44,7 +44,7 @@ const MyArtists = () => {
         }
         <Grid item xs={12}>
           {misArtistas.length === 0 &&
-            <h4 className={classes.cardTitleWhite}>No tienes Artistas</h4>}
+            <h4 style={styles.cardTitleBlack}>No tienes Artistas</h4>}
         </Grid>
       </Grid>
     </div >
@@ -61,8 +61,8 @@ const styles = {
     marginTop: "0",
     marginBottom: "0"
   },
-  cardTitleWhite: {
-    color: "#FFFFFF",
+  cardTitleBlack: {
+    color: "#000000",
     marginTop: "0px",
     minHeight: "auto",
     fontWeight: "300",

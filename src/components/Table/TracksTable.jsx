@@ -21,7 +21,7 @@ const TracksTable = ({tracksTableData}) => {
 
   return (
     <Grid item xs={12}>
-      <Card className={classes.tableCard}>
+      <Card sx={styles.tableCard}>
         <CardHeader color="primary">
           <h4 className={classes.cardTitleWhite}>Simple Table</h4>
           <p className={classes.cardCategoryWhite}>

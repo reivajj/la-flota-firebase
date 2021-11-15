@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import classNames from "classnames";
 import { useNavigate } from 'react-router-dom';
 import * as actions from 'redux/actions/AuthActions.js';
 import { useDispatch } from "react-redux";
 import makeStyles from '@mui/styles/makeStyles';
-import { MenuItem, MenuList, Paper, ClickAwayListener, Divider, Menu } from "@mui/material";
+import { MenuItem, MenuList, Divider, Menu, Badge } from "@mui/material";
 import { Person, Notifications, Dashboard, Search } from "@mui/icons-material";
 
 // core components
@@ -14,7 +13,11 @@ import Button from "components/CustomButtons/Button.js";
 import styles from "assets/jss/material-dashboard-react/components/headerLinksStyle.js";
 import { createTheme } from '@mui/material/styles';
 
+import { primaryColor, whiteColor, primaryBoxShadow, defaultFont, grayColor } from "assets/jss/material-dashboard-react.js";
+
+
 const useStyles = makeStyles(styles);
+const theme = createTheme();
 
 function to(promise) {
   return promise.then(data => {
@@ -28,48 +31,41 @@ const AdminNavbarLinks = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch();
 
-  const [openNotification, setOpenNotification] = useState(false);
-  const [openProfile, setOpenProfile] = useState(false);
+  const [anchorElNotifications, setAnchorElNotifications] = useState(null);
+  const openNotifications = Boolean(anchorElNotifications)
 
-  const handleClickNotification = event => {
-    if (openNotification && openNotification.contains(event.target)) {
-      setOpenNotification(false);
-    } else {
-      setOpenNotification(event.currentTarget);
-    }
+  const handleClickNotification = (event) => {
+    setAnchorElNotifications(event.currentTarget);
+  }
+  const handleCloseNotifications = () => {
+    setAnchorElNotifications(null);
   };
 
-  const handleCloseNotification = () => {
-    setOpenNotification(false);
+  const [anchorElProfile, setAnchorElProfile] = useState(null);
+  const openProfile = Boolean(anchorElProfile);
+
+  const handleClickProfile = (event) => {
+    setAnchorElProfile(event.currentTarget);
+  };
+  const handleCloseProfileMenu = () => {
+    setAnchorElProfile(null);
   };
 
   const handleClickOnDashboard = () => {
     navigate("dashboard");
   }
 
-  const handleClickProfile = event => {
-    if (openProfile && openProfile.contains(event.target)) {
-      setOpenProfile(false);
-    } else {
-      setOpenProfile(event.currentTarget);
-    }
-  };
-
   const handleSignOut = async () => {
     let [errorSignOut] = await to(dispatch(actions.signOutFromFirebase()));
     if (errorSignOut) console.log("Error al realizar signOut: ", errorSignOut);
 
-    setOpenProfile(false);
+    setAnchorElProfile(null);
     navigate("/login");
   };
 
-  const handleCloseProfileMenu = () => {
-    setOpenProfile(false);
-  }
-
   return (
     <div>
-      <div className={classes.searchWrapper}>
+      <div style={searchWrapperStyle}>
         <CustomInput
           formControlProps={{
             className: classes.margin + " " + classes.search
@@ -87,24 +83,25 @@ const AdminNavbarLinks = () => {
       </div>
       <Button
         aria-label="Dashboard"
-        sx={styles.buttonLink}
+        sx={buttonLinkStyle}
       >
         <Dashboard className={classes.icons} onClick={handleClickOnDashboard} />
       </Button>
-      <div className={classes.manager}>
+      <div style={managerStyle}>
         <Button
           onClick={handleClickNotification}
-          sx={styles.buttonLink}
+          sx={buttonLinkStyle}
         >
-          <Notifications className={classes.icons} />
-          <span className={classes.notifications}>5</span>
+          <Badge badgeContent={4} color="error">
+            <Notifications className={classes.icons} />
+          </Badge>
         </Button>
 
         <Menu
           id="basic-menu"
-          anchorEl={openNotification}
-          open={openNotification}
-          onClose={handleCloseNotification}
+          anchorEl={anchorElNotifications}
+          open={openNotifications}
+          onClose={handleCloseNotifications}
           MenuListProps={{
             'aria-labelledby': 'lock-button',
             role: 'listbox',
@@ -112,32 +109,32 @@ const AdminNavbarLinks = () => {
         >
           <MenuList role="menu">
             <MenuItem
-              onClick={handleCloseNotification}
-              className={classes.dropdownItem}
+              onClick={handleCloseNotifications}
+              sx={dropdownItemStyle}
             >
               Mike John responded to your email
             </MenuItem>
             <MenuItem
-              onClick={handleCloseNotification}
-              className={classes.dropdownItem}
+              onClick={handleCloseNotifications}
+              sx={dropdownItemStyle}
             >
               You have 5 new tasks
             </MenuItem>
             <MenuItem
-              onClick={handleCloseNotification}
-              className={classes.dropdownItem}
+              onClick={handleCloseNotifications}
+              sx={dropdownItemStyle}
             >
               You{"'"}re now friend with Andrew
             </MenuItem>
             <MenuItem
-              onClick={handleCloseNotification}
-              className={classes.dropdownItem}
+              onClick={handleCloseNotifications}
+              sx={dropdownItemStyle}
             >
               Another Notification
             </MenuItem>
             <MenuItem
-              onClick={handleCloseNotification}
-              className={classes.dropdownItem}
+              onClick={handleCloseNotifications}
+              sx={dropdownItemStyle}
             >
               Another One
             </MenuItem>
@@ -145,7 +142,7 @@ const AdminNavbarLinks = () => {
         </Menu>
       </div>
 
-      <div className={classes.manager}>
+      <div style={managerStyle}>
         <Button
           aria-owns={openProfile ? "profile-menu-list-grow" : null}
           aria-haspopup="true"
@@ -156,7 +153,7 @@ const AdminNavbarLinks = () => {
 
         <Menu
           id="basic-menu"
-          anchorEl={openProfile}
+          anchorEl={anchorElProfile}
           open={openProfile}
           onClose={handleCloseProfileMenu}
           MenuListProps={{
@@ -166,20 +163,20 @@ const AdminNavbarLinks = () => {
           <MenuList role="menu">
             <MenuItem
               onClick={handleCloseProfileMenu}
-              className={classes.dropdownItem}
+              sx={dropdownItemStyle}
             >
               Profile
             </MenuItem>
             <MenuItem
               onClick={handleCloseProfileMenu}
-              className={classes.dropdownItem}
+              sx={dropdownItemStyle}
             >
               Settings
             </MenuItem>
             <Divider light />
             <MenuItem
               onClick={handleSignOut}
-              className={classes.dropdownItem}
+              sx={dropdownItemStyle}
             >
               Logout
             </MenuItem>
@@ -191,3 +188,51 @@ const AdminNavbarLinks = () => {
 }
 
 export default AdminNavbarLinks;
+
+const buttonLinkStyle = {
+  [theme.breakpoints.down("md")]: {
+    display: "flex",
+    marginLeft: "30px",
+    width: "auto"
+  }
+}
+const dropdownItemStyle = {
+  ...defaultFont,
+  fontSize: "13px",
+  padding: "10px 20px",
+  margin: "0 5px",
+  borderRadius: "2px",
+  WebkitTransition: "all 150ms linear",
+  MozTransition: "all 150ms linear",
+  OTransition: "all 150ms linear",
+  MsTransition: "all 150ms linear",
+  transition: "all 150ms linear",
+  display: "block",
+  clear: "both",
+  fontWeight: "400",
+  lineHeight: "1.42857143",
+  color: grayColor[8],
+  whiteSpace: "nowrap",
+  height: "unset",
+  minHeight: "unset",
+  "&:hover": {
+    backgroundColor: primaryColor[0],
+    color: whiteColor,
+    ...primaryBoxShadow
+  }
+}
+
+const searchWrapperStyle = {
+  [theme.breakpoints.down("sm")]: {
+    width: "-webkit-fill-available",
+    margin: "10px 15px 0"
+  },
+  display: "inline-block"
+}
+
+const managerStyle = {
+  [theme.breakpoints.down("sm")]: {
+    width: "100%"
+  },
+  display: "inline-block"
+}

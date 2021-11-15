@@ -43,18 +43,7 @@ export default function Header(props) {
             {makeBrand()}
           </Button>
         </div>
-        <Hidden mdDown implementation="css">
-          {<AdminNavbarLinks />}
-        </Hidden>
-        <Hidden mdUp implementation="css">
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={props.handleDrawerToggle}
-            size="large">
-            <Menu />
-          </IconButton>
-        </Hidden>
+        {<AdminNavbarLinks />}
       </Toolbar>
     </AppBar>
   );

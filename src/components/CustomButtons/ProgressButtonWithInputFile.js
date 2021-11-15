@@ -8,6 +8,7 @@ import Fab from '@mui/material/Fab';
 import CheckIcon from '@mui/icons-material/Check';
 import SaveIcon from '@mui/icons-material/Save';
 import ErrorIcon from '@mui/icons-material/Error';
+import { createTheme } from '@mui/material/styles';
 
 const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClickHandler, progress }) => {
   const classes = useStyles();
@@ -68,7 +69,10 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
 
 export default ProgressButtonWithInputFile;
 
-const useStyles = makeStyles((theme) => ({
+
+const theme = createTheme();
+
+const useStyles = makeStyles(() => ({
   root: {
     display: 'inline-flex',
     alignItems: 'center',

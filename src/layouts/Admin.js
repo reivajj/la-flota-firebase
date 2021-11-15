@@ -28,6 +28,7 @@ const AdminLayout = ({ ...rest }) => {
   const mainPanel = createRef();
   // states and functions
   const image = bgImage;
+  // El color del boton en el menu lateral, una vez que lo presionamos
   const color = "blue";
   const [mobileOpen, setMobileOpen] = useState(false);
 

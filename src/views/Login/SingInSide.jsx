@@ -4,7 +4,6 @@ import {
   FormControlLabel, Checkbox, Link, Paper, Box, Grid
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from "react-router-dom";
@@ -22,7 +21,6 @@ function to(promise) {
 
 const SignInSide = () => {
 
-  const classes = useStyles();
   const user = useSelector(store => store.auth.user);
   const email = useSelector(store => store.auth.email);
   const password = useSelector(store => store.auth.password);
@@ -36,10 +34,9 @@ const SignInSide = () => {
   }, [user]);
 
   const login = async () => {
-    let [errorSignIn, signInRespuesta] = await to(dispatch(actions.signIn({ email, password, fromSignUp: false })));
+    let [errorSignIn] = await to(dispatch(actions.signIn({ email, password, fromSignUp: false })));
     //  REVEER: Dar una pantalla de error correspondiente
     if (errorSignIn) console.log("Error realizando el signIn: ", errorSignIn);
-    console.log("SIGN IN OK:", signInRespuesta);
   };
 
   const changeEmail = (text) => {
@@ -55,18 +52,18 @@ const SignInSide = () => {
   }
 
   return (
-    <Grid container component="main" className={classes.root}>
+    <Grid container component="main" sx={rootStyle}>
       <CssBaseline />
-      <Grid item xs={false} sm={4} md={7} className={classes.image} />
+      <Grid item xs={false} sm={4} md={7} sx={imageStyle} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-        <div className={classes.paper}>
-          <Avatar className={classes.avatar}>
+        <div style={paperStyle}>
+          <Avatar sx={avatarStyle}>
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <form className={classes.form} noValidate>
+          <form style={formStyle} noValidate>
 
             {errorSignInStore &&
               <Alert severity="error">
@@ -107,7 +104,7 @@ const SignInSide = () => {
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.submit}
+              sx={submitStyle}
               onClick={login}
             >
               Iniciar Sesión
@@ -155,46 +152,37 @@ const theme = createTheme({
   },
 });
 
-// const rootStyle = {
-//   height: '100vh',
-// };
 
-// const imageStyle = {
-//   backgroundImage: 'url(https://source.unsplash.com/random)',
-//   backgroundRepeat: 'no-repeat',
-//   backgroundColor:
-//     modeTheme === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-//   backgroundSize: 'cover',
-//   backgroundPosition: 'center',
-// }
+const rootStyle = {
+  height: '100vh',
+}
 
-const useStyles = makeStyles(() => ({
-  root: {
-    height: '100vh',
-  },
-  image: {
-    backgroundImage: 'url(https://source.unsplash.com/random)',
-    backgroundRepeat: 'no-repeat',
-    backgroundColor:
-      theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  },
-  paper: {
-    margin: theme.spacing(8, 4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
-  },
-  form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-}));
+const imageStyle = {
+  backgroundImage: 'url(https://source.unsplash.com/random)',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor:
+    theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+}
+
+const paperStyle = {
+  margin: theme.spacing(8, 4),
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}
+
+const avatarStyle = {
+  margin: theme.spacing(1),
+  backgroundColor: theme.palette.secondary.main,
+}
+
+const formStyle = {
+  width: '100%', // Fix IE 11 issue.
+  marginTop: theme.spacing(1),
+}
+
+const submitStyle = {
+  margin: theme.spacing(3, 0, 2),
+}

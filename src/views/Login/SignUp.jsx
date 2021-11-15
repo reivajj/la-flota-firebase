@@ -23,7 +23,6 @@ import { useSelector, useDispatch } from "react-redux";
 import SimpleReactValidator from "simple-react-validator";
 
 // import * as actions from 'redux/actions/AuthActions.js';
-import firebase from 'firebaseConfig/firebase.js';
 import { SIGNUP_ERROR } from 'redux/actions/Types.js';
 import Copyright from 'components/Copyright/Copyright.js';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
@@ -33,7 +32,10 @@ import * as actions from '../../redux/actions/AuthActions';
 
 import { createTheme } from '@mui/material/styles';
 
-const db = firebase.firestore();
+import firebaseApp from 'firebaseConfig/firebase.js';
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+
+const db = getFirestore(firebaseApp);
 
 function to(promise) {
   return promise.then(data => {
@@ -102,15 +104,15 @@ const SignUp = () => {
   useEffect(() => {
 
     const uploadAllData = async newUserData => {
-      let userPorMailRef = db.collection("usersPorMail").doc(newUserData.email);
-      let userGoogleIdRef = db.collection("users").doc(newUserData.id);
+      const userPorMailRef = doc(db, "usersPorMail", newUserData.email);
+      const userGoogleIdRef = doc(db, "users", newUserData.id);
 
       let userDataComplete = assignEmptyValuesToUserData(newUserData);
 
-      let [errorSettingUserInUsers] = await to(userGoogleIdRef.set(userDataComplete));
+      let [errorSettingUserInUsers] = await to(setDoc(userGoogleIdRef, userDataComplete));
       if (errorSettingUserInUsers) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserInUsers, userDataComplete } });
 
-      let [errorSettingUserByMail] = await to(userPorMailRef.set(userDataComplete));
+      let [errorSettingUserByMail] = await to(setDoc(userPorMailRef, userDataComplete));
       if (errorSettingUserByMail) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserByMail, userDataComplete } });
 
       let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: userDataComplete.email, password: userDataComplete.password, fromSignUp: true })));

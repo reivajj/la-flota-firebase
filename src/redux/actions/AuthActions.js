@@ -3,9 +3,13 @@ import {
   , SIGN_OUT_ERROR, SIGN_IN_ERR, SIGN_OUT, SIGNUP_SUCCESS
 } from "redux/actions/Types";
 import * as UserDataActions from "../../redux/actions/UserDataActions";
-import firebase from "../../firebaseConfig/firebase";
+import firebaseApp from "../../firebaseConfig/firebase";
 
-const db = firebase.firestore();
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFirestore, getDoc, doc, updateDoc } from "firebase/firestore";
+
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 
 function to(promise) {
   return promise.then(data => {
@@ -33,15 +37,16 @@ export const signIn = ({ email, password, fromSignUp }) => {
   return async dispatch => {
     if (!fromSignUp) {
       // Si vengo del SignUp quiere decir que ya estoy logueado
-      let [errorSignInFirebase] = await to(firebase.auth().signInWithEmailAndPassword(email, password));
+      let [errorSignInFirebase] = await to(signInWithEmailAndPassword(auth, email, password));
       if (errorSignInFirebase) dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
     }
 
-    const { currentUser } = firebase.auth();
-    let userInDBRef = db.collection("users").doc(currentUser.uid);
-
-    let [errorGettingRol, userDoc] = await to(userInDBRef.get());
-    if (errorGettingRol) dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    let userInDBRef = doc(db, "users", auth.currentUser.uid);
+    let [errorGettingRol, userDoc] = await to(getDoc(userInDBRef));
+    if (errorGettingRol) {
+      console.log("Error getting rol: ", errorGettingRol);
+      dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    };
 
     if (!userDoc.exists) {
       console.log("No such document!");
@@ -50,9 +55,12 @@ export const signIn = ({ email, password, fromSignUp }) => {
       // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
       let userDocData = userDoc.data()
       let date = new Date();
-      let lastTimeSignedInString = date.toLocaleString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires'});
-      let [errorUpdatingUserSignIn] = await to(userInDBRef.update({ lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
-      if (errorUpdatingUserSignIn) dispatch({ type: SIGN_IN_ERR }, { errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" });
+      let lastTimeSignedInString = date.toLocaleString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' });
+      let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+      if (errorUpdatingUserSignIn) {
+        console.log("Error al actualizar last time", errorUpdatingUserSignIn);
+        dispatch({ type: SIGN_IN_ERR }, { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" })
+      };
 
       dispatch({ type: SIGN_IN, payload: userDocData });
       dispatch(UserDataActions.userDataSignIn(userDocData));
@@ -62,9 +70,9 @@ export const signIn = ({ email, password, fromSignUp }) => {
 }
 
 // ASYNC - THUNK
-export const signOut = () => {
+export const signOutFromFirebase = () => {
   return async dispatch => {
-    let [errorSignOutFirebase, signOutFirebaseResponse] = await to(firebase.auth().signOut());
+    let [errorSignOutFirebase, signOutFirebaseResponse] = await to(signOut(auth));
     if (errorSignOutFirebase) dispatch({ type: SIGN_OUT_ERROR, payload: "Hubo un problema al realizar el SignOut" });
 
     dispatch(UserDataActions.userDataSignOut());
@@ -77,7 +85,7 @@ export const signOut = () => {
 export const signUp = userData => {
   return async dispatch => {
     const { email, password } = userData;
-    let [errorSignUpFirebase, userCreds] = await to(firebase.auth().createUserWithEmailAndPassword(email, password));
+    let [errorSignUpFirebase, userCreds] = await to(createUserWithEmailAndPassword(auth, email, password));
     if (errorSignUpFirebase) {
       // Aca deberia hacer algo! Indicando que hubo un problema, no deberia seguir! Puedo usar el SIGNUP_ERROR
       // de la misma manera que hago en el SignIn!

@@ -8,17 +8,14 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
-import firebase from "firebaseConfig/firebase.js";
 
 import Button from "components/CustomButtons/Button.js";
 import Danger from 'components/Typography/Danger.js';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import CardFooter from "components/Card/CardFooter.js";
 import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButtonWithInputFile';
-// import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { generosMusicales, languages } from 'services/DatosVarios';
-// import NewTrackDialog from "views/Tracks/NewTrackDialog";
 import TracksTable from "components/Table/TracksTable";
 import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
@@ -26,7 +23,10 @@ import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 import { SET_TRACK_UPLOAD_PROGRESS } from "redux/actions/Types";
 
-// firebase.functions().useEmulator("localhost", 5001);
+import firebaseApp from "firebaseConfig/firebase.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+const storage = getStorage(firebaseApp);
 
 function to(promise) {
   return promise.then(data => {
@@ -124,38 +124,31 @@ const NewAlbum = () => {
     navigate('admin/albums');
   }
 
-  const fileChangedHandler = (event) => {
+  const fileChangedHandler = async (event) => {
     const file = event.target.files[0];
     setCurrentFile(file);
     if (file["size"] > 5242880) {
       setMessage("El archivo debe ser menor que 5 Mb");
     } else {
       const imageUuid = uuidv4();
-      const storageRef = firebase
-        .storage()
-        .ref(`covers/${imageUuid}`)
-        .put(file);
-      storageRef.on(
-        "state_changed",
+      const storageRef = ref(storage, `covers/${imageUuid}`)
+      const uploadFileTask = uploadBytesResumable(storageRef, file);
+
+      uploadFileTask.on("state_changed",
         (snapshot) => {
           setProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
         },
         (error) => {
-          //error function
           setMessage("Error al subir la imagen: ", error);
           console.log(error);
         },
         () => {
-          firebase
-            .storage()
-            .ref('covers')
-            .child(`${imageUuid}`)
-            .getDownloadURL()
+          getDownloadURL(uploadFileTask.snapshot.ref)
             .then(url => {
               // let thumbCoverUrl = getThumbnailUrl(url);
               setAlbumData({ ...albumData, urlImagen: url, cover: file });
               console.log("URL: ", url);
-              const imageRef = firebase.storage().ref().child(`covers/${imageUuid}`);
+              const imageRef = storageRef;
               setImageReference(imageRef);
             });
         }
@@ -200,7 +193,6 @@ const NewAlbum = () => {
           className={classes.textField}
           autoFocus
           id="nombreArtist"
-          variant="outlined"
           required
           margin="normal"
           select
@@ -225,7 +217,6 @@ const NewAlbum = () => {
           name="title"
           className={classes.textField}
           id="title"
-          variant="outlined"
           required
           margin="normal"
           label="Título del Lanzamiento"
@@ -244,7 +235,6 @@ const NewAlbum = () => {
           name="label_name"
           className={classes.textField}
           id="label_name"
-          variant="outlined"
           required
           margin="normal"
           select
@@ -312,7 +302,6 @@ const NewAlbum = () => {
           className={classes.textField}
           name="p_year"
           id="p_year"
-          variant="outlined"
           required
           margin="normal"
           select
@@ -337,7 +326,6 @@ const NewAlbum = () => {
           name="p_line"
           className={classes.textField}
           id="p_line"
-          variant="outlined"
           required
           margin="normal"
           label="Publicador (Publisher)"
@@ -359,7 +347,6 @@ const NewAlbum = () => {
           name="c_year"
           className={classes.textField}
           id="c_year"
-          variant="outlined"
           required
           margin="normal"
           select
@@ -384,7 +371,6 @@ const NewAlbum = () => {
           name="c_line"
           className={classes.textField}
           id="c_line"
-          variant="outlined"
           required
           margin="normal"
           label="Copyright"
@@ -414,7 +400,8 @@ const NewAlbum = () => {
           iento (y aún no tenés perfilimport MyAlbums from './MyAlbums';
  en las tiendas) recomendamos que elijimport TracksTable from '../../components/Table/TracksTable';
 as una fecha de acá a 5-7 días en el fimport { Fab } from '@mui/material/Fab';
-uturo para que tu perfil se cree correctamente.
+uturo para que tu perfil se cree correimport firebaseApp from '../../firebaseConfig/firebase';
+ctamente.
         </p>
       </Grid> */}
 
@@ -427,7 +414,6 @@ uturo para que tu perfil se cree correctamente.
             name="language"
             fullWidth
             id="language"
-            variant="outlined"
             required
             margin="normal"
             select
@@ -448,7 +434,6 @@ uturo para que tu perfil se cree correctamente.
             name="generosMusicales"
             id="generosMusicales"
             fullWidth
-            variant="outlined"
             required
             margin="normal"
             select

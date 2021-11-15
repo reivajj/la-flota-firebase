@@ -2,6 +2,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { green, red } from '@mui/material/colors';
 import Button from "components/CustomButtons/Button.js";
+import { createTheme } from '@mui/material/styles';
 
 const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) => {
   const classes = useStyles();
@@ -32,7 +33,9 @@ const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) =>
 
 export default ButtonWithInputFile;
 
-const useStyles = makeStyles((theme) => ({
+const theme = createTheme();
+
+const useStyles = makeStyles(() => ({
   root: {
     display: 'inline-flex',
     alignItems: 'center',

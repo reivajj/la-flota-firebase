@@ -12,25 +12,15 @@ import Menu from "@mui/icons-material/Menu";
 import AdminNavbarLinks from "./AdminNavbarLinks.js";
 import Button from "components/CustomButtons/Button.js";
 
-import styles from "assets/jss/material-dashboard-react/components/headerStyle.js";
 import { useLocation } from "react-router-dom";
 
 import {
   container,
   defaultFont,
-  primaryColor,
-  defaultBoxShadow,
-  infoColor,
-  successColor,
-  warningColor,
-  dangerColor,
-  whiteColor,
   grayColor
 } from "assets/jss/material-dashboard-react.js";
 
-const useStyles = makeStyles(styles);
 export default function Header(props) {
-  const classes = useStyles();
   const url = useLocation();
 
   const makeBrand = () => {
@@ -43,17 +33,13 @@ export default function Header(props) {
     });
     return name;
   }
-  const { color } = props;
-  const appBarClasses = classNames({
-    [" " + classes[color]]: color
-  });
 
   return (
     <AppBar sx={appBarStyle}>
       <Toolbar sx={containerStyle}>
         <div style={flexStyle}>
           {/* Here we create navbar brand, based on route name */}
-          <Button color="transparent" href="#" sx={titleStyle}>
+          <Button href="#" sx={titleStyle}>
             {makeBrand()}
           </Button>
         </div>
@@ -114,40 +100,4 @@ const titleStyle = {
   textTransform: "none",
   color: "inherit",
   margin: "0",
-  "&:hover,&:focus": {
-    background: "transparent"
-  }
-}
-
-const appResponsiveStyle = {
-  top: "8px"
-}
-
-const primaryStyle = {
-  backgroundColor: primaryColor[0],
-  color: whiteColor,
-  ...defaultBoxShadow
-}
-
-const infoStyle = {
-  backgroundColor: infoColor[0],
-  color: whiteColor,
-  ...defaultBoxShadow
-}
-
-const successStyle = {
-  backgroundColor: successColor[0],
-  color: whiteColor,
-  ...defaultBoxShadow
-}
-
-const warningStyle = {
-  backgroundColor: warningColor[0],
-  color: whiteColor,
-  ...defaultBoxShadow
-}
-const dangerStyle = {
-  backgroundColor: dangerColor[0],
-  color: whiteColor,
-  ...defaultBoxShadow
 }

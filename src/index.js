@@ -1,11 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-// import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import firebase from 'firebaseConfig/firebase.js';
 import { Provider } from "react-redux";
-import { ReactReduxFirebaseProvider } from "react-redux-firebase";
-import { createFirestoreInstance } from "redux-firestore";
 import { useSelector } from "react-redux";
 import { isLoaded } from "react-redux-firebase";
 
@@ -16,21 +12,13 @@ import { PersistGate } from 'redux-persist/es/integration/react';
 import "assets/css/material-dashboard-react.css?v=1.9.0";
 import Rutas from "Rutas";
 
-const rrfConfig = {
-  userProfile: "users",
-  useFirestoreForProfile: true,
-};
-
-
-const rrfProps = {
-  firebase,
-  config: rrfConfig,
-  dispatch: store.dispatch,
-  createFirestoreInstance,
-};
+// const isLoaded = (auth) => {
+//   console.log("Auth: ", auth);
+//   return Boolean(auth.email);
+// }
 
 function AuthIsLoaded({ children }) {
-  const auth = useSelector(state => state.firebase.auth);
+  const auth = useSelector(state => state.auth);
   if (!isLoaded(auth))
     return (
       <div className="text-center">
@@ -50,17 +38,15 @@ if (module.hot) {
   module.hot.accept()
 }
 
-// const theme = createMuiTheme();
-
 ReactDOM.render(
   <Provider store={store}>
-    <ReactReduxFirebaseProvider {...rrfProps}>
+    {/* <ReactReduxFirebaseProvider {...rrfProps}> */}
       <AuthIsLoaded>
         <PersistGate persistor={persistor}>
           <Rutas />
         </PersistGate>
       </AuthIsLoaded>
-    </ReactReduxFirebaseProvider>
+    {/* </ReactReduxFirebaseProvider> */}
   </Provider>,
 
   document.getElementById("root")

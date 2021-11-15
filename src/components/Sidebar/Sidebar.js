@@ -7,9 +7,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Drawer from "@mui/material/Drawer";
 import Hidden from "@mui/material/Hidden";
 import List from "@mui/material/List";
-import { ListItem, ListItemIcon, ListItemText, Collapse } from "@mui/material";
+import { ListItem, ListItemText } from "@mui/material";
 import Icon from "@mui/material/Icon";
-import { ExpandLess, ExpandMore, PeopleAlt } from '@mui/icons-material';
 // core components
 import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
 
@@ -44,6 +43,7 @@ const Sidebar = props => {
             [" " + classes[color]]: activeRoute(prop.layout + prop.path)
           });
         }
+
         const whiteFontClasses = classNames({
           [" " + classes.whiteFont]: activeRoute(prop.layout + prop.path)
         });
@@ -54,7 +54,7 @@ const Sidebar = props => {
             className={activePro + classes.item}
             key={key}
           >
-            <ListItem button className={classes.itemLink + listItemClasses}>
+            <ListItem className={classes.itemLink + listItemClasses}>
               {typeof prop.icon === "string" ? (
                 <Icon
                   className={classNames(classes.itemIcon, whiteFontClasses)}
@@ -122,9 +122,7 @@ const Sidebar = props => {
           anchor={"left"}
           variant="permanent"
           open
-          classes={{
-            paper: classNames(classes.drawerPaper)
-          }}
+          classes={{ paper: classNames(classes.drawerPaper)}}
         >
           {brand}
           <div className={classes.sidebarWrapper}>{links}</div>

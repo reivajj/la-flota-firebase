@@ -2,6 +2,7 @@ import {
   primaryColor,
   whiteColor,
   primaryBoxShadow,
+  dangerColor,
   defaultFont,
   blackColor,
   grayColor,

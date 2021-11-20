@@ -14,7 +14,7 @@ export const createArtistRedux = (artist, userId) => {
     artist.id = uuidv4();
     artist.ownerId = userId;
 
-    let artistFromThirdWebApi = await BackendCommunication.createArtistDashGo(formDataArtist);
+    let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist);
     artist.dashGoId = artistFromThirdWebApi.data.response.id;
 
     await FirestoreServices.createArtist(artist, userId);

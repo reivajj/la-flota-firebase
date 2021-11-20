@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import makeStyles from '@mui/styles/makeStyles';
 // import InputLabel from "@mui/material/InputLabel";
 // core components
 import Button from "components/CustomButtons/Button.js";
@@ -38,8 +37,10 @@ export const trackActions = track => {
   );
 };
 
-export const NewTrackDialog = ({ openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData, circularProgress }) => {
-  // const classes = useStyles();
+export const NewTrackDialog = (props) => {
+  
+  let { openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData, circularProgress } = props;
+
   const dispatch = useDispatch();
   const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();

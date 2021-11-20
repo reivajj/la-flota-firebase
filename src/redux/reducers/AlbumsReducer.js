@@ -14,7 +14,7 @@ const AlbumsReducer = (state = initialState, action) => {
       const newAlbums = checkNewAlbums(state.albums, action.payload)
       return { ...state, albums: [...state.albums, ...newAlbums] }
     case ReducerTypes.ALBUMS_SIGN_OUT:
-      return initialState;
+      return { albums: [] };
     default:
       return state;
   }

@@ -34,17 +34,17 @@ export default function Tasks(props) {
   const { tasksIndexes, tasks } = props;
   const tableCellClasses = classnames(classes.tableCell);
   return (
-    <Table className={classes.table}>
+    <Table sx={styles.table}>
       <TableBody>
         {tasksIndexes.map(value => (
-          <TableRow key={value} className={classes.tableRow}>
+          <TableRow key={value} sx={styles.tableRow}>
             <TableCell className={tableCellClasses}>
               <Checkbox
                 checked={checked.indexOf(value) !== -1}
                 tabIndex={-1}
                 onClick={() => handleToggle(value)}
-                checkedIcon={<Check className={classes.checkedIcon} />}
-                icon={<Check className={classes.uncheckedIcon} />}
+                checkedIcon={<Check sx={styles.checkedIcon} />}
+                icon={<Check sx={styles.uncheckedIcon} />}
                 classes={{
                   checked: classes.checked,
                   root: classes.root
@@ -52,19 +52,15 @@ export default function Tasks(props) {
               />
             </TableCell>
             <TableCell className={tableCellClasses}>{tasks[value]}</TableCell>
-            <TableCell className={classes.tableActions}>
+            <TableCell sx={styles.tableActions}>
               <Tooltip
                 id="tooltip-top"
                 title="Edit Task"
                 placement="top"
                 classes={{ tooltip: classes.tooltip }}
               >
-                <IconButton aria-label="Edit" className={classes.tableActionButton} size="large">
-                  <Edit
-                    className={
-                      classes.tableActionButtonIcon + " " + classes.edit
-                    }
-                  />
+                <IconButton aria-label="Edit" sx={styles.tableActionButton} size="large">
+                  <Edit style={styles.tableActionButtonIconEdit} />
                 </IconButton>
               </Tooltip>
               <Tooltip
@@ -73,12 +69,8 @@ export default function Tasks(props) {
                 placement="top"
                 classes={{ tooltip: classes.tooltip }}
               >
-                <IconButton aria-label="Close" className={classes.tableActionButton} size="large">
-                  <Close
-                    className={
-                      classes.tableActionButtonIcon + " " + classes.close
-                    }
-                  />
+                <IconButton aria-label="Close" sx={styles.tableActionButton} size="large">
+                  <Close style={styles.tableActionButtonIconClose} />
                 </IconButton>
               </Tooltip>
             </TableCell>

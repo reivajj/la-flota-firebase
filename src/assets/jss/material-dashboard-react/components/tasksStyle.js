@@ -36,9 +36,19 @@ const tasksStyle = {
     height: "27px",
     padding: "0"
   },
-  tableActionButtonIcon: {
+  tableActionButtonIconEdit: {
     width: "17px",
-    height: "17px"
+    height: "17px",
+    backgroundColor: "transparent",
+    color: primaryColor[0],
+    boxShadow: "none"
+  },
+  tableActionButtonIconClose: {
+    width: "17px",
+    height: "17px",
+    backgroundColor: "transparent",
+    color: dangerColor[0],
+    boxShadow: "none"
   },
   edit: {
     backgroundColor: "transparent",

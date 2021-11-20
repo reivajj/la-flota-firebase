@@ -1,5 +1,5 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, updateDoc, doc, setDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where } from "firebase/firestore";
 
 const db = getFirestore(firebaseApp);
 
@@ -58,6 +58,19 @@ export const createAlbum = async (album, userId) => {
     console.log("Error al agregar al Album en la DB, coleccion del users: ", errorCreatingAlbumInUser);
     throw new Error({ msg: "Error al agregar al Album en la DB, coleccion del users: ", error: errorCreatingAlbumInUser });
   };
+}
+
+export const getAlbums = async userId => {
+  const albumsDbFromUserRef = query(collection(db, "albums"), where("ownerId", "==", userId));
+  let [errorGettingAlbumsFromUser, albumsFromUserSnapshot] = await to(getDocs(albumsDbFromUserRef));
+  if (errorGettingAlbumsFromUser) console.log("Error getting user albums: ", errorGettingAlbumsFromUser);
+
+  let albumsFromUser = [];
+  albumsFromUserSnapshot.forEach(albumDoc => {
+    albumsFromUser.push(albumDoc.data());
+  });
+
+  return albumsFromUser;
 }
 
 export const createTrack = async track => {

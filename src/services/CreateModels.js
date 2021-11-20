@@ -1,31 +1,46 @@
 export const createAlbumModel = dataAlbum => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
-  
-  formDataAlbum.append("c_line", `${dataAlbum.c_year + " " + dataAlbum.c_line}`);
-  formDataAlbum.append("label_name", dataAlbum.label_name);
-  formDataAlbum.append("p_line", `${dataAlbum.p_year + " " + dataAlbum.p_line}`);
-  formDataAlbum.append("release_date", saleAndReleaseDate);
-  formDataAlbum.append("sale_start_date", saleAndReleaseDate);
-  formDataAlbum.append("title", dataAlbum.title);
+
+  let fixedFugaLabel = "4490264762";
+  let fixedFugaArtistId = "4413387581";
+  let artistsArray = [{ primary: true, id: fixedFugaArtistId }];
+
+  formDataAlbum.append("name", dataAlbum.title);
+  formDataAlbum.append("label", fixedFugaLabel);
+  formDataAlbum.append("catalog_number", "CAT-1");
+  formDataAlbum.append("release_format_type", "ALBUM");
+  formDataAlbum.append("c_line_text", dataAlbum.c_line);
+  formDataAlbum.append("c_line_year", dataAlbum.c_year);
+  formDataAlbum.append("p_line_text", dataAlbum.p_line);
+  formDataAlbum.append("p_line_year", dataAlbum.p_year);
+  formDataAlbum.append("genre", "ELECTRONIC");
+  formDataAlbum.append("artists", JSON.stringify(artistsArray));
+  formDataAlbum.append("consumer_release_date", saleAndReleaseDate);
+  formDataAlbum.append("original_release_date", saleAndReleaseDate);
+  formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
 
   return formDataAlbum;
 };
 
 export const createTrackModel = dataTrack => {
+
+  let fixedFugaArtistId = "4413387581";
+  let artistsArray = [{ primary: true, id: fixedFugaArtistId }];
+
   let formDataTrack = new FormData();
 
-  formDataTrack.append("album_id", dataTrack.albumDashGoId);
-  formDataTrack.append("disc_number", dataTrack.disc_number);
-  formDataTrack.append("explicit", dataTrack.explicit);
-  formDataTrack.append("position", dataTrack.position);
-  formDataTrack.append("title", dataTrack.title);
+  formDataTrack.append("name", dataTrack.title);
+  formDataTrack.append("genre", "ELECTRONIC");
+  formDataTrack.append("artists", JSON.stringify(artistsArray));
   formDataTrack.append("track", dataTrack.track);
-  formDataTrack.append("track_language", dataTrack.track_language);
+  formDataTrack.append("sequence", dataTrack.position);
+  // formDataTrack.append("language", dataTrack.track_language);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
   if (dataTrack.price) formDataTrack.append("price", 1.29);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
+  formDataTrack.append("albumId", dataTrack.albumFugaId);
 
   return formDataTrack;
 }

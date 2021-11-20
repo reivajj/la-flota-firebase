@@ -51,6 +51,11 @@ const AdminNavbarLinks = () => {
     setAnchorElProfile(null);
   };
 
+  const handleGoToProfilePage = () => {
+    setAnchorElProfile(null);
+    navigate("user")
+  };
+
   const handleClickOnDashboard = () => {
     navigate("dashboard");
   }
@@ -162,7 +167,7 @@ const AdminNavbarLinks = () => {
           }}>
           <MenuList role="menu">
             <MenuItem
-              onClick={handleCloseProfileMenu}
+              onClick={handleGoToProfilePage}
               sx={dropdownItemStyle}
             >
               Profile

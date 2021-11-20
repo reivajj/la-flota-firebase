@@ -11,7 +11,7 @@ import { Grid } from '@mui/material';
 
 const Album = ({ dataAlbum }) => {
   const classes = useStyles();
-
+  dataAlbum.urlImagen = "https://firebasestorage.googleapis.com/v0/b/laflota-dashboard.appspot.com/o/covers%2FLaFlota-NO-3mill.jpg?alt=media&token=de6c1c37-abe8-4710-b734-53ba4174b690"; 
   return (
     <div>
       <Grid container>
@@ -57,4 +57,3 @@ const styles = {
 };
 
 const useStyles = makeStyles(styles);
-

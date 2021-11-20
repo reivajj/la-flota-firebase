@@ -12,9 +12,11 @@ export const createAlbumRedux = (album, userId) => {
     album.id = uuidv4();
     album.ownerId = userId;
 
-    let albumFromThirdWebApi = await BackendCommunication.createAlbumDashGo(formDataAlbum)
-      .catch(error => { throw new Error("Error al subir a DG: ", error) });
-    album.dashGoId = albumFromThirdWebApi.data.response.id;
+    let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum)
+    if (!albumFromThirdWebApi.data.response.result.success) console.error("Error al subir a fuga: ", albumFromThirdWebApi);
+
+    console.log("El album en Actions: ", albumFromThirdWebApi);
+    album.fugaId = albumFromThirdWebApi.data.response.albumId;
     delete album.cover;
 
     await FirestoreServices.createAlbum(album, userId);

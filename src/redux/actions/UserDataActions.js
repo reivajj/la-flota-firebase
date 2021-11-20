@@ -1,9 +1,12 @@
 import * as ReducerTypes from 'redux/actions/Types';
+import { getAlbums } from 'services/FirestoreServices';
 
 // ACTION CREATORS
 export const userDataSignIn = userInfo => {
   return async (dispatch) => {
 
+    let userAlbums = await getAlbums(userInfo.id);  
+    
     dispatch({
       type: ReducerTypes.USER_DATA_SIGN_IN,
       payload: userInfo
@@ -16,7 +19,7 @@ export const userDataSignIn = userInfo => {
 
     dispatch({
       type: ReducerTypes.ADD_ALBUMS,
-      payload: userInfo.albums
+      payload: userAlbums
     });
 
     dispatch({

@@ -102,7 +102,7 @@ const emailsSubscriptionChart = {
   },
   responsiveOptions: [
     [
-      "screen and (max-width: 640px)",
+      "screen and (maxWidth: 640px)",
       {
         seriesBarDistance: 5,
         axisX: {

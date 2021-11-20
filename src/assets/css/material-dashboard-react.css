@@ -218,7 +218,7 @@ footer ul li a:hover {
   text-decoration: none;
 }
 
-@media (max-width: 991px) {
+@media (maxWidth: 991px) {
   body,
   html {
     position: relative;

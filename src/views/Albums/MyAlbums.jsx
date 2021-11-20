@@ -1,5 +1,4 @@
 import React from "react";
-import makeStyles from '@mui/styles/makeStyles';
 // core components
 import Button from "components/CustomButtons/Button.js";
 import { Grid } from '@mui/material';
@@ -8,11 +7,10 @@ import { useSelector } from 'react-redux';
 import Album from "views/Albums/Album";
 
 const MyAlbums = () => {
+
   const navigate = useNavigate();
-  const classes = useStyles();
-
   const albumsFromStore = useSelector(store => store.albums.albums);
-
+  console.log("ALbums: ", albumsFromStore);
   const myAlbumsProfiles = () => {
     return albumsFromStore.length > 0
       ? albumsFromStore.map((label, index) =>
@@ -53,13 +51,6 @@ const MyAlbums = () => {
 export default MyAlbums;
 
 const styles = {
-  cardCategoryWhite: {
-    color: "rgba(255,255,255,.62)",
-    margin: "0",
-    fontSize: "14px",
-    marginTop: "0",
-    marginBottom: "0"
-  },
   cardTitleBlack: {
     color: "#000000",
     marginTop: "0px",
@@ -70,5 +61,3 @@ const styles = {
     textDecoration: "none"
   }
 };
-
-const useStyles = makeStyles(styles);

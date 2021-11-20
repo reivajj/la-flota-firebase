@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, MenuItem, TextField, Typography, Divider, CircularProgress, Fab } from '@mui/material';
+import { Grid, MenuItem, TextField, Typography, CircularProgress, Fab } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
@@ -25,6 +25,8 @@ import { SET_TRACK_UPLOAD_PROGRESS } from "redux/actions/Types";
 
 import firebaseApp from "firebaseConfig/firebase.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import ProgressButton from "components/CustomButtons/ProgressButton";
+import SaveIcon from '@mui/icons-material/Save';
 
 const storage = getStorage(firebaseApp);
 
@@ -33,6 +35,10 @@ function to(promise) {
     return [null, data];
   })
     .catch(err => [err]);
+}
+
+function toWithOutError(promise) {
+  return promise.then(result => result);
 }
 
 let errorFormat = (message) => (
@@ -91,6 +97,10 @@ const NewAlbum = () => {
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [artistForm, setArtistForm] = useState("");
 
+  const [openLoader, setOpenLoader] = useState(false);
+  const [buttonState, setButtonState] = useState("none");
+  const [buttonText, setButtonText] = useState("Finalizar");
+
   const [albumData, setAlbumData] = useState({
     nombreArtist: "", urlImagen: "", label_name: "", title: "", album_id: "", id: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
@@ -116,12 +126,13 @@ const NewAlbum = () => {
   }
 
   const createAlbum = async () => {
-    let [errorCreatingAlbum, albumDataFromDashGo] = await to(dispatch(createAlbumRedux(albumData, currentUserId)));
-    if (errorCreatingAlbum) throw new Error("Error creating album: ", errorCreatingAlbum);
-
-    let [errorCreatingTracksInAlbum] = await to(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromDashGo.id, albumDataFromDashGo.dashGoId, currentUserId)));
-    if (errorCreatingTracksInAlbum) throw new Error("Error creating tracks in Album: ", errorCreatingTracksInAlbum);
-    navigate('admin/albums');
+    setOpenLoader(true);
+    let albumDataFromDashGo = await toWithOutError(dispatch(createAlbumRedux(albumData, currentUserId)));
+    let [errorCreatingTracks] = await to(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromDashGo.id, albumDataFromDashGo.fugaId, currentUserId)));
+    setOpenLoader(false);
+    setButtonState(errorCreatingTracks ? "error" : "success");
+    setButtonText(errorCreatingTracks ? "Error" : "Finalizado");
+    // navigate(-1);
   }
 
   const fileChangedHandler = async (event) => {
@@ -401,7 +412,8 @@ const NewAlbum = () => {
  en las tiendas) recomendamos que elijimport TracksTable from '../../components/Table/TracksTable';
 as una fecha de acá a 5-7 días en el fimport { Fab } from '@mui/material/Fab';
 uturo para que tu perfil se cree correimport firebaseApp from '../../firebaseConfig/firebase';
-ctamente.
+ctamente.import { SaveIcon } from '@mui/icons-material/Save';
+
         </p>
       </Grid> */}
 
@@ -476,8 +488,11 @@ ctamente.
 
       <Grid item xs={12}>
         <CardFooter style={{ display: 'inline-flex' }}>
-          <Button color="primary" onClick={allFieldsValidCreateAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
+          <ProgressButton textButton={buttonText} loading={openLoader} buttonState={buttonState} onClickHandler={createAlbum} noneIcon={<SaveIcon />} />
         </CardFooter>
+        {/* <CardFooter style={{ display: 'inline-flex' }}>
+          <Button color="primary" variant="contained" onClick={createAlbum} style={{ textAlign: "center" }}>Finalizar</Button>
+        </CardFooter> */}
       </Grid>
     </Grid>
   );

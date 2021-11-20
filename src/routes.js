@@ -16,27 +16,20 @@ const dashboardRoutes = [
     component: DashboardPage,
     layout: "/admin"
   },
-  {
-    path: "/user",
-    name: "User Profile",
-    icon: Person,
-    component: UserProfile,
-    layout: "/admin"
-  },
-  {
-    path: "/table",
-    name: "Table List",
-    icon: "content_paste",
-    component: TableList,
-    layout: "/admin"
-  },
-  {
-    path: "/typography",
-    name: "Typography",
-    icon: LibraryBooks,
-    component: Typography,
-    layout: "/admin"
-  },
+  // {
+  //   path: "/table",
+  //   name: "Table List",
+  //   icon: "content_paste",
+  //   component: TableList,
+  //   layout: "/admin"
+  // },
+  // {
+  //   path: "/typography",
+  //   name: "Typography",
+  //   icon: LibraryBooks,
+  //   component: Typography,
+  //   layout: "/admin"
+  // },
   // {
   //   path: "/icons",
   //   name: "Icons",
@@ -70,6 +63,13 @@ const dashboardRoutes = [
     name: "Lanzamientos",
     icon: Notifications,
     component: MyAlbums,
+    layout: "/admin"
+  },
+  {
+    path: "/user",
+    name: "User Profile",
+    icon: Person,
+    component: UserProfile,
     layout: "/admin"
   },
   // {

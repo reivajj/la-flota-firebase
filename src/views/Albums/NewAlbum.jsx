@@ -21,7 +21,6 @@ import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
 import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
-import { SET_TRACK_UPLOAD_PROGRESS } from "redux/actions/Types";
 
 import firebaseApp from "firebaseConfig/firebase.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";

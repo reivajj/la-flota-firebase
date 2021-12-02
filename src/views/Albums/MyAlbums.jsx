@@ -23,7 +23,7 @@ const MyAlbums = () => {
 
   let myAlbums = myAlbumsProfiles();
 
-  const newAlbum = () => {
+  const navigateToNewAlbum = () => {
     navigate("/admin/new-album");
   }
 
@@ -32,7 +32,7 @@ const MyAlbums = () => {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <h1>Lanzamientos</h1>
-          <Button color="primary" round onClick={newAlbum}>
+          <Button color="primary" round onClick={navigateToNewAlbum}>
             Nuevo Lanzamiento
           </Button>
         </Grid>

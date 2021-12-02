@@ -1,61 +1,50 @@
 import * as ReducerTypes from 'redux/actions/Types';
-import { getAlbums } from 'services/FirestoreServices';
 
 // ACTION CREATORS
-export const userDataSignIn = userInfo => {
-  return async (dispatch) => {
+export const userDataSignIn = (userInfo, albums, artists, labels) => async dispatch => {
 
-    let userAlbums = await getAlbums(userInfo.id);  
-    
-    dispatch({
-      type: ReducerTypes.USER_DATA_SIGN_IN,
-      payload: userInfo
-    });
+  dispatch({
+    type: ReducerTypes.USER_DATA_SIGN_IN,
+    payload: userInfo
+  });
 
-    dispatch({
-      type: ReducerTypes.ADD_ARTISTS,
-      payload: userInfo.artists
-    });
+  dispatch({
+    type: ReducerTypes.ADD_ARTISTS,
+    payload: artists
+  });
 
-    dispatch({
-      type: ReducerTypes.ADD_ALBUMS,
-      payload: userAlbums
-    });
+  dispatch({
+    type: ReducerTypes.ADD_ALBUMS,
+    payload: albums
+  });
 
-    dispatch({
-      type: ReducerTypes.ADD_LABELS,
-      payload: userInfo.labels
-    });
+  dispatch({
+    type: ReducerTypes.ADD_LABELS,
+    payload: labels
+  });
 
-    dispatch({
-      type: ReducerTypes.ADD_TRACKS,
-      payload: userInfo.tracks
-    });
-  };
 };
 
-export const userDataSignOut = () => {
-  return async (dispatch) => {
-    dispatch({
-      type: ReducerTypes.USER_DATA_SIGN_OUT
-    })
+export const userDataSignOut = () => async dispatch => {
+  dispatch({
+    type: ReducerTypes.USER_DATA_SIGN_OUT
+  })
 
-    dispatch({
-      type: ReducerTypes.ARTISTS_SIGN_OUT
-    })
+  dispatch({
+    type: ReducerTypes.ARTISTS_SIGN_OUT
+  })
 
-    dispatch({
-      type: ReducerTypes.ALBUMS_SIGN_OUT
-    })
+  dispatch({
+    type: ReducerTypes.ALBUMS_SIGN_OUT
+  })
 
-    dispatch({
-      type: ReducerTypes.LABELS_SIGN_OUT
-    })
+  dispatch({
+    type: ReducerTypes.LABELS_SIGN_OUT
+  })
 
-    dispatch({
-      type: ReducerTypes.TRACKS_SIGN_OUT
-    })
-  };
+  dispatch({
+    type: ReducerTypes.TRACKS_SIGN_OUT
+  })
 };
 
 export const userDataAddImage = (urlImage) => {
@@ -65,8 +54,6 @@ export const userDataAddImage = (urlImage) => {
   };
 };
 
-export const editPerfil = () => {
-  return async () => {
-    return console.log("error");
-  };
+export const editPerfil = () => async dispatch => {
+  return console.log("error");
 };

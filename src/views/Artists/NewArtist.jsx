@@ -1,8 +1,7 @@
 import React, { useState, useRef } from "react";
-import makeStyles from '@mui/styles/makeStyles';
 // import InputLabel from "@mui/material/InputLabel";
 // core components
-import Button from "components/CustomButtons/Button.js";
+// import Button from "components/CustomButtons/Button.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 // import CardAvatar from "components/Card/CardAvatar.js";
@@ -12,30 +11,18 @@ import CardFooter from "components/Card/CardFooter.js";
 import SimpleReactValidator from "simple-react-validator";
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import Danger from 'components/Typography/Danger.js';
-import { TextField, Grid } from "@mui/material";
+import { TextField, Grid, Button } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createArtistRedux } from '../../redux/actions/ArtistsActions';
-
-
-// const generosMusicales = [
-//   { value: "alt", nombre: "Alternativo" }, { value: "alt_indie", nombre: "ALTERNATIVO/INDIE ROCK" }, { value: "alt_hard", nombre: "ALTERNATIVO/PUNK" },
-//   { value: "alt_dance", nombre: "ROCK ALTERNATIVO/DANCE ALTERNATIVO" }, { value: "alt_brit", nombre: "ROCK ALTERNATIVO/BRITISH" }
-// ];
-
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
-}
+import { to } from '../../utils';
 
 let errorFormat = (message) => (
   <Danger color="error" variant="h6">{message}</Danger>
 )
 
 const NewArtist = () => {
-  const classes = useStyles();
+  // const classes = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const simpleValidator = useRef(new SimpleReactValidator());
@@ -56,63 +43,54 @@ const NewArtist = () => {
   }
 
   const createArtist = async () => {
-    let [errorCreatingArtist] = await to(dispatch(createArtistRedux({ nombre, bio, }, currentUserId)));
-    if (errorCreatingArtist) throw new Error("Error creating artist: ", errorCreatingArtist);
-
-    navigate('admin/artists');
+    await to(dispatch(createArtistRedux({ nombre, bio, }, currentUserId)));
+    navigate('/admin/artists');
   }
 
   return (
-    <Grid container>
+    <Grid container justifyContent="center">
       <Grid item xs={12} sm={12} md={8}>
-        <Card>
+        <Card sx={{ width: "60em" }}>
           <CardHeader color="primary">
-            <h4 className={classes.cardTitleWhite}>Crear Artista</h4>
-            <p className={classes.cardCategoryWhite}>Completa con los datos del Artista</p>
+            <h4 sx={styles.cardTitleWhite}>Crear Artista</h4>
+            <p sx={styles.cardCategoryWhite}>Completa con los datos del Artista</p>
           </CardHeader>
 
           <CardBody>
-            <Grid>
-              <Grid item xs={12}>
-                <TextField
-                  name="nombre"
-                  variant="outlined"
-                  required
-                  fullWidth
-                  id="nombre"
-                  label="Nombre del Artista"
-                  autoFocus
-                  value={nombre}
-                  onChange={evento => setNombre(evento.target.value)}
-                />
-                {simpleValidator.current.message('nombre', nombre, 'required', {
-                  className: 'text-danger',
-                  messages: { default: "Debes ingresar un nombre." },
-                  element: (message) => errorFormat(message)
-                })}
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="nombre"
+                required
+                fullWidth
+                id="nombre"
+                label="Nombre del Artista"
+                autoFocus
+                value={nombre}
+                onChange={evento => setNombre(evento.target.value)}
+              />
+              {simpleValidator.current.message('nombre', nombre, 'required', {
+                className: 'text-danger',
+                messages: { default: "Debes ingresar un nombre." },
+                element: (message) => errorFormat(message)
+              })}
             </Grid>
 
-            <Grid>
-              <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  id="bio"
-                  name="bio"
-                  label="Breve Biografía del Artista (max 100 caracteres)"
-                  fullWidth
-                  value={bio}
-                  multiline={true}
-                  inputProps={{ maxLength: 100 }}
-                  maxRows="3"
-                  rows="3"
-                  onChange={(evento) => setBio(evento.target.value)} />
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                margin="normal"
+                id="bio"
+                name="bio"
+                label="Breve Biografía del Artista (max 100 caracteres)"
+                fullWidth
+                value={bio}
+                multiline={true}
+                inputProps={{ maxLength: 100 }}
+                maxRows="3"
+                onChange={(evento) => setBio(evento.target.value)} />
             </Grid>
           </CardBody>
           <CardFooter>
-            <Button color="primary" onClick={allFieldsValidCreateArtist} >Finalizar</Button>
+            <Button onClick={allFieldsValidCreateArtist}>Finalizar</Button>
           </CardFooter>
         </Card>
       </Grid>
@@ -140,5 +118,3 @@ const styles = {
     textDecoration: "none"
   },
 };
-
-const useStyles = makeStyles(styles);

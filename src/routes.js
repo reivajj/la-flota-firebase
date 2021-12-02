@@ -1,12 +1,13 @@
 import { Dashboard, Person, LibraryBooks, Notifications } from "@mui/icons-material";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/Dashboard.js";
-import UserProfile from "views/UserProfile/UserProfile.js";
-import TableList from "views/TableList/TableList.js";
-import Typography from "views/Typography/Typography.js";
+// import UserProfile from "views/UserProfile/UserProfile.js";
+// import TableList from "views/TableList/TableList.js";
+// import Typography from "views/Typography/Typography.js";
 import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
+import UserProfileTest from "views/UserProfile/UserProfileTest";
 
 const dashboardRoutes = [
   {
@@ -67,9 +68,9 @@ const dashboardRoutes = [
   },
   {
     path: "/user",
-    name: "User Profile",
+    name: "Perfil",
     icon: Person,
-    component: UserProfile,
+    component: UserProfileTest,
     layout: "/admin"
   },
   // {

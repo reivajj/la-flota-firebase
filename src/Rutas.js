@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, BrowserRouter, Route } from "react-router-dom";
 import AdminLayout from 'layouts/Admin.js';
 import DashboardPage from 'views/Dashboard/Dashboard.js';
-import UserProfile from 'views/UserProfile/UserProfile.js';
+// import UserProfile from 'views/UserProfile/UserProfile.js';
 import TableList from 'views/TableList/TableList.js';
 import Typography from 'views/Typography/Typography.js';
 import Icons from 'views/Icons/Icons.js';
@@ -17,6 +17,7 @@ import MyLabels from 'views/Labels/MyLabels';
 import NewLabel from 'views/Labels/NewLabel';
 import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
+import UserProfileTest from 'views/UserProfile/UserProfileTest';
 
 const Rutas = () => {
   return (
@@ -33,7 +34,7 @@ const Rutas = () => {
         <Route path="/admin/" element={<AdminLayout />}>
 
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="user" element={<UserProfile />} />
+          <Route path="user" element={<UserProfileTest />} />
           <Route path="table" element={<TableList />} />
           <Route path="typography" element={<Typography />} />
           <Route path="icons" element={<Icons />} />

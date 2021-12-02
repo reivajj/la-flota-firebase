@@ -1,3 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
+
+export const createArtistModel = dataArtist => {
+  let formDataArtist = new FormData();
+  formDataArtist.append("name", dataArtist.nombre);
+  formDataArtist.append("proprietary_id", uuidv4());
+  return formDataArtist;
+}
+
 export const createAlbumModel = dataAlbum => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;

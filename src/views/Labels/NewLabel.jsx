@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import makeStyles from '@mui/styles/makeStyles';
 // import InputLabel from "@mui/material/InputLabel";
 // core components
 import Button from "components/CustomButtons/Button.js";
@@ -11,31 +10,13 @@ import CardFooter from "components/Card/CardFooter.js";
 
 import SimpleReactValidator from "simple-react-validator";
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
-import Danger from 'components/Typography/Danger.js';
 import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createLabelRedux } from '../../redux/actions/LabelsActions';
-
-
-// const generosMusicales = [
-//   { value: "alt", nombre: "Alternativo" }, { value: "alt_indie", nombre: "ALTERNATIVO/INDIE ROCK" }, { value: "alt_hard", nombre: "ALTERNATIVO/PUNK" },
-//   { value: "alt_dance", nombre: "ROCK ALTERNATIVO/DANCE ALTERNATIVO" }, { value: "alt_brit", nombre: "ROCK ALTERNATIVO/BRITISH" }
-// ];
-
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
-}
-
-let errorFormat = (message) => (
-  <Danger color="error" variant="h6">{message}</Danger>
-)
+import { errorFormat, to } from "utils";
 
 const NewLabel = () => {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const simpleValidator = useRef(new SimpleReactValidator());
@@ -56,59 +37,51 @@ const NewLabel = () => {
   }
 
   const createLabel = async () => {
-    let [errorCreatingLabel] = await to(dispatch(createLabelRedux({ nombre, details, }, currentUserId)));
-    if (errorCreatingLabel) throw new Error("Error creating label: ", errorCreatingLabel);
+    await to(dispatch(createLabelRedux({ nombre, details, }, currentUserId)));
 
-    navigate('admin/labels');
+    navigate('/admin/labels');
   }
 
   return (
-    <Grid container>
+    <Grid container justifyContent="center">
       <Grid item xs={12} sm={12} md={8}>
-        <Card>
+        <Card sx={{ width: "60em" }}>
           <CardHeader color="primary">
-            <h4 className={classes.cardTitleWhite}>Crear Sello</h4>
-            <p className={classes.cardCategoryWhite}>Completa con los datos del Sello</p>
+            <h4 sx={styles.cardTitleWhite}>Crear Sello</h4>
+            <p sx={styles.cardCategoryWhite}>Completa con los datos del Sello</p>
           </CardHeader>
 
           <CardBody>
-            <Grid>
-              <Grid item xs={12} sm={12} md={5}>
-                <TextField
-                  name="nombre"
-                  // variant="outlined"
-                  required
-                  fullWidth
-                  id="nombre"
-                  label="Nombre del Sello"
-                  autoFocus
-                  value={nombre}
-                  onChange={evento => setNombre(evento.target.value)}
-                />
-                {simpleValidator.current.message('nombre', nombre, 'required', {
-                  className: 'text-danger',
-                  messages: { default: "Debes ingresar un nombre." },
-                  element: (message) => errorFormat(message)
-                })}
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="nombre"
+                required
+                fullWidth
+                id="nombre"
+                label="Nombre del Sello"
+                autoFocus
+                value={nombre}
+                onChange={evento => setNombre(evento.target.value)}
+              />
+              {simpleValidator.current.message('nombre', nombre, 'required', {
+                className: 'text-danger',
+                messages: { default: "Debes ingresar un nombre." },
+                element: (message) => errorFormat(message)
+              })}
             </Grid>
 
-            <Grid>
-              <Grid item xs={12} sm={12} md={12}>
-                <TextField
-                  // variant="outlined"
-                  margin="normal"
-                  id="details"
-                  name="details"
-                  label="Breve Biografía del Sello (max 100 caracteres)"
-                  fullWidth
-                  value={details}
-                  multiline={true}
-                  inputProps={{ maxLength: 100 }}
-                  maxRows="3"
-                  rows="3"
-                  onChange={(evento) => setDetails(evento.target.value)} />
-              </Grid>
+            <Grid item xs={12}>
+              <TextField
+                margin="normal"
+                id="details"
+                name="details"
+                label="Breve Biografía del Sello (max 100 caracteres)"
+                fullWidth
+                value={details}
+                multiline={true}
+                inputProps={{ maxLength: 100 }}
+                maxRows="3"
+                onChange={(evento) => setDetails(evento.target.value)} />
             </Grid>
           </CardBody>
           <CardFooter>
@@ -140,5 +113,3 @@ const styles = {
     textDecoration: "none"
   },
 };
-
-const useStyles = makeStyles(styles);

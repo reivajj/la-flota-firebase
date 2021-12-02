@@ -1,29 +1,44 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where } from "firebase/firestore";
+import { getFirestore, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment } from "firebase/firestore";
+import { to } from 'utils';
 
 const db = getFirestore(firebaseApp);
 
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
+export const getElements = async (userId, typeOfElement, dispatch) => {
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
+  let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
+  if (errorGettingElementsFromUser) console.log(`Error getting user ${typeOfElement}: `, errorGettingElementsFromUser);
+
+  let elementsFromUser = [];
+  elementsFromUserSnapshot.forEach(albumDoc => {
+    elementsFromUser.push(albumDoc.data());
+  });
+
+  return elementsFromUser;
 }
 
+
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
-export const createArtist = async (artist, userId) => {
-  const artistDbRef = doc(db, "artists", artist.id);
-  let [errorCreatingArtistInArtistsCollection] = await to(setDoc(artistDbRef, artist));
-  if (errorCreatingArtistInArtistsCollection) {
-    console.log("Error al crear al artista en la DB, coleccion de artistas: ", errorCreatingArtistInArtistsCollection);
-    throw new Error({ msg: "Error al crear al artista en la DB, coleccion de artistas: ", error: errorCreatingArtistInArtistsCollection });
+export const createElementFS = async (element, userId, collection, fieldToIncrementInUser, amountToIncrement, dispatch) => {
+  const elementDbRef = doc(db, collection, element.id);
+  let [errorCreatingElementInCollection] = await to(setDoc(elementDbRef, element));
+  if (errorCreatingElementInCollection) {
+    console.log(`Error creating new element in ${collection} collection`, errorCreatingElementInCollection);
+    throw new Error({ msg: `Error creating new element in ${collection} collection`, error: errorCreatingElementInCollection });
+  }
+
+  const elementStatsDbRef = doc(db, collection, "stats");
+  let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amountToIncrement) }));
+  if (errorUpdatingStatsInCollection) {
+    console.log(`Error updating stats in ${collection} : `, errorUpdatingStatsInCollection);
+    throw new Error({ msg: `Error updating stats in ${collection} : `, error: errorUpdatingStatsInCollection });
   }
 
   const usersDbRef = doc(db, "users", userId);
-  let [errorCreatingArtistInUser] = await to(updateDoc(usersDbRef, { artists: arrayUnion(artist) }));
-  if (errorCreatingArtistInUser) {
-    console.log("Error al agregar al artista en la DB, coleccion del users: ", errorCreatingArtistInUser);
-    throw new Error({ msg: "Error al agregar al artista en la DB, coleccion del users: ", error: errorCreatingArtistInUser });
+  let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToIncrementInUser}`]: increment(amountToIncrement) }));
+  if (errorUpdatingStatsInUser) {
+    console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
+    throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
   };
 }
 
@@ -58,19 +73,6 @@ export const createAlbum = async (album, userId) => {
     console.log("Error al agregar al Album en la DB, coleccion del users: ", errorCreatingAlbumInUser);
     throw new Error({ msg: "Error al agregar al Album en la DB, coleccion del users: ", error: errorCreatingAlbumInUser });
   };
-}
-
-export const getAlbums = async userId => {
-  const albumsDbFromUserRef = query(collection(db, "albums"), where("ownerId", "==", userId));
-  let [errorGettingAlbumsFromUser, albumsFromUserSnapshot] = await to(getDocs(albumsDbFromUserRef));
-  if (errorGettingAlbumsFromUser) console.log("Error getting user albums: ", errorGettingAlbumsFromUser);
-
-  let albumsFromUser = [];
-  albumsFromUserSnapshot.forEach(albumDoc => {
-    albumsFromUser.push(albumDoc.data());
-  });
-
-  return albumsFromUser;
 }
 
 export const createTrack = async track => {

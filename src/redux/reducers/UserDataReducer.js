@@ -2,14 +2,23 @@ import {
   USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE,
 } from "redux/actions/Types";
 
+
+const initialStats = {
+  totalAlbums: 0, totalArtists: 0, totalLabels: 0, totalTracks: 0,
+  withdrawals: {
+    usd: { totalAmount: 0, totalWithdrawals: 0 },
+    pesos: { totalAmount: 0, totalWithdrawals: 0 },
+    cupones: { totalAmount: 0, totalWithdrawals: 0 }
+  }
+}
+
 const initialState = {
   rol: '', email: '', userName: '', id: '', ciudad: '', telefono: '', direccion: '', nombre: '',
-  apellido: '', dni: '', imagen: '',
+  apellido: '', dni: '', imagen: '', stats: initialStats, usuarioActivo: false
 }
 
 const UserDataReducer = (state = initialState, action) => {
   let userData = action.payload;
-  console.log("USerData: ", userData);
   switch (action.type) {
     case USER_DATA_SIGN_IN:
       return {
@@ -24,6 +33,7 @@ const UserDataReducer = (state = initialState, action) => {
         dni: userData.dni,
         imagenUrl: userData.imagen,
         usuarioActivo: userData.usuario,
+        stats: userData.stats,
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;

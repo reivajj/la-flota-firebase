@@ -40,3 +40,5 @@ export const SET_TRACK_UPLOAD_PROGRESS = "set_track_upload_progress";
 
 //ErrorHandler
 export const ERROR_FROM_BACKEND = "error_from_backend";
+export const ERROR_FROM_FIRESTORE = "error_from_firestore";
+export const ERROR_CLEAN_LAST = "error_clean_last"; 

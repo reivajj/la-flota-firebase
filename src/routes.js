@@ -7,7 +7,7 @@ import DashboardPage from "views/Dashboard/Dashboard.js";
 import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
-import UserProfileTest from "views/UserProfile/UserProfileTest";
+import UserProfile from "views/UserProfile/UserProfile";
 
 const dashboardRoutes = [
   {
@@ -70,16 +70,9 @@ const dashboardRoutes = [
     path: "/user",
     name: "Perfil",
     icon: Person,
-    component: UserProfileTest,
+    component: UserProfile,
     layout: "/admin"
-  },
-  // {
-  //   path: "/upgrade-to-pro",
-  //   name: "Upgrade To PRO",
-  //   icon: Unarchive,
-  //   component: UpgradeToPro,
-  //   layout: "/admin"
-  // }
+  }
 ];
 
 export default dashboardRoutes;

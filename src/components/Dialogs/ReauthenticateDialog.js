@@ -68,8 +68,6 @@ const ReauthenticateDialog = ({ isOpen, setIsOpen }) => {
     }
   }, [reauthSuccess, isOpen])
 
-  console.log("Los state: ", { reauthSuccess, currentEmail, currentPassword, isOpen });
-
   return (
     <Dialog
       maxWidth="xs"

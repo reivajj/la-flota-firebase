@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import CheckIcon from '@mui/icons-material/Check';
 import ErrorIcon from '@mui/icons-material/Error';
+import ReplayIcon from '@mui/icons-material/Replay';
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme();
@@ -49,19 +50,19 @@ const styles = {
   },
 };
 
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon }) => {
+const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color }) => {
 
   return (
     <div style={styles.root}>
       <div style={styles.wrapper}>
         <Fab
           aria-label="save"
-          color="primary"
+          color={color}
           sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : { color: "primary" }}
           onClick={onClickHandler}
         >
           {buttonState === "none" ? noneIcon
-            : buttonState === "success" ? <CheckIcon /> : <ErrorIcon />}
+            : buttonState === "success" ? <CheckIcon /> : <ReplayIcon />}
 
         </Fab>
         {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
@@ -70,7 +71,7 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
       <div style={styles.wrapper}>
         <Button
           variant="contained"
-          color="primary"
+          color={color}
           sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : { color: "primary" }}
           disabled={loading}
           onClick={onClickHandler}

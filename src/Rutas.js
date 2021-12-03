@@ -17,7 +17,7 @@ import MyLabels from 'views/Labels/MyLabels';
 import NewLabel from 'views/Labels/NewLabel';
 import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
-import UserProfileTest from 'views/UserProfile/UserProfileTest';
+import UserProfile from 'views/UserProfile/UserProfile';
 
 const Rutas = () => {
   return (
@@ -34,7 +34,7 @@ const Rutas = () => {
         <Route path="/admin/" element={<AdminLayout />}>
 
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="user" element={<UserProfileTest />} />
+          <Route path="user" element={<UserProfile />} />
           <Route path="table" element={<TableList />} />
           <Route path="typography" element={<Typography />} />
           <Route path="icons" element={<Icons />} />

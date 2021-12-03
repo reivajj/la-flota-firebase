@@ -16,6 +16,8 @@ import styles from "assets/jss/material-dashboard-react/layouts/adminStyle.js";
 import bgImage from "assets/img/sidebar-2.jpg";
 import logo from "assets/img/reactlogo.png";
 
+import Notifications from "views/Notifications/Notifications";
+
 let ps;
 
 const useStyles = makeStyles(styles);
@@ -62,7 +64,7 @@ const AdminLayout = ({ ...rest }) => {
 
   return (
     <div style={mainStyle}>
-      
+
       <Sidebar
         routes={routes}
         logoText={"La Flota"}
@@ -89,6 +91,7 @@ const AdminLayout = ({ ...rest }) => {
           </div>
         </div>
 
+        <Notifications />
         <Footer />
       </div>
     </div>

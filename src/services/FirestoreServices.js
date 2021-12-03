@@ -1,8 +1,20 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import { getFirestore, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment } from "firebase/firestore";
 import { to } from 'utils';
+import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 
 const db = getFirestore(firebaseApp);
+
+export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
+  const userDbRef = doc(db, "users", newUserData.id);
+  let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }))  ;
+  if (errorUpdatingUserInDB) {
+    dispatch(createFireStoreError("Error updating user data info" , errorUpdatingUserInDB));
+    return "ERROR";
+  }
+
+  return "EDITED";
+} 
 
 export const getElements = async (userId, typeOfElement, dispatch) => {
   const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));

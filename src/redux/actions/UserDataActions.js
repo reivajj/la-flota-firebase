@@ -1,4 +1,5 @@
 import * as ReducerTypes from 'redux/actions/Types';
+import * as FirestoreServices from 'services/FirestoreServices.js';
 
 // ACTION CREATORS
 export const userDataSignIn = (userInfo, albums, artists, labels) => async dispatch => {
@@ -54,6 +55,14 @@ export const userDataAddImage = (urlImage) => {
   };
 };
 
-export const editPerfil = () => async dispatch => {
-  return console.log("error");
+export const editPerfil = newProfile => async dispatch => {
+
+  let resultEdit = await FirestoreServices.editUserDataWithOutCredentials(newProfile, dispatch);
+  if (resultEdit === "EDITED") {
+    dispatch({
+      type: ReducerTypes.USER_DATA_EDIT_PERFIL,
+      payload: newProfile
+    })
+    return "success";
+  }
 };

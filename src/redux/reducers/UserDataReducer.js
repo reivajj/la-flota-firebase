@@ -1,5 +1,5 @@
 import {
-  USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE,
+  USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE, USER_DATA_EDIT_PERFIL
 } from "redux/actions/Types";
 
 
@@ -37,8 +37,8 @@ const UserDataReducer = (state = initialState, action) => {
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;
-    // case USER_DATA_EDIT_PERFIL:
-    //   return { ...action.payload };
+    case USER_DATA_EDIT_PERFIL:
+      return { ...state, ...action.payload };
     case USER_DATA_ADD_IMAGE:
       return { ...state, imagen: action.payload };
     default:

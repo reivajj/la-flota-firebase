@@ -48,7 +48,10 @@ export const signIn = ({ email, password, fromSignUp }) => async dispatch => {
   if (!fromSignUp) {
     // Si vengo del SignUp quiere decir que ya estoy logueado
     let [errorSignInFirebase] = await to(signInWithEmailAndPassword(auth, email, password));
-    if (errorSignInFirebase) dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
+    if (errorSignInFirebase) {
+      dispatch({ type: SIGN_IN_ERR }, errorSignInFirebase);
+      return;
+    }
   }
 
   let userInDBRef = doc(db, "users", auth.currentUser.uid);
@@ -56,11 +59,12 @@ export const signIn = ({ email, password, fromSignUp }) => async dispatch => {
   if (errorGettingRol) {
     console.log("Error getting rol: ", errorGettingRol);
     dispatch({ type: SIGN_IN_ERR }, errorGettingRol);
+    return;
   };
 
   if (!userDoc.exists) {
-    console.log("No such document!");
     dispatch({ type: SIGN_IN_ERR, payload: true }, "NO EXISTE EL USER");
+    return;
   } else {
     // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
     let userDocData = userDoc.data()
@@ -69,7 +73,8 @@ export const signIn = ({ email, password, fromSignUp }) => async dispatch => {
     let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
     if (errorUpdatingUserSignIn) {
       console.log("Error al actualizar last time", errorUpdatingUserSignIn);
-      dispatch({ type: SIGN_IN_ERR }, { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" })
+      dispatch({ type: SIGN_IN_ERR }, { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" });
+      return;
     };
 
     let [errorUploadingAllDataFromDbToStore] = await to(getAllDataFromDBToStore(auth.currentUser.uid, userDocData, dispatch));

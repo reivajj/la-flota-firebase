@@ -11,6 +11,8 @@ import { useSelector, useDispatch } from "react-redux";
 import * as actions from 'redux/actions/AuthActions.js';
 import Copyright from 'components/Copyright/Copyright.js';
 import { createTheme } from '@mui/material/styles';
+import { signInWithGoogle } from 'services/AuthServices';
+import { SIGNUP_ERROR } from '../../redux/actions/Types';
 
 function to(promise) {
   return promise.then(data => {
@@ -49,6 +51,17 @@ const SignInSide = () => {
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') login();
+  }
+
+  const goTosignInWithGoogle = async () => {
+    let userEmailAndUUID = await signInWithGoogle();
+    console.log("USER :", userEmailAndUUID);
+    let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: userEmailAndUUID.email, password: "", fromSignUp: true })));
+    if (errorAddingInfoToStore) {
+      dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userEmailAndUUID } });
+      return;
+    }
+    navigate("/admin/dashboard");
   }
 
   return (
@@ -120,6 +133,15 @@ const SignInSide = () => {
                 <Link component={RouterLink} to="/sign-up" underline="hover" variant="body2">
                   {"No tienes una cuenta? Regístrate"}
                 </Link>
+              </Grid>
+              <Grid item>
+                <Button
+                  color="primary"
+                  sx={submitStyle}
+                  onClick={goTosignInWithGoogle}
+                >
+                  Ingresa con Google
+                </Button>
               </Grid>
             </Grid>
             <Box mt={5}>

@@ -1,8 +1,10 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getAuth, reauthenticateWithCredential, updatePassword, updateEmail } from "firebase/auth";
+import { getAuth, reauthenticateWithCredential, updatePassword, updateEmail, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { to } from 'utils';
 
 const auth = getAuth(firebaseApp);
+const provider = new GoogleAuthProvider();
+auth.languageCode = 'sp';
 
 export const reauthenticateWithCredentialOk = async (currentEmail, currentPassword) => {
   console.log("Credentials recibidas: ", { currentEmail, currentPassword });
@@ -36,3 +38,13 @@ export const authUpdatePassword = async (newPassword) => {
   console.log("Success updating password: ", successUpdatingPassword);
   return true;
 }
+
+export const signInWithGoogle = async () => {
+
+  let [errorSignInWithGoogle, resultSignInWithGoogle] = await to(signInWithPopup(auth, provider));
+  if (errorSignInWithGoogle) console.log("ERROR SIGN IN WITH GOOGLE: ", errorSignInWithGoogle);
+
+  const user = resultSignInWithGoogle.user;
+  return user;
+}
+

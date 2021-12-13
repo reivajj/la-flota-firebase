@@ -56,7 +56,7 @@ const SignInSide = () => {
   const goTosignInWithGoogle = async () => {
     let userEmailAndUUID = await signInWithGoogle();
     console.log("USER :", userEmailAndUUID);
-    let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: userEmailAndUUID.email, password: "", fromSignUp: true })));
+    let [errorAddingInfoToStore] = await to(dispatch(actions.signInFromGoogle(userEmailAndUUID)));
     if (errorAddingInfoToStore) {
       dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userEmailAndUUID } });
       return;

@@ -9,6 +9,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { getFirestore, getDoc, doc, updateDoc } from "firebase/firestore";
 import { to } from 'utils';
 import * as FirestoreServices from "../../services/FirestoreServices";
+import { logLoginAnalyticEvent } from '../../services/GoogleAnalytics';
 
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
@@ -41,6 +42,89 @@ const getAllDataFromDBToStore = async (userUid, userDataFromDB, dispatch) => {
   if (userIsClient) {
     await getAllDataFromDBToStoreClient(userUid, userDataFromDB, dispatch);
   }
+}
+
+export const signInFromGoogle = userInfoFromGoogle => async dispatch => {
+  console.log("USER INFO: ", userInfoFromGoogle);
+
+  let userInDBRef = doc(db, "users", auth.currentUser.uid);
+  let [errorGettingDoc, userDoc] = await to(getDoc(userInDBRef));
+
+  if (errorGettingDoc) {
+    dispatch({ type: SIGN_IN_ERR }, errorGettingDoc);
+    return;
+  };
+
+  if (!userDoc.exists) {
+    dispatch({ type: SIGN_IN_ERR, payload: true }, "NO EXISTE EL USER");
+    return;
+  } else {
+    // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
+    let userDocData = userDoc.data()
+    let date = new Date();
+    let lastTimeSignedInString = date.toLocaleString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' });
+    let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+    if (errorUpdatingUserSignIn) {
+      console.log("Error al actualizar last time", errorUpdatingUserSignIn);
+      dispatch({ type: SIGN_IN_ERR }, { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" });
+      return;
+    };
+
+    let [errorUploadingAllDataFromDbToStore] = await to(getAllDataFromDBToStore(auth.currentUser.uid, userDocData, dispatch));
+    if (errorUploadingAllDataFromDbToStore) {
+      console.log("Error al subir toda la data de la db al store: ", errorUploadingAllDataFromDbToStore);
+      throw new Error("Error al subir toda la data de la db al store: ", errorUploadingAllDataFromDbToStore);
+    }
+
+    dispatch({ type: SIGN_IN, payload: userDocData });
+  }
+}
+
+const createUserDocItem = userData => {
+  return {
+    email: userData.email,
+    nombre: userData.nombre,
+    apellido: userData.apellido,
+    id: userData.id,
+    usuarioActivo: true,
+    ciudad: "",
+    provincia: "",
+    telefono: "",
+    dni: "",
+    imagenUrl: "",
+    timestampWhenCreatedUser: Date.now(),
+    rol: "basic",
+    stats: {
+      totalAlbums: 0,
+      totalArtists: 0,
+      totalLabels: 0,
+      totalTracks: 0
+    },
+    withdrawals: {
+      cupones: {
+        totalAmount: 0,
+        totalWithdrawals: 0
+      },
+      pesos: {
+        totalAmount: 0,
+        totalWithdrawals: 0
+      },
+      usd: {
+        totalAmount: 0,
+        totalWithdrawals: 0
+      }
+    }
+  };
+}
+
+export const createUserDocs = async newUserData => async dispatch => {
+  console.log("User: ", newUserData);
+  let userDataComplete = createUserDocItem(newUserData);
+
+  await FirestoreServices.createElementFS(userDataComplete, newUserData.id, "users", "", 0, dispatch);
+  await FirestoreServices.createElementFS(userDataComplete, newUserData.email, "usersPorMail", "", 0, dispatch);
+
+  dispatch({ type: SIGN_IN, payload: userDataComplete });
 }
 
 export const signIn = ({ email, password, fromSignUp }) => async dispatch => {
@@ -101,7 +185,7 @@ export const signOutFromFirebase = () => async dispatch => {
 }
 
 export const signUp = userData => async dispatch => {
-  const { email, password } = userData;
+  const { email, password, nombre, apellido } = userData;
   let [errorSignUpFirebase, userCreds] = await to(createUserWithEmailAndPassword(auth, email, password));
   if (errorSignUpFirebase) {
     // Aca deberia hacer algo! Indicando que hubo un problema, no deberia seguir! Puedo usar el SIGNUP_ERROR
@@ -109,6 +193,14 @@ export const signUp = userData => async dispatch => {
     dispatch({ type: SIGNUP_ERROR, payload: { msg: "Hubo un problema al realizar el SignUp", error: errorSignUpFirebase } });
     throw new Error("Hubo un problema al realizar el SignUp");
   }
+
   dispatch({ type: SIGNUP_SUCCESS, payload: userCreds });
+
+  let userDataComplete = createUserDocItem({ email, id: userCreds.user.uid, nombre, apellido });
+  await FirestoreServices.createElementFS(userDataComplete, userData.id, "users", "", 1, dispatch);
+  dispatch({ type: SIGN_IN, payload: userDataComplete });
+
+  logLoginAnalyticEvent(userDataComplete);
+
   return `SignUp Ok: ${userCreds}`;
 }

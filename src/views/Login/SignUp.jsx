@@ -32,11 +32,6 @@ import * as actions from '../../redux/actions/AuthActions';
 
 import { createTheme } from '@mui/material/styles';
 
-import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-
-const db = getFirestore(firebaseApp);
-
 function to(promise) {
   return promise.then(data => {
     return [null, data];
@@ -80,56 +75,18 @@ const SignUp = () => {
   }
 
   const signUp = async () => {
-    let [errorSignUp] = await to(dispatch(actions.signUp({ email, password })));
+    let [errorSignUp] = await to(dispatch(actions.signUp({ email, password, nombre, apellido })));
     if (errorSignUp) {
       setErrorSignUpFirebase(true);
       return;
     }
     setUserData({ email, password, nombre, apellido });
+
   };
 
-  const assignEmptyValuesToUserData = userData => {
-    let newUserData = { ...userData };
-    newUserData.usuarioActivo = true;
-    newUserData.artists = [];
-    newUserData.rol = "";
-    newUserData.ciudad = "";
-    newUserData.provincia = "";
-    newUserData.telefono = "";
-    newUserData.dni = "";
-    newUserData.imagenUrl = "";
-    return newUserData;
-  }
-
   useEffect(() => {
-
-    const uploadAllData = async newUserData => {
-      const userPorMailRef = doc(db, "usersPorMail", newUserData.email);
-      const userGoogleIdRef = doc(db, "users", newUserData.id);
-
-      let userDataComplete = assignEmptyValuesToUserData(newUserData);
-
-      let [errorSettingUserInUsers] = await to(setDoc(userGoogleIdRef, userDataComplete));
-      if (errorSettingUserInUsers) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserInUsers, userDataComplete } });
-
-      let [errorSettingUserByMail] = await to(setDoc(userPorMailRef, userDataComplete));
-      if (errorSettingUserByMail) dispatch({ type: SIGNUP_ERROR, payload: { errorSettingUserByMail, userDataComplete } });
-
-      let [errorAddingInfoToStore] = await to(dispatch(actions.signIn({ email: userDataComplete.email, password: userDataComplete.password, fromSignUp: true })));
-      if (errorAddingInfoToStore) {
-        dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userDataComplete } })
-        setErrorSignUpFirebase(true);
-      }
-      navigate("/admin/dashboard");
-    }
-
     if (signUpInfo.userCreds && userData) {
-      let newUserData = userData;
-      newUserData.id = signUpInfo.userCreds.user.uid;
-      newUserData.rol = tipoDeUsuario;
-      newUserData.timestampWhenCreatedUser = Date.now();
-
-      uploadAllData(newUserData)
+      navigate('/admin/dashboard');
     }
     else return;
   }, [signUpInfo, userData]);

@@ -7,14 +7,14 @@ const db = getFirestore(firebaseApp);
 
 export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
   const userDbRef = doc(db, "users", newUserData.id);
-  let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }))  ;
+  let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }));
   if (errorUpdatingUserInDB) {
-    dispatch(createFireStoreError("Error updating user data info" , errorUpdatingUserInDB));
+    dispatch(createFireStoreError("Error updating user data info", errorUpdatingUserInDB));
     return "ERROR";
   }
 
   return "EDITED";
-} 
+}
 
 export const getElements = async (userId, typeOfElement, dispatch) => {
   const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
@@ -31,8 +31,9 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
 
 
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
-export const createElementFS = async (element, userId, collection, fieldToIncrementInUser, amountToIncrement, dispatch) => {
+export const createElementFS = async (element, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
   const elementDbRef = doc(db, collection, element.id);
+
   let [errorCreatingElementInCollection] = await to(setDoc(elementDbRef, element));
   if (errorCreatingElementInCollection) {
     console.log(`Error creating new element in ${collection} collection`, errorCreatingElementInCollection);
@@ -46,12 +47,15 @@ export const createElementFS = async (element, userId, collection, fieldToIncrem
     throw new Error({ msg: `Error updating stats in ${collection} : `, error: errorUpdatingStatsInCollection });
   }
 
-  const usersDbRef = doc(db, "users", userId);
-  let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToIncrementInUser}`]: increment(amountToIncrement) }));
-  if (errorUpdatingStatsInUser) {
-    console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
-    throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
-  };
+  if (fieldToIncrementInUserStats !== "") {
+    const usersDbRef = doc(db, "users", userId);
+    let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToIncrementInUserStats}`]: increment(amountToIncrement) }));
+    if (errorUpdatingStatsInUser) {
+      console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
+      throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
+    };
+  }
+
 }
 
 // Siempre que creo un Sello, tambien actualizare el documento del Usuario que creo el Sello.

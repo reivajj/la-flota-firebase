@@ -27,7 +27,7 @@ export const createArtistRedux = (artist, userId) => async dispatch => {
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
 
-  await FirestoreServices.createElementFS(artist, userId, "artists", "totalArtists", 1, dispatch);
+  await FirestoreServices.createElementFS(artist, artist.id, userId, "artists", "totalArtists", 1, dispatch);
 
   return dispatch({
     type: ReducerTypes.ADD_ARTISTS,

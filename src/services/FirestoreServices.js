@@ -1,7 +1,10 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment } from "firebase/firestore";
+import { getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment } from "firebase/firestore";
 import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
+import { SIGN_IN_ERR } from 'redux/actions/Types';
+import { createUserDocItem } from 'factory/users.factory';
+import { SIGN_IN } from 'redux/actions/Types';
 
 const db = getFirestore(firebaseApp);
 
@@ -14,6 +17,34 @@ export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
   }
 
   return "EDITED";
+}
+
+export const getUserDoc = async (userId, dispatch) => {
+  let userInDBRef = doc(db, "users", userId);
+
+  let [errorGettingUserDoc, userDoc] = await to(getDoc(userInDBRef));
+  if (errorGettingUserDoc) {
+    dispatch({ type: SIGN_IN_ERR, payload: errorGettingUserDoc });
+    return { exists: false };
+  };
+
+  return userDoc;
+}
+
+export const updateUserDoc = async (userId, userDoc, dispatch) => {
+  let userInDBRef = doc(db, "users", userId);
+  let userDocData = userDoc.data();
+  let date = new Date();
+  let lastTimeSignedInString = date.toLocaleString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' });
+  userDocData.lastTimeSignedInString = lastTimeSignedInString;
+  userDocData.lastTimeSignedIn = date.getTime();
+
+  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+  if (errorUpdatingUserSignIn) {
+    dispatch({ type: SIGN_IN_ERR, payload: { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" } });
+    return "error";
+  };
+  return userDocData;
 }
 
 export const getElements = async (userId, typeOfElement, dispatch) => {
@@ -31,8 +62,8 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
 
 
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
-export const createElementFS = async (element, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
-  const elementDbRef = doc(db, collection, element.id);
+export const createElementFS = async (element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
+  const elementDbRef = doc(db, collection, elementId);
 
   let [errorCreatingElementInCollection] = await to(setDoc(elementDbRef, element));
   if (errorCreatingElementInCollection) {
@@ -58,39 +89,7 @@ export const createElementFS = async (element, userId, collection, fieldToIncrem
 
 }
 
-// Siempre que creo un Sello, tambien actualizare el documento del Usuario que creo el Sello.
-export const createLabel = async (label, userId) => {
-  const labelsDbRef = doc(db, "labels", label.id);
-  let [errorCreatingLabelInLabelsCollection] = await to(setDoc(labelsDbRef, label));
-  if (errorCreatingLabelInLabelsCollection) {
-    console.log("Error al crear al Sello en la DB, coleccion de labels: ", errorCreatingLabelInLabelsCollection);
-    throw new Error({ msg: "Error al crear al Sello en la DB, coleccion de labels: ", error: errorCreatingLabelInLabelsCollection });
-  }
-
-  const usersDbRef = doc(db, "users", userId);
-  let [errorCreatingLabelInUser] = await to(updateDoc(usersDbRef, { labels: arrayUnion(label) }));
-  if (errorCreatingLabelInUser) {
-    console.log("Error al agregar al Sello en la DB, coleccion del users: ", errorCreatingLabelInUser);
-    throw new Error({ msg: "Error al agregar al Sello en la DB, coleccion del users: ", error: errorCreatingLabelInUser });
-  }
-}
-
-export const createAlbum = async (album, userId) => {
-  const albumsDbRef = doc(db, "albums", album.id);
-  let [errorCreatingAlbumInAlbumsCollection] = await to(setDoc(albumsDbRef, album));
-  if (errorCreatingAlbumInAlbumsCollection) {
-    console.log("Error al crear al Album en la DB, coleccion de albums: ", errorCreatingAlbumInAlbumsCollection);
-    throw new Error({ msg: "Error al crear al Album en la DB, coleccion de albums: ", error: errorCreatingAlbumInAlbumsCollection });
-  }
-
-  const usersDbRef = doc(db, "users", userId);
-  let [errorCreatingAlbumInUser] = await to(updateDoc(usersDbRef, { albums: arrayUnion(album) }));
-  if (errorCreatingAlbumInUser) {
-    console.log("Error al agregar al Album en la DB, coleccion del users: ", errorCreatingAlbumInUser);
-    throw new Error({ msg: "Error al agregar al Album en la DB, coleccion del users: ", error: errorCreatingAlbumInUser });
-  };
-}
-
+// Todavia lo estoy usando. Reemplazarlo.
 export const createTrack = async track => {
   const tracksDbRef = doc(db, "tracks", track.id);
   let [errorCreatingTrackInTrackssCollection] = await to(setDoc(tracksDbRef, track));
@@ -105,4 +104,21 @@ export const createTrack = async track => {
     console.log("Error al agregar al Track en la DB, coleccion del users: ", errorCreatingTrackInUser);
     throw new Error({ msg: "Error al agregar al Track en la DB, coleccion del users: ", error: errorCreatingTrackInUser });
   };
+}
+
+export const userByEmailInFS = async (email, dispatch) => {
+  const userByEmailDbRef = doc(db, "usersByEmail", email);
+  let [errorGettingUserByEmail, userByEmailSnap] = await to(getDoc(userByEmailDbRef));
+  if (errorGettingUserByEmail) return false;
+  return userByEmailSnap.exists();
+}
+
+export const createUserDocs = async (newUserData, dispatch) => {
+  console.log("User: ", newUserData);
+  let userDataComplete = createUserDocItem(newUserData);
+
+  await createElementFS(userDataComplete, newUserData.id, newUserData.id, "users", "", 1, dispatch);
+  await createElementFS(userDataComplete, newUserData.email, "", "usersByEmail", "", 1, dispatch);
+
+  return userDataComplete;
 }

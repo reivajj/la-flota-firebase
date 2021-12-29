@@ -32,8 +32,12 @@ const UserDataReducer = (state = initialState, action) => {
         apellido: userData.apellido,
         dni: userData.dni,
         imagenUrl: userData.imagen,
-        usuarioActivo: userData.usuario,
+        usuarioActivo: userData.usuarioActivo,
         stats: userData.stats,
+        lastTimeSignedIn: userData.lastTimeSignedIn,
+        lastTimeSignedInString: userData.lastTimeSignedInString,
+        withdrawals: userData.withdrawals,
+        timestampWhenCreatedUser: userData.timestampWhenCreatedUser,
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;

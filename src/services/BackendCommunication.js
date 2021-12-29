@@ -1,8 +1,12 @@
+import { getFunctions, httpsCallable } from "firebase/functions";
 import axios from 'axios';
 import { to } from '../utils';
+import { SIGN_IN_ERR } from "redux/actions/Types";
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
+
+const functions = getFunctions();
 
 export const createArtistFuga = async formDataArtist => {
   let [uploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
@@ -36,3 +40,25 @@ export const createTrackFuga = async (formDataTrack, onUploadProgress) => {
   return trackFromThirdWebApi;
 }
 
+export const userExistInWpDB = async (email, dispatch) => {
+  let [errorCheckingUser, checkingUserResponse] = await to(axios.get(`${localUrl}users/searchByEmail/${email}`));
+  if (errorCheckingUser) dispatch({ type: SIGN_IN_ERR, payload: errorCheckingUser });
+  
+  if (checkingUserResponse.data.response.exist === false) return false;
+  if (checkingUserResponse.data.response.exist === true) return checkingUserResponse.data.response.user;
+}
+
+export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => {
+  let userInWp = await userExistInWpDB(email);
+  if (userInWp) {
+    const checkPasswordInWpDB = httpsCallable(functions, 'users-checkPasswordInWpDB');
+    const passwordHashInDB = userInWp.userPass;
+    const [errorCheckingPassword, passwordOk] = await to(checkPasswordInWpDB({ passwordHashInDB, password }));
+    if (errorCheckingPassword) {
+      dispatch({ type: SIGN_IN_ERR, payload: errorCheckingPassword });
+      return;
+    }
+    return { existEmail: true, passwordCheck: passwordOk.data };
+  }
+  return { existEmail: false };
+}

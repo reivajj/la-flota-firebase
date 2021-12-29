@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import {
-  Avatar, Button, CssBaseline, TextField, Typography,
+  Button, CssBaseline, TextField, Typography,
   FormControlLabel, Checkbox, Link, Paper, Box, Grid
 } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Alert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from "react-router-dom";
@@ -13,13 +12,9 @@ import Copyright from 'components/Copyright/Copyright.js';
 import { createTheme } from '@mui/material/styles';
 import { signInWithGoogle } from 'services/AuthServices';
 import { SIGNUP_ERROR } from '../../redux/actions/Types';
-
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
-}
+import { Image } from 'mui-image'
+import { to } from 'utils';
+import GoogleColorIcon from '../Icons/GoogleColorIcon';
 
 const SignInSide = () => {
 
@@ -36,7 +31,7 @@ const SignInSide = () => {
   }, [user]);
 
   const login = async () => {
-    let [errorSignIn] = await to(dispatch(actions.signIn({ email, password, fromSignUp: false })));
+    let [errorSignIn] = await to(dispatch(actions.signInDoubleSystem({ email, password, fromSignUp: false })));
     //  REVEER: Dar una pantalla de error correspondiente
     if (errorSignIn) console.log("Error realizando el signIn: ", errorSignIn);
   };
@@ -67,14 +62,16 @@ const SignInSide = () => {
   return (
     <Grid container component="main" sx={rootStyle}>
       <CssBaseline />
-      <Grid item xs={false} sm={4} md={7} sx={imageStyle} />
+      <Grid item xs={false} sm={4} md={7} >
+        <Image src="/images/login-full.jpg" alt="image" duration={30} />
+      </Grid>
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div style={paperStyle}>
-          <Avatar sx={avatarStyle}>
-            <LockOutlinedIcon />
-          </Avatar>
+          <Box sx={avatarStyle}>
+            <Image src="/images/login-avatar.png" alt="logo" duration={30} />
+          </Box>
           <Typography component="h1" variant="h5">
-            Sign in
+            Inicia Sesión en tu Cuenta
           </Typography>
           <form style={formStyle} noValidate>
 
@@ -134,16 +131,14 @@ const SignInSide = () => {
                   {"No tienes una cuenta? Regístrate"}
                 </Link>
               </Grid>
+            </Grid>
+
+            <Grid container padding={2}>
               <Grid item>
-                <Button
-                  color="primary"
-                  sx={submitStyle}
-                  onClick={goTosignInWithGoogle}
-                >
-                  Ingresa con Google
-                </Button>
+                <GoogleColorIcon sx={{ height: "50px" }}/>
               </Grid>
             </Grid>
+
             <Box mt={5}>
               <Copyright />
             </Box>
@@ -179,15 +174,6 @@ const rootStyle = {
   height: '100vh',
 }
 
-const imageStyle = {
-  backgroundImage: 'url(https://source.unsplash.com/random)',
-  backgroundRepeat: 'no-repeat',
-  backgroundColor:
-    theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-}
-
 const paperStyle = {
   margin: theme.spacing(8, 4),
   display: 'flex',
@@ -196,8 +182,10 @@ const paperStyle = {
 }
 
 const avatarStyle = {
-  margin: theme.spacing(1),
-  backgroundColor: theme.palette.secondary.main,
+  backgroundColor: theme.palette.common.white,
+  width: 100,
+  height: 100,
+
 }
 
 const formStyle = {

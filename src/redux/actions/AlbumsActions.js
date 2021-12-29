@@ -19,7 +19,7 @@ export const createAlbumRedux = (album, userId) => async dispatch => {
   album.fugaId = albumFromThirdWebApi.data.response.albumId;
   delete album.cover;
 
-  await FirestoreServices.createElementFS(album, userId, "albums", "totalAlbums", 1, dispatch);
+  await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);
   
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,

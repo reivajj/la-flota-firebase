@@ -6,7 +6,7 @@ export const createLabelRedux = (label, userId) => async dispatch => {
   label.id = uuidv4();
   label.ownerId = userId;
   
-  await FirestoreServices.createElementFS(label, userId, "labels", "totalLabels", 1, dispatch);
+  await FirestoreServices.createElementFS(label, label.id, userId, "labels", "totalLabels", 1, dispatch);
 
   return dispatch({
     type: ReducerTypes.ADD_LABELS,

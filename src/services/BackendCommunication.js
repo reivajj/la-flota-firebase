@@ -2,20 +2,20 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import axios from 'axios';
 import { to } from '../utils';
 import { SIGN_IN_ERR } from "redux/actions/Types";
+import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
 
 const functions = getFunctions();
 
-export const createArtistFuga = async formDataArtist => {
-  let [uploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
-    axios.post(`${localUrl}artists`, formDataArtist, {
-      headers: { "Content-Type": "multipart/form-data" }
-    }));
+export const createArtistFuga = async (formDataArtist, dispatch) => {
+  let [errorUploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
+    axios.post(`${localUrl}artists`, formDataArtist));
 
-  if (uploadingArtistInThirdWebApi) {
-    return { message: "Error al subir el artista a Fuga", error: uploadingArtistInThirdWebApi.response.data };
+  if (errorUploadingArtistInThirdWebApi) {
+    dispatch(createBackendError("Error al crear el artista.", errorUploadingArtistInThirdWebApi.response.data));
+    return "ERROR";
   }
   console.log("La respuesta de Fuga", artistFromThirdWebApi);
 
@@ -43,7 +43,7 @@ export const createTrackFuga = async (formDataTrack, onUploadProgress) => {
 export const userExistInWpDB = async (email, dispatch) => {
   let [errorCheckingUser, checkingUserResponse] = await to(axios.get(`${localUrl}users/searchByEmail/${email}`));
   if (errorCheckingUser) dispatch({ type: SIGN_IN_ERR, payload: errorCheckingUser });
-  
+
   if (checkingUserResponse.data.response.exist === false) return false;
   if (checkingUserResponse.data.response.exist === true) return checkingUserResponse.data.response.user;
 }

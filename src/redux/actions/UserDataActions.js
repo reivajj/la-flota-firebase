@@ -56,7 +56,7 @@ export const userDataAddImage = (urlImage) => {
 };
 
 export const editPerfil = newProfile => async dispatch => {
-
+  // Si da error simplemente genero la notificacion.
   let resultEdit = await FirestoreServices.editUserDataWithOutCredentials(newProfile, dispatch);
   if (resultEdit === "EDITED") {
     dispatch({

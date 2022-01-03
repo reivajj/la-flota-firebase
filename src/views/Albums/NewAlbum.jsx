@@ -26,23 +26,9 @@ import firebaseApp from "firebaseConfig/firebase.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import SaveIcon from '@mui/icons-material/Save';
+import { toWithOutError, to, errorFormat } from "utils";
 
 const storage = getStorage(firebaseApp);
-
-function to(promise) {
-  return promise.then(data => {
-    return [null, data];
-  })
-    .catch(err => [err]);
-}
-
-function toWithOutError(promise) {
-  return promise.then(result => result);
-}
-
-let errorFormat = (message) => (
-  <Danger color="error" variant="h6">{message}</Danger>
-);
 
 const NewAlbum = () => {
   const classes = useStyles();
@@ -286,7 +272,7 @@ const NewAlbum = () => {
 
         {!albumData.urlImagen && (
           <Grid>
-            <SkeletonTheme color="aliceblue" >
+            <SkeletonTheme color="antiquewhite" >
               <Skeleton variant="rectangular" width={250} height={220} />
             </SkeletonTheme>
           </Grid>

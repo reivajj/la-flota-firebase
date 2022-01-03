@@ -71,20 +71,6 @@ const AdminNavbarLinks = () => {
   return (
     <div>
       <div style={searchWrapperStyle}>
-        <CustomInput
-          formControlProps={{
-            className: classes.margin + " " + classes.search
-          }}
-          inputProps={{
-            placeholder: "Search",
-            inputProps: {
-              "aria-label": "Search"
-            }
-          }}
-        />
-        <Button color="white" aria-label="edit" justIcon round>
-          <Search />
-        </Button>
       </div>
       <Button
         aria-label="Dashboard"

@@ -7,30 +7,21 @@ import { createArtistModel } from '../../services/CreateModels';
 export const createArtistRedux = (artist, userId) => async dispatch => {
 
   let formDataArtist = createArtistModel(artist)
-  let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist);
-  if (artistFromThirdWebApi.error) {
-    console.log("Error from FUGA, or connection error: ", artistFromThirdWebApi);
-    // ACA REALIZAR EL DISPATCH PARA HANDLEAR EL ERROR
-    return;
-  }
+  let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist, dispatch);
+  if (artistFromThirdWebApi === "ERROR") return "ERROR";
 
-  console.log("Lo que vuelve de FUGA en ArtistsAction: ", artistFromThirdWebApi);
-  
-  // const artistFromThirdWebApi = {
-  //   data:
-  //     { response: { id: "testingFS", proprietary_id: "testingFS" } }
-  // }
-  
   artist.id = uuidv4();
   artist.ownerId = userId;
-
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
+  delete artist.photo;
 
   await FirestoreServices.createElementFS(artist, artist.id, userId, "artists", "totalArtists", 1, dispatch);
 
-  return dispatch({
+  dispatch({
     type: ReducerTypes.ADD_ARTISTS,
     payload: [artist]
   });
+
+  return "SUCCESS";
 }

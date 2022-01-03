@@ -304,12 +304,6 @@ const UserProfile = () => {
 
 export default UserProfile;
 
-const buttonStyles = {
-  margin: "1em 0 1em",
-  height: "3em",
-  width: "15em",
-}
-
 const cardCategoryWhiteStyles = {
   color: "rgba(255,255,255,.62)",
   margin: "0",

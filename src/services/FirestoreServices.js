@@ -4,7 +4,6 @@ import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { SIGN_IN_ERR } from 'redux/actions/Types';
 import { createUserDocItem } from 'factory/users.factory';
-import { SIGN_IN } from 'redux/actions/Types';
 
 const db = getFirestore(firebaseApp);
 
@@ -114,7 +113,6 @@ export const userByEmailInFS = async (email, dispatch) => {
 }
 
 export const createUserDocs = async (newUserData, dispatch) => {
-  console.log("User: ", newUserData);
   let userDataComplete = createUserDocItem(newUserData);
 
   await createElementFS(userDataComplete, newUserData.id, newUserData.id, "users", "", 1, dispatch);

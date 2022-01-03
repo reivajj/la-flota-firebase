@@ -31,7 +31,7 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
           />
           <Fab
             aria-label="save"
-            color="primary"
+            color="secondary"
             className={buttonClassname}
             component="span"
           >
@@ -53,7 +53,7 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
             onChange={onClickHandler}
           />
           <Button
-            color="primary"
+            color="secondary"
             variant="contained"
             component="span"
             className={buttonClassname}

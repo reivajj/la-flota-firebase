@@ -1,14 +1,45 @@
 import React from 'react';
-import clsx from 'clsx';
-import { makeStyles } from '@mui/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import { green, red } from '@mui/material/colors';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import CheckIcon from '@mui/icons-material/Check';
-import ErrorIcon from '@mui/icons-material/Error';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { createTheme } from '@mui/material/styles';
+
+const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color }) => {
+  return (
+    <div style={styles.root}>
+      <div style={styles.wrapper}>
+        <Fab
+          aria-label="save"
+          color={color}
+          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : styles.buttonNone}
+          onClick={onClickHandler}
+        >
+          {buttonState === "none" ? noneIcon
+            : buttonState === "success" ? <CheckIcon sx={{color: "rgba(255,255,255, 1)"}}/> : <ReplayIcon sx={{ color: "rgba(255,255,255, 1)" }} />}
+
+        </Fab>
+        {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
+
+      </div>
+      <div style={styles.wrapper}>
+        <Button
+          variant="contained"
+          color={color}
+          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : styles.buttonNone}
+          disabled={loading}
+          onClick={onClickHandler}
+        >
+          {textButton}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default ProgressButton;
 
 const theme = createTheme();
 
@@ -25,6 +56,12 @@ const styles = {
     backgroundColor: green[500],
     '&:hover': {
       backgroundColor: green[700],
+    },
+  },
+  buttonNone: {
+    backgroundColor: theme.palette.secondary.main,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
     },
   },
   buttonError: {
@@ -49,39 +86,3 @@ const styles = {
     // marginLeft: -12,
   },
 };
-
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color }) => {
-
-  return (
-    <div style={styles.root}>
-      <div style={styles.wrapper}>
-        <Fab
-          aria-label="save"
-          color={color}
-          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : { color: "primary" }}
-          onClick={onClickHandler}
-        >
-          {buttonState === "none" ? noneIcon
-            : buttonState === "success" ? <CheckIcon /> : <ReplayIcon />}
-
-        </Fab>
-        {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
-
-      </div>
-      <div style={styles.wrapper}>
-        <Button
-          variant="contained"
-          color={color}
-          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : { color: "primary" }}
-          disabled={loading}
-          onClick={onClickHandler}
-        >
-          {textButton}
-        </Button>
-        {loading && <CircularProgress size={24} sx={styles.buttonProgress} />}
-      </div>
-    </div>
-  );
-}
-
-export default ProgressButton;

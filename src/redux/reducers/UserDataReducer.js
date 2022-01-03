@@ -38,6 +38,7 @@ const UserDataReducer = (state = initialState, action) => {
         lastTimeSignedInString: userData.lastTimeSignedInString,
         withdrawals: userData.withdrawals,
         timestampWhenCreatedUser: userData.timestampWhenCreatedUser,
+        plan: userData.plan,
       } || initialState;
     case USER_DATA_SIGN_OUT:
       return initialState;

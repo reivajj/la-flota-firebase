@@ -15,16 +15,9 @@ function to(promise) {
     .catch(err => [err]);
 }
 
-/**
- * When an image is uploaded in the Storage bucket We generate a thumbnail automatically using
- * ImageMagick.
- */
-exports.onUploadGenerateThumbnail = functions.storage.object().onFinalize(async (object) => {
-  const fileBucket = object.bucket; // The Storage bucket that contains the file.
-  const filePath = object.name; // File path in the bucket.
-  const contentType = object.contentType; // File content type.
-
-  log("El objeto que recibo", object);
+exports.onCallGenerateThumbnail = functions.https.onCall(async (data) => {
+  const { fileBucket, filePath, contentType, fileSize } = data;
+  log("El objeto que recibo", { fileBucket, filePath, contentType, fileSize });
 
   // [START stopConditions]
   // Exit if this is triggered on a file that is not an image.
@@ -35,8 +28,8 @@ exports.onUploadGenerateThumbnail = functions.storage.object().onFinalize(async 
   // Get the file name.
   const fileName = path.basename(filePath);
   // Exit if the image is already a thumbnail.
-  if (object.size < 100000) {
-    return console.log('Already a Thumbnail.');
+  if (fileSize < 100000) {
+    return log('Already a Thumbnail.');
   }
   // [END stopConditions]
 
@@ -56,7 +49,7 @@ exports.onUploadGenerateThumbnail = functions.storage.object().onFinalize(async 
   [errorGeneratingThumbnail] = await to(spawn('convert', [tempFilePath, '-thumbnail', '200x200>', tempFilePath]));
   if (errorGeneratingThumbnail) throw new Error('Error al generar el thumbnail: ', errorGeneratingThumbnail);
 
-  // We add a 'thumb_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
+  // Mantengo en pathName del thumbnail con el mismo nombre. 
   const thumbFileName = fileName;
   const thumbFilePath = path.join(path.dirname(filePath), thumbFileName);
 
@@ -72,6 +65,5 @@ exports.onUploadGenerateThumbnail = functions.storage.object().onFinalize(async 
 
   // Once the thumbnail has been uploaded delete the local file to free up disk space.
   return fs.unlinkSync(tempFilePath);
-  // [END thumbnailGeneration]
 });
-// [END generateThumbnail]
+

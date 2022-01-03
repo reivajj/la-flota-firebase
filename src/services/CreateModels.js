@@ -1,9 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export const createArtistModel = dataArtist => {
+export const createArtistModel = (dataArtist) => {
   let formDataArtist = new FormData();
-  formDataArtist.append("name", dataArtist.nombre);
+  formDataArtist.append("name", dataArtist.name);
   formDataArtist.append("proprietary_id", uuidv4());
+  if (dataArtist.biography) formDataArtist.append("biography", dataArtist.biography);
+  // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
   return formDataArtist;
 }
 

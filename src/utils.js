@@ -7,6 +7,10 @@ export const to = promise => {
     .catch(err => [err]);
 }
 
+export const toWithOutError = (promise) => {
+  return promise.then(result => result);
+}
+
 export const errorFormat = (message) => (
   <Danger color="error" variant="h6">{message}</Danger>
 );

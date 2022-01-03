@@ -60,7 +60,6 @@ const SignUp = () => {
   const [errorSignIn, setErrorSignIn] = useState(false);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
-  const [tipoDeUsuario, setTipoDeUsuario] = useState("");
 
   const [errorSignUpFirebase, setErrorSignUpFirebase] = useState(false);
   const [userData, setUserData] = useState(false);

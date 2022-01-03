@@ -11,7 +11,8 @@ export const createUserDocItem = userData => {
     dni: "",
     imagenUrl: "",
     timestampWhenCreatedUser: Date.now(),
-    rol: "basic",
+    rol: "user",
+    plan: "",
     stats: {
       totalAlbums: 0,
       totalArtists: 0,

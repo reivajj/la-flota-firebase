@@ -17,6 +17,8 @@ export const createAlbumRedux = (album, userId) => async dispatch => {
 
   console.log("El album en Actions: ", albumFromThirdWebApi);
   album.fugaId = albumFromThirdWebApi.data.response.albumId;
+  album.whenCreatedTS = new Date().getTime(); 
+  album.lastUpdateTS = album.whenCreatedTS;
   delete album.cover;
 
   await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);

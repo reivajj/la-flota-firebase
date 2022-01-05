@@ -21,10 +21,17 @@ export const USER_DATA_ADD_IMAGE = 'user_data_add_image';
 // Artists Types
 export const ADD_ARTISTS = "add_artists";
 export const ARTISTS_SIGN_OUT = "artists_sign_out";
+export const ADDING_ARTIST_NAME = "adding_artist_name";
+export const ADDING_ARTIST_BIO = "adding_artist_bio";
+export const ADDING_ARTIST_IMAGEN_URL = "adding_artist_imagen_url";
+export const ADDING_ARTIST_ID = "adding_artist_id";
+export const DELETE_ARTIST_WITH_ID = "delete_artist_with_id";
+export const EDIT_ARTIST_WITH_ID = "edit_artist_with_id";
 
 // Labels Types
 export const ADD_LABELS = "add_labels";
 export const LABELS_SIGN_OUT = "labels_sign_out";
+export const LABEL_DELETE_WITH_ID = "label_delete_with_id";
 
 //Albums Types
 export const ADD_ALBUMS = "add_albums";

@@ -13,6 +13,8 @@ const LabelsReducer = (state = initialState, action) => {
     case ReducerTypes.ADD_LABELS:
       const newLabels = checkNewLabels(state.labels, action.payload);
       return { ...state, labels: [...state.labels, ...newLabels] };
+    case ReducerTypes.LABEL_DELETE_WITH_ID:
+      return { ...state, labels: state.labels.filter(l => l.id !== action.payload) };
     case ReducerTypes.LABELS_SIGN_OUT:
       return initialState;
     default:

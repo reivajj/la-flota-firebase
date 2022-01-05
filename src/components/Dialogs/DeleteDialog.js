@@ -5,9 +5,10 @@ import {
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Delete } from '@mui/icons-material';
+import ProgressButton from 'components/CustomButtons/ProgressButton';
 
 const DeleteDialog = (props) => {
-  const { isOpen, setIsOpen, title, textName, textContent, deleteAction, deleteButtonText
+  const { isOpen, setIsOpen, title, textName, textContent, deleteAction, deleteButtonText, openLoader
   } = props;
 
   return (
@@ -18,7 +19,7 @@ const DeleteDialog = (props) => {
       open={isOpen}
       onClose={() => setIsOpen(false)}>
       <DialogTitle id="title-delete-dialog">
-        <Typography variant="h2">{title}</Typography>
+        <Typography sx={dialogTitleStyle}>{title}</Typography>
       </DialogTitle>
       <DialogContent>
 
@@ -32,8 +33,8 @@ const DeleteDialog = (props) => {
 
       </DialogContent>
       <DialogActions id="actions-delete-dialog">
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={6} >
             <Button
               variant="contained"
               fullWidth
@@ -43,13 +44,13 @@ const DeleteDialog = (props) => {
             </Button>
           </Grid>
           <Grid item xs={6}>
-            <Button
-              endIcon={<Delete />}
-              onClick={deleteAction}
-              fullWidth
-              style={{ backgroundColor: "#c50e29", color: "white" }}>
-              {deleteButtonText}
-            </Button>
+            <ProgressButton
+              textButton={deleteButtonText}
+              loading={openLoader}
+              buttonState="delete"
+              onClickHandler={deleteAction}
+              noneIcon={<Delete />}
+              noFab={true} />
           </Grid>
         </Grid>
       </DialogActions>
@@ -58,6 +59,12 @@ const DeleteDialog = (props) => {
 }
 
 export default DeleteDialog;
+
+const dialogTitleStyle = {
+  fontWeight: "300px",
+  fontSize: "30px",
+  marginBottom: "3px",
+}
 
 DeleteDialog.defaultProps = {
   isOpen: false,

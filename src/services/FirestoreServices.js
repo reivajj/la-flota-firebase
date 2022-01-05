@@ -1,5 +1,5 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment } from "firebase/firestore";
+import { getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment, deleteDoc } from "firebase/firestore";
 import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { SIGN_IN_ERR } from 'redux/actions/Types';
@@ -14,7 +14,6 @@ export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
     dispatch(createFireStoreError("Error updating user data info", errorUpdatingUserInDB));
     return "ERROR";
   }
-
   return "EDITED";
 }
 
@@ -86,6 +85,45 @@ export const createElementFS = async (element, elementId, userId, collection, fi
     };
   }
 
+}
+
+// Elements es: LABEL, ARTIST, TRACK, ALBUMS.
+export const deleteElementFS = async (elementId, userId, collection, fieldToDecrementInUserStats, amountToDecrement, dispatch) => {
+  const elementDbRef = doc(db, collection, elementId);
+
+  let [errorDeletingElementInCollection] = await to(deleteDoc(elementDbRef));
+  if (errorDeletingElementInCollection) {
+    console.log(`Error deleting element in ${collection} collection`, errorDeletingElementInCollection);
+    throw new Error({ msg: `Error deleting new element in ${collection} collection`, error: errorDeletingElementInCollection });
+  }
+
+  const elementStatsDbRef = doc(db, collection, "stats");
+  let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amountToDecrement) }));
+  if (errorUpdatingStatsInCollection) {
+    console.log(`Error updating stats in ${collection} : `, errorUpdatingStatsInCollection);
+    throw new Error({ msg: `Error updating stats in ${collection} : `, error: errorUpdatingStatsInCollection });
+  }
+
+  if (fieldToDecrementInUserStats !== "") {
+    const usersDbRef = doc(db, "users", userId);
+    let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToDecrementInUserStats}`]: increment(amountToDecrement) }));
+    if (errorUpdatingStatsInUser) {
+      console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
+      throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
+    };
+  }
+
+}
+
+// Elements es: ARTIST, TRACK, ALBUMS.
+export const updateElementFS = async (newElementFields, elementId, collection, dispatch) => {
+  const elementDbRef = doc(db, collection, elementId);
+
+  let [errorUpdatingElementInCollection] = await to(updateDoc(elementDbRef, { ...newElementFields }));
+  if (errorUpdatingElementInCollection) {
+    console.log(`Error updating element in ${collection} collection`, errorUpdatingElementInCollection);
+    throw new Error({ msg: `Error updating new element in ${collection} collection`, error: errorUpdatingElementInCollection });
+  }
 }
 
 // Todavia lo estoy usando. Reemplazarlo.

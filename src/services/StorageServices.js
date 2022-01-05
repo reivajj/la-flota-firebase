@@ -1,5 +1,4 @@
 import firebaseApp from "firebaseConfig/firebase.js";
-import { v4 as uuidv4 } from 'uuid';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { to } from 'utils';
@@ -7,12 +6,11 @@ import { to } from 'utils';
 const storage = getStorage(firebaseApp);
 const functions = getFunctions();
 
-export const manageAddImageToStorage = async (file, storageBucketName, maxSize, setMessage, setProgress) => {
+export const manageAddImageToStorage = async (file, imageUuid, storageBucketName, maxSize, setMessage, setProgress) => {
   return new Promise((resolve, reject) => {
     if (file["size"] > maxSize) {
       setMessage(`El archivo debe ser menor que ${maxSize / (1024 * 1024)} MB`);
     } else {
-      const imageUuid = uuidv4();
       const storageRef = ref(storage, `${storageBucketName}/${imageUuid}`)
       const uploadFileTask = uploadBytesResumable(storageRef, file);
 

@@ -25,6 +25,9 @@ const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress) =
   console.log("entro al create track:", dataTrack);
   let formDataTrack = createTrackModel(dataTrack);
   let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress);
+
+  dataTrack.whenCreatedTS = new Date().getTime(); 
+  dataTrack.lastUpdateTS = dataTrack.whenCreatedTS;
   dataTrack.fugaId = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.id;
   dataTrack.isrc = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.isrc;
   dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;

@@ -1,16 +1,15 @@
 import React from "react";
 import makeStyles from '@mui/styles/makeStyles';
 // core components
-import Button from "components/CustomButtons/Button.js";
 import Label from 'views/Labels/Label';
-import { Grid } from '@mui/material';
+import { Grid, Button } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const MyLabels = () => {
-  const navigate = useNavigate();
-  const classes = useStyles();
 
+  const navigate = useNavigate();
   const labelsFromStore = useSelector(store => store.labels.labels);
 
   const myLabelsProfiles = () => {
@@ -25,17 +24,14 @@ const MyLabels = () => {
 
   let myLabels = myLabelsProfiles();
 
-  const addLabel = () => {
-    console.log("Agregar Label");
-    navigate("/admin/new-label");
-  }
+  const addLabel = () => navigate("/admin/new-label");
 
   return (
     <div>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <h1 >Mis Sellos</h1>
-          <Button color="primary" round onClick={addLabel}>
+          <Button variant="contained" color="secondary" onClick={addLabel} endIcon={<AddCircleOutlineIcon />}>
             Agregar Sello
           </Button>
         </Grid>

@@ -1,41 +1,49 @@
 import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { green, red } from '@mui/material/colors';
-import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
+import { Button, Fab, Grid } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { createTheme } from '@mui/material/styles';
 
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color }) => {
+const getStyleFromStateButton = buttonState => {
+  if (buttonState === "success") return styles.buttonSuccess;
+  if (buttonState === "error") return styles.buttonError;
+  if (buttonState === "delete") return styles.buttonDelete;
+  return styles.buttonNone;
+}
+
+const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab }) => {
   return (
-    <div style={styles.root}>
-      <div style={styles.wrapper}>
-        <Fab
-          aria-label="save"
-          color={color}
-          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : styles.buttonNone}
-          onClick={onClickHandler}
-        >
-          {buttonState === "none" ? noneIcon
-            : buttonState === "success" ? <CheckIcon sx={{color: "rgba(255,255,255, 1)"}}/> : <ReplayIcon sx={{ color: "rgba(255,255,255, 1)" }} />}
+    <Grid container sx={styles.root}>
+      {!noFab &&
+        <Grid item sx={styles.wrapper}>
+          <Fab
+            aria-label="save"
+            color={color}
+            sx={getStyleFromStateButton(buttonState)}
+            onClick={onClickHandler}
+          >
+            {(buttonState === "none" || buttonState === "delete") ? noneIcon
+              : buttonState === "success" ? <CheckIcon sx={{ color: "rgba(255,255,255, 1)" }} /> : <ReplayIcon sx={{ color: "rgba(255,255,255, 1)" }} />}
 
-        </Fab>
-        {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
+          </Fab>
+          {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
 
-      </div>
-      <div style={styles.wrapper}>
+        </Grid>}
+      <Grid item sx={noFab ? styles.wrapperNoFab : styles.wrapperFab}>
         <Button
           variant="contained"
           color={color}
-          sx={buttonState === "success" ? styles.buttonSuccess : buttonState === "error" ? styles.buttonError : styles.buttonNone}
+          sx={getStyleFromStateButton(buttonState)}
           disabled={loading}
           onClick={onClickHandler}
         >
           {textButton}
         </Button>
-      </div>
-    </div>
+        {noFab && loading && <CircularProgress size={35} sx={styles.buttonProgress} />}
+      </Grid>
+    </Grid>
   );
 }
 
@@ -47,10 +55,16 @@ const styles = {
   root: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center'
   },
-  wrapper: {
+  wrapperNoFab: {
+    width: "inherit",
+    position: "relative",
+    justifyContent: "center"
+  },
+  wrapperFab: {
     margin: theme.spacing(1),
-    position: 'relative',
+    position: "relative"
   },
   buttonSuccess: {
     backgroundColor: green[500],
@@ -70,19 +84,26 @@ const styles = {
       backgroundColor: red[900],
     },
   },
+  buttonDelete: {
+    backgroundColor: "#c50e29",
+    '&:hover': {
+      backgroundColor: "#c50e29",
+    },
+    color: "white",
+    width: "inherit"
+  },
   fabProgress: {
     color: green[500],
     position: 'absolute',
-    top: -6,
-    left: -6,
+    marginTop: '-6px',
+    marginLeft: '-62px',
     zIndex: 1,
   },
   buttonProgress: {
     color: green[500],
     position: 'absolute',
-    // top: '50%',
-    // left: '50%',
-    // marginTop: -12,
-    // marginLeft: -12,
+    marginTop: '2px',
+    marginLeft: '-7.5em',
+    zIndex: 1,
   },
 };

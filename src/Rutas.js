@@ -41,7 +41,8 @@ const Rutas = () => {
           <Route path="notifications" element={<Notifications />} />
 
           <Route path="artists" element={<MyArtists />} />
-          <Route path="new-artist" element={<NewArtist />} />
+          <Route path="new-artist" element={<NewArtist editing={false} />} />
+          <Route path="edit-artist/:artistId" element={<NewArtist editing={true} />} />
 
           <Route path="labels" element={<MyLabels />} />
           <Route path="new-label" element={<NewLabel />} />

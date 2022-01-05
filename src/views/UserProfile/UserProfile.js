@@ -291,7 +291,8 @@ const UserProfile = () => {
                 buttonState={editState}
                 onClickHandler={handleSubmit}
                 noneIcon={<Save />}
-                color="secondary" />
+                color="secondary"
+                noFab={false} />
             </Grid>
           </CardFooter>
 

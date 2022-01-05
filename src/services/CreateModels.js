@@ -1,12 +1,13 @@
-import { v4 as uuidv4 } from 'uuid';
-
-export const createArtistModel = (dataArtist) => {
-  let formDataArtist = new FormData();
-  formDataArtist.append("name", dataArtist.name);
-  formDataArtist.append("proprietary_id", uuidv4());
-  if (dataArtist.biography) formDataArtist.append("biography", dataArtist.biography);
+// Lo uso tanto para crear como para editar.
+export const createArtistModel = (dataArtist, editing) => {
+  console.log("PARAMS EN MODEL: ", { dataArtist, editing });
+  let rawDataArtist = {};
+  if (dataArtist.name) rawDataArtist.name = dataArtist.name;
+  if (!editing && dataArtist.id) rawDataArtist.proprietary_id = dataArtist.id;
+  if (dataArtist.biography) rawDataArtist.biography = dataArtist.biography;
   // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
-  return formDataArtist;
+  console.log("RAW DATA:", rawDataArtist);
+  return rawDataArtist;
 }
 
 export const createAlbumModel = dataAlbum => {

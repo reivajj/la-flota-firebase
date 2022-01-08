@@ -7,7 +7,7 @@ const checkNewAlbums = (oldAlbums, albums) => {
 const initialState = {
   albums: [],
   addingAlbum: {
-    nombreArtist: "", imagenUrl: "", label_name: "", title: "", album_id: "", id: "",
+    nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
     month: "", year: "", genre: "", language: "", disc_number: ""
   }

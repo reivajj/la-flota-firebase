@@ -18,28 +18,32 @@ const initialState = {
 
 const ArtistsReducer = (state = initialState, action) => {
   switch (action.type) {
+    
     case ReducerTypes.ADD_ARTISTS:
       const newArtists = filterArtistsWithSameIdThanNewOne(state.artists, action.payload);
-      return {
-        addingArtist: { name: "", biography: "", imagenUrl: "", id: "" },
-        artists: [...state.artists, ...newArtists]
-      }
+      return { addingArtist: initialState.addingArtist, artists: [...state.artists, ...newArtists] }
+
     case ReducerTypes.EDIT_ARTIST_WITH_ID:
-      const newArtistsPostEdit = editAndAddArtist(state.artists, action.payload);
-      return {
-        addingArtist: { name: "", biography: "", imagenUrl: "", id: "" },
-        artists: newArtistsPostEdit
-      }
+      return { addingArtist: initialState.addingArtist, artists: editAndAddArtist(state.artists, action.payload) }
+
+    case ReducerTypes.ARTIST_DELETE_WITH_ID:
+      return { ...state, artists: state.artists.filter(artist => artist.id !== action.payload) };
+
     case ReducerTypes.ARTISTS_SIGN_OUT:
       return initialState;
+
     case ReducerTypes.ADDING_ARTIST_NAME:
       return { ...state, addingArtist: { ...state.addingArtist, name: action.payload } }
+
     case ReducerTypes.ADDING_ARTIST_BIO:
       return { ...state, addingArtist: { ...state.addingArtist, biography: action.payload } }
+
     case ReducerTypes.ADDING_ARTIST_IMAGEN_URL:
       return { ...state, addingArtist: { ...state.addingArtist, imagenUrl: action.payload } }
+
     case ReducerTypes.ADDING_ARTIST_ID:
       return { ...state, addingArtist: { ...state.addingArtist, id: action.payload } }
+
     default:
       return state;
   }

@@ -36,7 +36,7 @@ const cleanNotEditedFields = allFields => {
 export const updateArtistRedux = (newArtistsFields, artistFugaId, photoFile, userId) => async dispatch => {
   let onlyEditedFields = cleanNotEditedFields(newArtistsFields);
   let rawDataArtist = createArtistModel(onlyEditedFields, true);
-  
+
   let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, dispatch);
   if (artistFromThirdWebApi === "ERROR") return "ERROR";
 
@@ -46,6 +46,20 @@ export const updateArtistRedux = (newArtistsFields, artistFugaId, photoFile, use
   dispatch({
     type: ReducerTypes.EDIT_ARTIST_WITH_ID,
     payload: onlyEditedFields
+  });
+
+  return "SUCCESS";
+}
+
+export const deleteArtistRedux = (artistId, artistFugaId, userId) => async dispatch => {
+  let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
+  if (deleteResponse === "ERROR") return "ERROR";
+
+  await FirestoreServices.deleteElementFS(artistId, userId, "artists", "totalArtists", -1, dispatch);
+
+  dispatch({
+    type: ReducerTypes.ARTIST_DELETE_WITH_ID,
+    payload: artistId
   });
 
   return "SUCCESS";

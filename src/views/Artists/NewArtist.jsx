@@ -24,7 +24,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { Image } from 'mui-image';
 import { manageAddImageToStorage } from "services/StorageServices";
 
-const NewArtist = (editing) => {
+const NewArtist = ({ editing }) => {
 
   const dispatch = useDispatch();
   const { artistId } = useParams();
@@ -37,7 +37,10 @@ const NewArtist = (editing) => {
   const currentArtistData = useSelector(store => store.artists.addingArtist);
   const [currentArtistEditingData] = useSelector(store => store.artists.artists).filter(artist => artist.id === artistId);
 
+  console.log("CURRENT ARTIST: ", currentArtistData);
   let artistDataToShow = editing ? currentArtistEditingData : currentArtistData;
+  console.log("CURRENT ARTIST TO SHOW: ", artistDataToShow);
+  console.log("EDITING:", editing);
 
   const changeArtistId = () => dispatch(saveAddingArtistId(uuidv4()));
   const putArtistIdOnEditingArtist = () => dispatch(saveAddingArtistId(currentArtistEditingData.id));

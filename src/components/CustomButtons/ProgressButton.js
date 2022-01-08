@@ -2,18 +2,27 @@ import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { green, red } from '@mui/material/colors';
 import { Button, Fab, Grid } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
+import { Check, Replay, Delete } from '@mui/icons-material/';
 import { createTheme } from '@mui/material/styles';
 
-const getStyleFromStateButton = buttonState => {
+const getStyleFromStateButton = (buttonState, noFab) => {
   if (buttonState === "success") return styles.buttonSuccess;
-  if (buttonState === "error") return styles.buttonError;
+  if (buttonState === "error" && !noFab) return styles.buttonErrorFab;
   if (buttonState === "delete") return styles.buttonDelete;
+  if (buttonState === "error" && noFab) return styles.buttonErrorNoFab
   return styles.buttonNone;
 }
 
 const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab }) => {
+
+  const getEndButtonIcon = () => {
+    if (buttonState === "delete" && noFab) return <Delete />;
+    if (buttonState === "error" && noFab) return <Replay />;
+    return "";
+  }
+
+  const endButtonIcon = getEndButtonIcon();
+
   return (
     <Grid container sx={styles.root}>
       {!noFab &&
@@ -21,11 +30,11 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
           <Fab
             aria-label="save"
             color={color}
-            sx={getStyleFromStateButton(buttonState)}
+            sx={getStyleFromStateButton(buttonState, noFab)}
             onClick={onClickHandler}
           >
             {(buttonState === "none" || buttonState === "delete") ? noneIcon
-              : buttonState === "success" ? <CheckIcon sx={{ color: "rgba(255,255,255, 1)" }} /> : <ReplayIcon sx={{ color: "rgba(255,255,255, 1)" }} />}
+              : buttonState === "success" ? <Check sx={{ color: "rgba(255,255,255, 1)" }} /> : <Replay sx={{ color: "rgba(255,255,255, 1)" }} />}
 
           </Fab>
           {loading && <CircularProgress size={68} sx={styles.fabProgress} />}
@@ -35,9 +44,10 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
         <Button
           variant="contained"
           color={color}
-          sx={getStyleFromStateButton(buttonState)}
+          sx={getStyleFromStateButton(buttonState, noFab)}
           disabled={loading}
           onClick={onClickHandler}
+          endIcon={endButtonIcon}
         >
           {textButton}
         </Button>
@@ -78,11 +88,18 @@ const styles = {
       backgroundColor: theme.palette.secondary.main,
     },
   },
-  buttonError: {
+  buttonErrorFab: {
     backgroundColor: red[800],
     '&:hover': {
       backgroundColor: red[900],
     },
+  },
+  buttonErrorNoFab: {
+    backgroundColor: red[800],
+    '&:hover': {
+      backgroundColor: red[900],
+    },
+    width: "inherit"
   },
   buttonDelete: {
     backgroundColor: "#c50e29",

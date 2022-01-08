@@ -5,24 +5,37 @@ import { Delete, Edit } from '@mui/icons-material';
 import DeleteDialog from "components/Dialogs/DeleteDialog";
 import { Divider } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { toWithOutError } from 'utils';
+import { useDispatch } from 'react-redux';
+import { deleteArtistRedux } from "redux/actions/ArtistsActions";
 
+const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Album en el que esté el Artista."
 
 const Artist = ({ dataArtist, index }) => {
-
+  console.log("DATAARTIST: ", dataArtist);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openLoader, setOpenLoader] = useState(false);
+  const [buttonText, setButtonText] = useState("Confirmar");
+  const [buttonState, setButtonState] = useState("delete");
 
   const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
+  const handleCloseDelete = () => setOpenDeleteDialog(false);
 
-  const handleCloseDelete = () => {
-    console.log("Close Delete");
-    setOpenDeleteDialog(false);
-  }
-
-  const handleDelete = () => {
-    console.log("Delete");
-    setOpenDeleteDialog(false);
+  const handleDelete = async () => {
+    setOpenLoader(true);
+    let result = await toWithOutError(dispatch(deleteArtistRedux(dataArtist.id, dataArtist.fugaId, dataArtist.ownerId)));
+    if (result === "ERROR") {
+      setButtonState("error");
+      setButtonText("Error");
+      setOpenLoader(false);
+    }
+    else {
+      setOpenLoader(false);
+      setOpenDeleteDialog(false);
+    }
   }
 
   const handleEditArtista = () => navigate(`/admin/edit-artist/${dataArtist.id}`);
@@ -116,8 +129,8 @@ const Artist = ({ dataArtist, index }) => {
       </Card>
 
       <DeleteDialog isOpen={openDeleteDialog} setIsOpen={setOpenDeleteDialog} handleClose={handleCloseDelete}
-        title={"Eliminar Artista"} textName={dataArtist.name} textContent={"Confirma que quieres eliminar al Artista"}
-        deleteAction={handleDelete} deleteButtonText={"Confirmar"}
+        title={"Eliminar Artista"} textName={dataArtist.name} textContent={deleteArtistDialogText}
+        deleteAction={handleDelete} deleteButtonText={buttonText} openLoader={openLoader} buttonState={buttonState}
       />
     </Grid>
   );

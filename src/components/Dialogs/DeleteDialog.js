@@ -8,7 +8,7 @@ import { Delete } from '@mui/icons-material';
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 
 const DeleteDialog = (props) => {
-  const { isOpen, setIsOpen, title, textName, textContent, deleteAction, deleteButtonText, openLoader
+  const { isOpen, setIsOpen, title, textName, textContent, deleteAction, deleteButtonText, openLoader, buttonState
   } = props;
 
   return (
@@ -47,7 +47,7 @@ const DeleteDialog = (props) => {
             <ProgressButton
               textButton={deleteButtonText}
               loading={openLoader}
-              buttonState="delete"
+              buttonState={buttonState}
               onClickHandler={deleteAction}
               noneIcon={<Delete />}
               noFab={true} />

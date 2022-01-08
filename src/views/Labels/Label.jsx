@@ -14,6 +14,8 @@ const Label = ({ dataLabel }) => {
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openLoader, setOpenLoader] = useState(false);
+  const [buttonText, setButtonText] = useState("Confirmar");
+  const [buttonState, setButtonState] = useState("delete");
 
   const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
 
@@ -23,13 +25,14 @@ const Label = ({ dataLabel }) => {
     setOpenLoader(true);
     let result = await toWithOutError(dispatch(deleteLabelRedux(dataLabel.fugaId, dataLabel.id, dataLabel.ownerId)));
     if (result === "ERROR") {
-      // setButtonState("error");
-      // setButtonText("Error");
+      setButtonState("error");
+      setButtonText("Error");
       setOpenLoader(false);
-      console.log("ERROR");
     }
-    setOpenLoader(false);
-    setOpenDeleteDialog(false);
+    else {
+      setOpenLoader(false);
+      setOpenDeleteDialog(false);
+    }
   }
 
   return (
@@ -71,7 +74,7 @@ const Label = ({ dataLabel }) => {
 
       <DeleteDialog isOpen={openDeleteDialog} setIsOpen={setOpenDeleteDialog} handleClose={handleCloseDelete}
         title={"Eliminar Sello"} textName={dataLabel.name} textContent={"Confirma que quieres eliminar el Sello"}
-        deleteAction={handleDelete} deleteButtonText={"Confirmar"} openLoader={openLoader}
+        deleteAction={handleDelete} deleteButtonText={buttonText} openLoader={openLoader} buttonState={buttonState}
       />
     </Grid>
   );

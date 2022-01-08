@@ -48,7 +48,7 @@ const Rutas = () => {
           <Route path="new-label" element={<NewLabel />} />
 
           <Route path="albums" element={<MyAlbums />} />
-          <Route path="new-album" element={<NewAlbum />} />
+          <Route path="new-album" element={<NewAlbum editing={false} />} />
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
         </Route>

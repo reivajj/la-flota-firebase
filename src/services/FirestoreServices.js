@@ -61,6 +61,7 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
 
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
 export const createElementFS = async (element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
+  
   const elementDbRef = doc(db, collection, elementId);
 
   let [errorCreatingElementInCollection] = await to(setDoc(elementDbRef, element));

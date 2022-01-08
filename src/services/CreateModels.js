@@ -1,12 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
+
 // Lo uso tanto para crear como para editar.
 export const createArtistModel = (dataArtist, editing) => {
-  console.log("PARAMS EN MODEL: ", { dataArtist, editing });
   let rawDataArtist = {};
   if (dataArtist.name) rawDataArtist.name = dataArtist.name;
   if (!editing && dataArtist.id) rawDataArtist.proprietary_id = dataArtist.id;
   if (dataArtist.biography) rawDataArtist.biography = dataArtist.biography;
   // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
-  console.log("RAW DATA:", rawDataArtist);
   return rawDataArtist;
 }
 
@@ -14,19 +14,17 @@ export const createAlbumModel = dataAlbum => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
 
-  let fixedFugaLabel = "4490264762";
-  let fixedFugaArtistId = "4413387581";
-  let artistsArray = [{ primary: true, id: fixedFugaArtistId }];
-
+  let artistsArray = [{ primary: true, id: dataAlbum.artistFugaId }];
+  
   formDataAlbum.append("name", dataAlbum.title);
-  formDataAlbum.append("label", fixedFugaLabel);
-  formDataAlbum.append("catalog_number", "CAT-1");
+  formDataAlbum.append("label", dataAlbum.labelFugaId);
+  formDataAlbum.append("catalog_number", uuidv4());
   formDataAlbum.append("release_format_type", "ALBUM");
   formDataAlbum.append("c_line_text", dataAlbum.c_line);
   formDataAlbum.append("c_line_year", dataAlbum.c_year);
   formDataAlbum.append("p_line_text", dataAlbum.p_line);
   formDataAlbum.append("p_line_year", dataAlbum.p_year);
-  formDataAlbum.append("genre", "ELECTRONIC");
+  formDataAlbum.append("genre", dataAlbum.genre);
   formDataAlbum.append("artists", JSON.stringify(artistsArray));
   formDataAlbum.append("consumer_release_date", saleAndReleaseDate);
   formDataAlbum.append("original_release_date", saleAndReleaseDate);
@@ -38,13 +36,13 @@ export const createAlbumModel = dataAlbum => {
 
 export const createTrackModel = dataTrack => {
 
-  let fixedFugaArtistId = "4413387581";
-  let artistsArray = [{ primary: true, id: fixedFugaArtistId }];
+  // let fixedFugaArtistId = "4413387581";
+  let artistsArray = [{ primary: true, id: dataTrack.artistFugaId }];
 
   let formDataTrack = new FormData();
 
   formDataTrack.append("name", dataTrack.title);
-  formDataTrack.append("genre", "ELECTRONIC");
+  formDataTrack.append("genre", dataTrack.genre);
   formDataTrack.append("artists", JSON.stringify(artistsArray));
   formDataTrack.append("track", dataTrack.track);
   formDataTrack.append("sequence", dataTrack.position);

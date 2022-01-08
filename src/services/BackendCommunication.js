@@ -16,7 +16,7 @@ export const createLabelFuga = async (labelName, dispatch) => {
     axios.post(`${localUrl}labels`, { name: labelName }));
 
   if (errorCreatingLabelInThirdWebApi) {
-    dispatch(createBackendError(errorCreatingLabelInThirdWebApi.response.data.errorMsgToFrontEnd, errorCreatingLabelInThirdWebApi.response.data));
+    dispatch(createBackendError(errorCreatingLabelInThirdWebApi));
     return "ERROR";
   }
   console.log("La respuesta de Fuga", labelFromThirdWebApi);
@@ -29,7 +29,7 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
     axios.delete(`${localUrl}labels/${labelFugaId}`));
 
   if (errorDeletingLabelInThirdWebApi) {
-    dispatch(createBackendError(errorDeletingLabelInThirdWebApi.response.data.errorMsgToFrontEnd, errorDeletingLabelInThirdWebApi.response.data));
+    dispatch(createBackendError(errorDeletingLabelInThirdWebApi));
     return "ERROR";
   }
 
@@ -44,7 +44,7 @@ export const createArtistFuga = async (formDataArtist, dispatch) => {
     axios.post(`${localUrl}artists`, formDataArtist));
 
   if (errorUploadingArtistInThirdWebApi) {
-    dispatch(createBackendError("Error al crear el artista.", errorUploadingArtistInThirdWebApi.response.data));
+    dispatch(createBackendError(errorUploadingArtistInThirdWebApi));
     return "ERROR";
   }
 
@@ -56,27 +56,40 @@ export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) =
     axios.put(`${localUrl}artists/${artistFugaId}`, formDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
-    dispatch(createBackendError("Error al editar el artista.", errorUpdatingArtistInThirdWebApi.response.data));
+    dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
     return "ERROR";
   }
 
   return "SUCCESS";
 }
 
+
+export const deleteArtistFuga = async (artistFugaId, dispatch) => {
+  let [errorDeletingArtistInThirdWebApi] = await to(
+    axios.delete(`${localUrl}artists/${artistFugaId}`));
+
+  if (errorDeletingArtistInThirdWebApi) {
+    dispatch(createBackendError(errorDeletingArtistInThirdWebApi));
+    return "ERROR";
+  }
+  return "SUCCESS";
+}
+
 // ======================================ALBUMS=============================================\\
 
-export const createAlbumFuga = async formDataAlbum => {
-  let [uploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${webUrl}albums`, formDataAlbum));
-  if (uploadingAlbumInThirdWebApi) throw new Error("Error al subir el album a Fuga", uploadingAlbumInThirdWebApi);
-  console.log("La respuesta de crear el album en Fuga: ", albumFromThirdWebApi);
-
+export const createAlbumFuga = async (formDataAlbum, dispatch) => {
+  let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${localUrl}albums`, formDataAlbum));
+  if (errorUploadingAlbumInThirdWebApi) {
+    dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
+    return "ERROR";
+  }
   return albumFromThirdWebApi;
 }
 
 // ======================================TRACKS=============================================\\
 
 export const createTrackFuga = async (formDataTrack, onUploadProgress) => {
-  let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${webUrl}tracks/`, formDataTrack, { onUploadProgress }));
+  let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${localUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     console.log("Error al subir el track a Fuga", errorUploadingTrackInThirdWebApi);
   }

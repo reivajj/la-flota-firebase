@@ -52,7 +52,7 @@ export const NewTrackDialog = (props) => {
     setTrackData({
       ...trackData, explicit: 0,
       position: tracksDataTable.length + 1, title: "", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "Spanish",
+      price: "", lyrics: "", isrc: "", track_language: "",
       other_artists: "", composers: "", producers: "",
     });
   }, [tracksDataTable]);
@@ -62,7 +62,7 @@ export const NewTrackDialog = (props) => {
     setTrackData({
       ...trackData, explicit: 0,
       position: tracksDataTable.length + 1, title: "", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "",
+      price: "", lyrics: "", isrc: "", track_language: "Spanish",
       other_artists: "", composers: "", producers: "", progress: 0
     });
   }

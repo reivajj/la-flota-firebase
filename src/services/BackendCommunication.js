@@ -88,10 +88,11 @@ export const createAlbumFuga = async (formDataAlbum, dispatch) => {
 
 // ======================================TRACKS=============================================\\
 
-export const createTrackFuga = async (formDataTrack, onUploadProgress) => {
+export const createTrackFuga = async (formDataTrack, onUploadProgress, dispatch) => {
   let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${localUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
-    console.log("Error al subir el track a Fuga", errorUploadingTrackInThirdWebApi);
+    dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
+    return "ERROR";
   }
   console.log("La respuesta de crear el track en Fuga: ", trackFromThirdWebApi);
 

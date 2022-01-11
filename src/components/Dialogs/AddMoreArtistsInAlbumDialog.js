@@ -5,27 +5,28 @@ import {
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
-const InfoDialog = (props) => {
+const AddMoreArtistsInAlbumDialog = (props) => {
 
-  const { isOpen, handleClose, title, contentTexts } = props;
+  const { isOpen, handleClose, title } = props;
 
   return (
     <Dialog
       maxWidth="xs"
       fullWidth
-      id="info-dialog"
+      id="collaborative-dialog"
       open={isOpen}
       onClose={handleClose}>
+
       <DialogTitle id="title-info-dialog">
         <Typography variant="h4">{title}</Typography>
       </DialogTitle>
-      <DialogContent>
-        {contentTexts.map((contentText, index) =>
-          <DialogContentText key={index}>
-            {contentText}
-          </DialogContentText>
-        )}
-      </DialogContent>
+
+      {/* <DialogContent>
+        <DialogContentText key={index}>
+          {contentText}
+        </DialogContentText>
+      </DialogContent> */}
+
       <DialogActions>
         <Button onClick={handleClose} color="primary">
           OK
@@ -35,14 +36,13 @@ const InfoDialog = (props) => {
   )
 }
 
-export default InfoDialog;
+export default AddMoreArtistsInAlbumDialog;
 
-InfoDialog.defaultProps = {
+AddMoreArtistsInAlbumDialog.defaultProps = {
   isOpen: false,
 }
 
-InfoDialog.propTypes = {
-  contentTexts: PropTypes.array,
+AddMoreArtistsInAlbumDialog.propTypes = {
   title: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,

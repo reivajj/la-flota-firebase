@@ -29,7 +29,6 @@ const cleanNotEditedFields = allFields => {
   Object.keys(allFields).forEach(prop => {
     if (allFields[prop] === "") delete allFields[prop];
   })
-  console.log("ALL FIELDS:", allFields);
   return allFields;
 }
 
@@ -90,5 +89,19 @@ export const saveAddingArtistId = artistTempId => {
   return {
     type: ReducerTypes.ADDING_ARTIST_ID,
     payload: artistTempId
+  }
+}
+
+export const saveAddingArtistSpotifyUri = artistTempSpotifyUri => {
+  return {
+    type: ReducerTypes.ADDING_ARTIST_SPOTIFY_URI,
+    payload: artistTempSpotifyUri
+  }
+}
+
+export const saveAddingArtistAppleId = artistTempAppleId => {
+  return {
+    type: ReducerTypes.ADDING_ARTIST_APPLE_ID,
+    payload: artistTempAppleId
   }
 }

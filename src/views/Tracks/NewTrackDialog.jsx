@@ -7,7 +7,7 @@ import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import Danger from 'components/Typography/Danger.js';
 import Success from "components/Typography/Success";
 import {
-  TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton
+  TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, MenuItem
 } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { createTrackLocalRedux } from '../../redux/actions/TracksActions';
@@ -15,10 +15,9 @@ import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-
-let errorFormat = (message) => (
-  <Danger color="error" variant="h6">{message}</Danger>
-);
+import BasicSwitch from "components/Switch/BasicSwitch";
+import { languages } from "variables/varias";
+import { errorFormat } from "utils";
 
 export const trackActions = track => {
   return (
@@ -38,7 +37,7 @@ export const trackActions = track => {
 };
 
 export const NewTrackDialog = (props) => {
-  
+
   let { openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData, circularProgress } = props;
 
   const dispatch = useDispatch();
@@ -50,7 +49,7 @@ export const NewTrackDialog = (props) => {
   // Luego sacar Spanish y pedirlo en el Form.
   useEffect(() => {
     setTrackData({
-      ...trackData, explicit: 0,
+      ...trackData, explicit: false,
       position: tracksDataTable.length + 1, title: "", track: "",
       price: "", lyrics: "", isrc: "", track_language: "",
       other_artists: "", composers: "", producers: "",
@@ -60,9 +59,9 @@ export const NewTrackDialog = (props) => {
   const handleCancelDialog = () => {
     setOpenNewTrackDialog(false);
     setTrackData({
-      ...trackData, explicit: 0,
+      ...trackData, explicit: false,
       position: tracksDataTable.length + 1, title: "", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "Spanish",
+      price: "", lyrics: "", isrc: "", track_language: "",
       other_artists: "", composers: "", producers: "", progress: 0
     });
   }
@@ -75,9 +74,8 @@ export const NewTrackDialog = (props) => {
       `${trackData.title}`,
       `${trackData.isrc}`,
       `${trackData.other_artists}`,
-      "NO",
       `${trackData.track_language}`,
-      `${trackData.explicit === 0 ? "NO" : "SI"}`,
+      `${trackData.explicit ? "NO" : "SI"}`,
       trackActions(trackData),
       circularProgress(trackData.progress)
     ]]);
@@ -92,10 +90,12 @@ export const NewTrackDialog = (props) => {
     }
   }
 
-  const getTrackFromLocal = (event) => {
-    const trackFile = event.target.files[0];
-    setTrackData({ ...trackData, track: trackFile });
-    console.log("El audio: ", trackFile);
+  const getTrackFromLocal = (event) => setTrackData({ ...trackData, track: event.target.files[0] });
+  
+  const handlerLanguageChoose = event => setTrackData({ ...trackData, track_language: event.target.value });
+
+  const handleExplicitChange = newExplicitEvent => {
+    setTrackData({ ...trackData, explicit: newExplicitEvent.target.checked });
   }
 
   return (
@@ -181,7 +181,7 @@ export const NewTrackDialog = (props) => {
               value={trackData.other_artists}
               onChange={(event) => setTrackData({ ...trackData, other_artists: event.target.value })}
               helperText="Artista/s Invitado/s de la Canción, separados por comas.
-                Ejemplos: Spotify, Apple"
+                Ejemplos: Juanes, Francisco Lopez"
             />
             {simpleValidator.current.message('other_artists', trackData.other_artists, 'max:50', {
               className: 'text-danger',
@@ -223,11 +223,38 @@ export const NewTrackDialog = (props) => {
               onChange={(event) => setTrackData({ ...trackData, producers: event.target.value })}
               helperText="Ingresá el nombre completo y real de el/los Productor/es, separados por coma. "
             />
-            {simpleValidator.current.message('producers', trackData.producers, 'max:70', {
+            {simpleValidator.current.message('producers', trackData.producers, 'required|max:70', {
               className: 'text-danger',
               messages: { default: "Debes ingresar el/los compositor/es de la Canción." },
               element: (message) => errorFormat(message)
             })}
+          </Grid>
+
+          <Grid item xs={4}>
+              <TextField
+                name="language"
+                fullWidth
+                id="language"
+                required
+                margin="normal"
+                select
+                label="Idioma de la Canción"
+                value={trackData.track_language}
+                onChange={handlerLanguageChoose}
+              >
+                {languages.map(language => (
+                  <MenuItem key={language} value={language}>
+                    {language}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+          <Grid item xs={2}>
+            <BasicSwitch
+              label="Explicito"
+              onChange={handleExplicitChange}
+              checked={trackData.explicit} />
           </Grid>
 
           <Grid item xs={12}>
@@ -248,10 +275,10 @@ export const NewTrackDialog = (props) => {
 
       <DialogActions>
         <Button onClick={handleCancelDialog} color="primary">
-          Cancel
+          Atras
         </Button>
         <Button onClick={allFieldsValidCreateTrack} color="primary">
-          Subscribe
+          Agregar
         </Button>
       </DialogActions>
     </Dialog>

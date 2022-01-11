@@ -32,3 +32,17 @@ export const updateAddingAlbumRedux = newAddingAlbum => {
     payload: newAddingAlbum
   }
 }
+
+export const updateNameOtherArtistsAlbumRedux = (nameValue, otherArtistIndex) => {
+  return {
+    type: ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_NAME,
+    payload: { nameValue, otherArtistIndex }
+  }
+}
+
+export const updateSpotifyUriOtherArtistsAlbumRedux = (spotifyUri, otherArtistIndex) => {
+  return {
+    type: ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI,
+    payload: { spotifyUri, otherArtistIndex }
+  }
+}

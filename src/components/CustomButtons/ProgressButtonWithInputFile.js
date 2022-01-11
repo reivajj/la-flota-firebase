@@ -10,7 +10,10 @@ import SaveIcon from '@mui/icons-material/Save';
 import ErrorIcon from '@mui/icons-material/Error';
 import { createTheme } from '@mui/material/styles';
 
-const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClickHandler, progress }) => {
+import { Tooltip, IconButton } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
+
+const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClickHandler, progress, fileType, helperText }) => {
   const classes = useStyles();
 
   const buttonClassname = clsx({
@@ -27,6 +30,7 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
             id="upload-photo"
             name="upload-photo"
             type="file"
+            accept={fileType}
             onChange={onClickHandler}
           />
           <Fab
@@ -40,7 +44,7 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
 
           </Fab>
         </label>
-        {loading && <CircularProgress variant="determinate" value={progress} size={68} className={classes.fabProgress} />}
+        {loading && <CircularProgress size={68} className={classes.fabProgress} />}
 
       </div>
       <div className={classes.wrapper}>
@@ -57,10 +61,20 @@ const ProgressButtonWithInputFile = ({ textButton, loading, buttonState, onClick
             variant="contained"
             component="span"
             className={buttonClassname}
-            disabled={loading}>
+            disabled={loading}
+          >
             {textButton}
           </Button>
         </label>
+
+        {helperText ? <Tooltip title={helperText} >
+          <IconButton
+            aria-label={"info" + textButton}
+            edge="end">
+            {<InfoIcon />}
+          </IconButton>
+        </Tooltip> : ""}
+
         {loading && <CircularProgress variant="determinate" value={progress} size={24} className={classes.buttonProgress} />}
       </div>
     </div>

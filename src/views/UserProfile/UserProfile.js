@@ -9,8 +9,10 @@ import { Save, LockOpen } from '@mui/icons-material';
 import SimpleReactValidator from 'simple-react-validator';
 import { unstable_createMuiStrictModeTheme as createTheme } from '@mui/material';
 import ReauthenticateDialog from "../../components/Dialogs/ReauthenticateDialog";
-import { provincias, generosMusicalesList } from '../../services/DatosVarios';
 import useForceUpdate from 'components/Varios/ForceUpdate.js';
+
+import { provincias } from "variables/varias";
+import { allFugaGenres } from "variables/genres";
 
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
@@ -45,7 +47,7 @@ theme.typography.h6 = {
 const getStyles = (generoMusical) => {
   return {
     fontWeight:
-      generosMusicalesList.indexOf(generoMusical) === -1
+      allFugaGenres.indexOf(generoMusical) === -1
         ? theme.typography.fontWeightRegular
         : theme.typography.fontWeightMedium,
   };
@@ -272,9 +274,9 @@ const UserProfile = () => {
                     )}
                     MenuProps={MenuProps}
                   >
-                    {generosMusicalesList.map((generoMusical) => (
-                      <MenuItem key={generoMusical} value={generoMusical} style={getStyles(generoMusical)}>
-                        {generoMusical}
+                    {allFugaGenres.map((generoMusical) => (
+                      <MenuItem key={generoMusical.id} value={generoMusical.name} style={getStyles(generoMusical.name)}>
+                        {generoMusical.name}
                       </MenuItem>
                     ))}
                   </Select>

@@ -6,6 +6,8 @@ export const createArtistModel = (dataArtist, editing) => {
   if (dataArtist.name) rawDataArtist.name = dataArtist.name;
   if (!editing && dataArtist.id) rawDataArtist.proprietary_id = dataArtist.id;
   if (dataArtist.biography) rawDataArtist.biography = dataArtist.biography;
+  if (dataArtist.spotify_uri) rawDataArtist.spotify_uri = dataArtist.spotify_uri;
+  if (dataArtist.apple_id) rawDataArtist.apple_id = dataArtist.apple_id;
   // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
   return rawDataArtist;
 }

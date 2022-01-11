@@ -21,24 +21,27 @@ const setUploadProgress = (position, percentageProgress) => {
 }
 
 
-const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress) => {
+const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, dispatch) => {
   console.log("entro al create track:", dataTrack);
   let formDataTrack = createTrackModel(dataTrack);
-  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress);
 
-  dataTrack.whenCreatedTS = new Date().getTime(); 
+  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dispatch);
+  if (trackFromThirdWebApi === "ERROR") return "ERROR";
+
+  dataTrack.whenCreatedTS = new Date().getTime();
   dataTrack.lastUpdateTS = dataTrack.whenCreatedTS;
   dataTrack.fugaId = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.id;
   dataTrack.isrc = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.isrc;
   dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;
   delete dataTrack.track;
 
-  await FirestoreServices.createTrack(dataTrack).catch(error => { console.log("Error en Firestore: ", error) });
+  await FirestoreServices.createTrack(dataTrack, dispatch).catch(error => { console.log("Error en Firestore: ", error) });
 
   return `Track de nombre: ${dataTrack.title} creado correctamente en posicion: ${dataTrack.position}`;
 }
 
 export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId) => async dispatch => {
+
   const uploadTracksOneByOne = tracksData.map(async dataTrack => {
 
     const onUploadProgress = progress => {
@@ -48,18 +51,25 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId)
     }
 
     dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId; dataTrack.id = uuidv4();
-    return createTrackInAlbumFugaAndFireStore(dataTrack, onUploadProgress).catch(error => { console.log("Error en Firestore al crear tracks en album:", error) });
+    return createTrackInAlbumFugaAndFireStore(dataTrack, onUploadProgress, dispatch).catch(error => {
+      console.log("Error en Firestore o BE al crear tracks en album:", error);
+      return "ERROR";
+    });
   });
 
   let [errorCreatingAllTracksToAlbum, successCreatingAllTracksToAlbum] = await to(Promise.all(uploadTracksOneByOne));
-  if (errorCreatingAllTracksToAlbum) console.log("Error en el Promise All, crenado todos los tracks en el album: "
-    , errorCreatingAllTracksToAlbum);
-  console.log("Success creando los tracks en el album: ", successCreatingAllTracksToAlbum);
+  if (errorCreatingAllTracksToAlbum) {
+    console.log("ERROR EN EL PROMISE ALL :", errorCreatingAllTracksToAlbum);
+    return "ERROR";
+  }
 
+  console.log("Success creando los tracks en el album: ", successCreatingAllTracksToAlbum);
   console.log("Los tracks despues de agregar todo: ", tracksData);
 
-  return dispatch({
+  dispatch({
     type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,
     payload: tracksData
   });
+
+  return "SUCCESS";
 }

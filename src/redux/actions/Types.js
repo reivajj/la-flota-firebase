@@ -27,6 +27,8 @@ export const ADDING_ARTIST_IMAGEN_URL = "adding_artist_imagen_url";
 export const ADDING_ARTIST_ID = "adding_artist_id";
 export const ARTIST_DELETE_WITH_ID = "artist_delete_with_id";
 export const EDIT_ARTIST_WITH_ID = "edit_artist_with_id";
+export const ADDING_ARTIST_SPOTIFY_URI = "adding_artist_spotify_uri";
+export const ADDING_ARTIST_APPLE_ID = "adding_artist_apple_id";
 
 // Labels Types
 export const ADD_LABELS = "add_labels";
@@ -37,6 +39,8 @@ export const LABEL_DELETE_WITH_ID = "label_delete_with_id";
 export const ADD_ALBUMS = "add_albums";
 export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ALBUMS_UPDATE_ADDING_ALBUM = "albums_update_adding_album";
+export const ALBUMS_UPDATE_OTHER_ARTIST_NAME = "albums_update_other_artist_name";
+export const ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI = "albums_update_other_artist_spotify_uri";
 
 //Tracks Types
 export const ADD_TRACKS = "add_tracks";

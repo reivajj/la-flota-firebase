@@ -4,12 +4,24 @@ const checkNewAlbums = (oldAlbums, albums) => {
   return albums.filter(album => !oldAlbums.map(oldAlbum => oldAlbum.id).includes(album.id))
 }
 
+const editOtherArtistName = ({ nameValue, otherArtistIndex }, allOtherArtistOld) => {
+  allOtherArtistOld[otherArtistIndex].name = nameValue;
+  return allOtherArtistOld;
+}
+
+const editOtherArtistSpotifyUri = ({ spotifyUri, otherArtistIndex }, allOtherArtistOld) => {
+  allOtherArtistOld[otherArtistIndex].spotify_uri = spotifyUri;
+  console.log("ALL OTHER:", allOtherArtistOld);
+  return allOtherArtistOld;
+}
+
 const initialState = {
   albums: [],
   addingAlbum: {
     nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
-    month: "", year: "", genre: "", language: "", disc_number: ""
+    month: "", year: "", genre: "", language: "", disc_number: "", colaborativo: false,
+    allOtherArtists: [], artistFugaId: "",
   }
 }
 
@@ -23,7 +35,15 @@ const AlbumsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM:
       return { ...state, addingAlbum: action.payload }
-  
+
+    case ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_NAME:
+      const newAllOtherArtists = editOtherArtistName(action.payload, state.addingAlbum.allOtherArtists)
+      return { ...state, addingAlbum: { ...state.addingAlbum, allOtherArtists: newAllOtherArtists } }
+
+    case ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI:
+      const newAllOtherArtistsSpotify = editOtherArtistSpotifyUri(action.payload, state.addingAlbum.allOtherArtists)
+      return { ...state, addingAlbum: { ...state.addingAlbum, allOtherArtists: newAllOtherArtistsSpotify } }
+
     case ReducerTypes.ALBUMS_SIGN_OUT:
       return initialState;
 

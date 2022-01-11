@@ -11,10 +11,10 @@ import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  createArtistRedux, saveAddingArtistName, saveAddingArtistBiography
-  , saveAddingArtistImagenUrl, saveAddingArtistId, updateArtistRedux
+  createArtistRedux, saveAddingArtistName, saveAddingArtistBiography, saveAddingArtistImagenUrl,
+  saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId
 } from '../../redux/actions/ArtistsActions';
-import { to, errorFormat, toWithOutError } from '../../utils';
+import { to, toWithOutError } from '../../utils';
 
 import SaveIcon from '@mui/icons-material/Save';
 import ProgressButtonWithInputFile from "components/CustomButtons/ProgressButtonWithInputFile";
@@ -23,12 +23,12 @@ import ProgressButton from 'components/CustomButtons/ProgressButton';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { Image } from 'mui-image';
 import { manageAddImageToStorage } from "services/StorageServices";
+import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 
 const NewArtist = ({ editing }) => {
 
   const dispatch = useDispatch();
   const { artistId } = useParams();
-  console.log("ARTIST-ID: ", artistId);
   const navigate = useNavigate();
   const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
@@ -37,10 +37,7 @@ const NewArtist = ({ editing }) => {
   const currentArtistData = useSelector(store => store.artists.addingArtist);
   const [currentArtistEditingData] = useSelector(store => store.artists.artists).filter(artist => artist.id === artistId);
 
-  console.log("CURRENT ARTIST: ", currentArtistData);
   let artistDataToShow = editing ? currentArtistEditingData : currentArtistData;
-  console.log("CURRENT ARTIST TO SHOW: ", artistDataToShow);
-  console.log("EDITING:", editing);
 
   const changeArtistId = () => dispatch(saveAddingArtistId(uuidv4()));
   const putArtistIdOnEditingArtist = () => dispatch(saveAddingArtistId(currentArtistEditingData.id));
@@ -53,7 +50,7 @@ const NewArtist = ({ editing }) => {
   const [photoFile, setPhotoFile] = useState("");
 
   const [progress, setProgress] = useState(0);
-  const [message, setMessage] = useState("No es obligatoria la imagen para el Artista");
+  const [message, setMessage] = useState("No es obligatoria la imagen");
 
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonState, setButtonState] = useState("none");
@@ -86,6 +83,7 @@ const NewArtist = ({ editing }) => {
   }
 
   const onClickAddImage = async (event) => {
+    changeArtistImagenUrl("");
     setMessage("");
     let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], artistDataToShow.id, 'artistsPhotos', 5242880, setMessage, setProgress));
     if (errorAddingFile) {
@@ -94,6 +92,7 @@ const NewArtist = ({ editing }) => {
     }
     setPhotoFile(urlAndFile.file);
     changeArtistImagenUrl(urlAndFile.url);
+    setProgress(0);
   }
 
   const changeArtistName = event => {
@@ -107,6 +106,8 @@ const NewArtist = ({ editing }) => {
   }
 
   const changeArtistImagenUrl = imagenUrl => dispatch(saveAddingArtistImagenUrl(imagenUrl));
+  const changeSpotifyUri = spotifyUri => dispatch(saveAddingArtistSpotifyUri(spotifyUri));
+  const changeAppleId = appleId => dispatch(saveAddingArtistAppleId(appleId));
 
   return (
     <Grid container justifyContent="center">
@@ -115,7 +116,6 @@ const NewArtist = ({ editing }) => {
 
           <CardHeader color="primary">
             <Typography sx={cardTitleWhiteStyles}>Crear Artista</Typography>
-            <p sx={cardCategoryWhiteStyles}>Completa con los Datos del Artista</p>
           </CardHeader>
 
           <CardBody>
@@ -124,11 +124,12 @@ const NewArtist = ({ editing }) => {
               {!editing &&
                 <Grid item xs={12}>
                   <ProgressButtonWithInputFile
-                    textButton={progress === 100 ? "Cambiar Imagen" : "Imagen del Artista"}
-                    loading={progress > 0 && progress < 100}
-                    buttonState={progress < 100 ? "none" : "success"}
+                    textButton={(progress === 100 || artistDataToShow.imagenUrl) ? "Cambiar Imagen" : "Imagen"}
+                    loading={progress > 0 && !artistDataToShow.imagenUrl}
+                    buttonState={!artistDataToShow.imagenUrl ? "none" : "success"}
                     onClickHandler={onClickAddImage}
-                    progress={progress} />
+                    progress={progress}
+                    fileType={"image/*"} />
 
                   <div className="alert alert-light" role="alert">
                     {message}
@@ -155,29 +156,48 @@ const NewArtist = ({ editing }) => {
                 </Grid>}
 
               <Grid item xs={12}>
-                <TextField
+                <TextFieldWithInfo
                   name="name"
                   required
                   fullWidth
-                  id="name"
                   label="Nombre del Artista"
                   autoFocus
                   value={(editing && !nameEdited) ? artistDataToShow.name : currentArtistData.name}
                   onChange={changeArtistName}
+                  validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar un nombre.", validator: simpleValidator }}
                 />
-                {simpleValidator.current.message('name', artistDataToShow.name, 'required|max:50', {
-                  className: 'text-danger',
-                  messages: { default: "Debes ingresar un nombre." },
-                  element: (message) => errorFormat(message)
-                })}
               </Grid>
+
+              {!editing &&
+                <Grid item xs={12}>
+                  <TextFieldWithInfo
+                    name="spotify_uri"
+                    fullWidth
+                    label="Spotify Uri"
+                    value={currentArtistData.spotify_uri}
+                    onChange={changeSpotifyUri}
+                  />
+                </Grid>}
+
+              {!editing &&
+                <Grid item xs={12}>
+                  <TextFieldWithInfo
+                    name="apple_id"
+                    fullWidth
+                    label="Apple ID"
+                    value={currentArtistData.apple_id}
+                    onChange={changeAppleId}
+                    helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
+                    Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)."
+                  />
+                </Grid>}
 
               <Grid item xs={12}>
                 <TextField
                   margin="normal"
                   id="bio"
                   name="bio"
-                  label="Breve Biografía del Artista (max 500 caracteres)"
+                  label="Breve Biografía (max 500 caracteres)"
                   fullWidth
                   value={(editing && !biographyEdited) ? artistDataToShow.biography : currentArtistData.biography}
                   multiline={true}
@@ -208,13 +228,6 @@ const NewArtist = ({ editing }) => {
 
 export default NewArtist;
 
-const cardCategoryWhiteStyles = {
-  color: "rgba(255,255,255,.62)",
-  margin: "0",
-  fontSize: "14px",
-  marginTop: "0",
-  marginBottom: "0"
-}
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",
   marginTop: "0px",

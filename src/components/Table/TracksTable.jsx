@@ -15,12 +15,11 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
       <Card style={cardStyle}>
         <CardHeader color="primary" style={{ width: "70em" }}>
           <Typography sx={cardTitleWhiteStyles}>Canciones</Typography>
-          <p sx={cardCategoryWhiteStyles}>Agrega las Canciones del Lanzamiento</p>
         </CardHeader>
         <CardBody>
           <Table
             tableHeaderColor="primary"
-            tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Es un Cover?", "Lenguaje", "Lenguaje inapropiado?", "Acciones", "Carga"]}
+            tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Lenguaje", "Explicito", "Acciones", "Carga"]}
             tableData={tracksTableData}
           />
         </CardBody>
@@ -51,13 +50,6 @@ const cardStyle = {
   backgroundColor: "cornsilk"
 }
 
-const cardCategoryWhiteStyles = {
-  color: "rgba(255,255,255,.62)",
-  margin: "0",
-  fontSize: "14px",
-  marginTop: "0",
-  marginBottom: "0"
-}
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",
   marginTop: "0px",

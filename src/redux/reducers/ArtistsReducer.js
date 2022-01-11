@@ -13,12 +13,12 @@ const editAndAddArtist = (oldArtists, editedFieldsFromArtist) => {
 
 const initialState = {
   artists: [],
-  addingArtist: { name: "", biography: "", imagenUrl: "", id: "" }
+  addingArtist: { name: "", biography: "", imagenUrl: "", id: "", spotify_uri: "", apple_id: "" }
 }
 
 const ArtistsReducer = (state = initialState, action) => {
   switch (action.type) {
-    
+
     case ReducerTypes.ADD_ARTISTS:
       const newArtists = filterArtistsWithSameIdThanNewOne(state.artists, action.payload);
       return { addingArtist: initialState.addingArtist, artists: [...state.artists, ...newArtists] }
@@ -44,6 +44,11 @@ const ArtistsReducer = (state = initialState, action) => {
     case ReducerTypes.ADDING_ARTIST_ID:
       return { ...state, addingArtist: { ...state.addingArtist, id: action.payload } }
 
+    case ReducerTypes.ADDING_ARTIST_SPOTIFY_URI:
+      return { ...state, addingArtist: { ...state.addingArtist, spotify_uri: action.payload } }
+    case ReducerTypes.ADDING_ARTIST_APPLE_ID:
+      
+      return { ...state, addingArtist: { ...state.addingArtist, apple_id: action.payload } }
     default:
       return state;
   }

@@ -45,7 +45,7 @@ const sidebarStyle = () => ({
       left: "auto",
       zIndex: "1032",
       visibility: "visible",
-      overflowY: "visible",
+      overflowY: "auto",
       borderTop: "none",
       textAlign: "left",
       paddingRight: "0px",
@@ -267,7 +267,8 @@ const sidebarStyle = () => ({
   sidebarWrapper: {
     position: "relative",
     height: "calc(100vh - 75px)",
-    overflow: "auto",
+    overflow: "hidden",
+    overflowY: "auto",
     width: "260px",
     zIndex: "4",
     overflowScrolling: "touch"

@@ -3,8 +3,7 @@ import React, { useRef, useEffect } from "react";
 // core components
 import Button from "components/CustomButtons/Button.js";
 import SimpleReactValidator from "simple-react-validator";
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
-import Danger from 'components/Typography/Danger.js';
+
 import Success from "components/Typography/Success";
 import {
   TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, MenuItem
@@ -17,7 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import BasicSwitch from "components/Switch/BasicSwitch";
 import { languages } from "variables/varias";
-import { errorFormat } from "utils";
+import { errorFormat, useForceUpdate } from "utils";
 
 export const trackActions = track => {
   return (

@@ -7,12 +7,11 @@ import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
 import SimpleReactValidator from "simple-react-validator";
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import { TextField, Grid, Typography } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createLabelRedux } from '../../redux/actions/LabelsActions';
-import { errorFormat, toWithOutError } from "utils";
+import { errorFormat, toWithOutError, useForceUpdate } from "utils";
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import SaveIcon from '@mui/icons-material/Save';
 

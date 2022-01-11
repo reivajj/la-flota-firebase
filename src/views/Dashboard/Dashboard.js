@@ -37,6 +37,7 @@ import {
 } from "variables/charts.js";
 
 import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
+import Box from '@mui/material/Box';
 
 const useStyles = makeStyles(styles);
 

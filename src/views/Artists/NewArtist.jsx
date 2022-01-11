@@ -7,7 +7,6 @@ import CardFooter from "components/Card/CardFooter.js";
 import { TextField, Grid, Typography } from "@mui/material";
 
 import SimpleReactValidator from "simple-react-validator";
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -24,6 +23,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import { Image } from 'mui-image';
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
+import { useForceUpdate } from 'utils';
 
 const NewArtist = ({ editing }) => {
 

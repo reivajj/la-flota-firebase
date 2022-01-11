@@ -4,17 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
 
-import { Grid, Typography, CircularProgress, Fab, IconButton, Tooltip, Button } from '@mui/material';
+import { Grid, Typography, CircularProgress, Fab, IconButton } from '@mui/material';
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import SimpleReactValidator from "simple-react-validator";
-import { createAlbumRedux, updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateSpotifyUriOtherArtistsAlbumRedux } from "redux/actions/AlbumsActions";
+import { createAlbumRedux, updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
 
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
 import ProgressButtonWithInputFile from 'components/CustomButtons/ProgressButtonWithInputFile';
 import SelectDateInputDDMMYYYY from "components/DatesInput/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
@@ -27,23 +25,22 @@ import { green } from '@mui/material/colors';
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, Info } from '@mui/icons-material/';
 
-import { toWithOutError, to } from "utils";
+import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import { Image as ReactImage } from 'mui-image';
 import { languages } from "variables/varias";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import InfoDialog from "components/Dialogs/InfoDialog";
-import BasicCheckbox from "components/Checkbox/BasicCheckbox";
-import InfoIcon from '@mui/icons-material/Info';
+import AddOtherArtistsForm from 'components/Forms/AddOtherArtistsForm';
 
 const publicationDateWarning = [<Typography >
   Elegí la fecha en la que querés que este lanzamiento sea publicado en las tiendas. Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente. Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1-2 días en aprobarse y procesarse, a la vez las tiendas tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.
   <br />Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro (por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las tiendas principales a la vez.
   <br />Si es tu primer lanzamimport {updateNameOtherArtistsAlbumRedux} from '../../redux/actions/AlbumsActions';
-  iento (y aún no tenés perfil en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
+  iento (y aún no tenés perfilimport AddOtherArtistsForm from '../../components/Forms/AddOtherArtistsForm';
+ en las tiendas) recomendamos que elijas una fecha de acá a 5-7 días en el futuro para que tu perfil se cree correctamente.
 </Typography>];
 
-const lanzamientoColaborativoTooltip = "Seleccioná si el lanzamiento pertenece a dos o más artistas";
 
 const NewAlbum = ({ editing }) => {
 
@@ -108,8 +105,6 @@ const NewAlbum = ({ editing }) => {
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
   const [openInfoDialog, setOpenInfoDialog] = useState(false);
-  const [openColaborativo, setOpenColaborativo] = useState(false);
-
 
   const [trackData, setTrackData] = useState({
     disc_number: cantAlbumsFromUser, explicit: 0,
@@ -184,17 +179,6 @@ const NewAlbum = ({ editing }) => {
     setTrackData({ ...trackData, primary_artist: event.target.value, artistFugaId });
   };
 
-  const addOneArtistSkeleton = () => {
-    let artist = { name: "", spotify_uri: "" };
-    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, allOtherArtists: [...currentAlbumData.allOtherArtists, artist] }));
-    setTrackData({ ...trackData, allOtherArtists: [...currentAlbumData.allOtherArtists, artist] });
-  }
-
-  const deleteAllOtherArtists = () => {
-    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, allOtherArtists: [] }));
-    setTrackData({ ...trackData, allOtherArtists: [] });
-  }
-
   const getLabelIdFromName = labelName => myLabels.filter(label => label.name === labelName)[0].fugaId;
 
   const handlerLabelChoose = event => {
@@ -213,19 +197,6 @@ const NewAlbum = ({ editing }) => {
   const handlerGenreChoose = event => {
     setTrackData({ ...trackData, genre: event.target.value });
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: event.target.value }));
-  }
-
-  const handlerAddNameToOtherArtists = (nameValue, otherArtistIndex) => {
-    dispatch(updateNameOtherArtistsAlbumRedux(nameValue, otherArtistIndex));
-  }
-
-  const handlerAddSpotifyUri = (spotifyUri, otherArtistIndex) => {
-    dispatch(updateSpotifyUriOtherArtistsAlbumRedux(spotifyUri, otherArtistIndex));
-  }
-
-  const handleOnChangeCheckBox = (event) => {
-    if (event.target.checked) addOneArtistSkeleton();
-    else deleteAllOtherArtists();
   }
 
   const yearsArray = Array.from({ length: 30 }, (x, i) => 2021 - i);
@@ -299,84 +270,9 @@ const NewAlbum = ({ editing }) => {
                 validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: simpleValidator }}
               />
             </Grid>
-
-            <Grid container item xs={12}>
-              <Grid item xs={7} textAlign="end">
-                <BasicCheckbox
-                  label={"Es un lanzamiento colaborativo"}
-                  onChecked={handleOnChangeCheckBox}
-                  checked={openColaborativo || currentAlbumData.allOtherArtists.length > 0}
-                />
-              </Grid>
-              <Grid item xs={1}>
-                <Tooltip title={lanzamientoColaborativoTooltip} >
-                  <IconButton
-                    edge="end">
-                    {<InfoIcon />}
-                  </IconButton>
-                </Tooltip>
-              </Grid>
-            </Grid>
           </Grid>
 
-          {currentAlbumData.allOtherArtists[0] &&
-            <Grid container item xs={12} >
-
-              <Grid item xs={6}>
-                <TextFieldWithInfo
-                  name="nombreSecondArtist"
-                  sx={textFieldStyle}
-                  label="Nombre Segundo Artista "
-                  value={currentAlbumData.allOtherArtists[0].name}
-                  onChange={(event) => handlerAddNameToOtherArtists(event.target.value, 0)}
-                  helperText="Ingresá el nombre → Debe coincidir 100% como aparece en las DSPs. "
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextFieldWithInfo
-                  name="spotifyUriSecondArtist"
-                  sx={textFieldStyle}
-                  label="Codigo Uri de Spotify"
-                  value={currentAlbumData.allOtherArtists[0].spotify_uri}
-                  onChange={(event) => handlerAddSpotifyUri(event.target.value, 0)}
-                  helperText="Ingresá el código URi de Spotify. "
-                />
-              </Grid>
-            </Grid>}
-
-          {currentAlbumData.allOtherArtists[1] &&
-            <Grid container item xs={12} >
-
-              <Grid item xs={6}>
-                <TextFieldWithInfo
-                  name="nombreSecondArtist"
-                  sx={textFieldStyle}
-                  label="Nombre Segundo Artista "
-                  value={currentAlbumData.allOtherArtists[1].name}
-                  onChange={(event) => handlerAddNameToOtherArtists(event.target.value, 1)}
-                  helperText="Ingresá el nombre → Debe coincidir 100% como aparece en las DSPs. "
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <TextFieldWithInfo
-                  name="spotifyUriSecondArtist"
-                  sx={textFieldStyle}
-                  label="Codigo Uri de Spotify"
-                  value={currentAlbumData.allOtherArtists[1].spotify_uri}
-                  onChange={(event) => handlerAddSpotifyUri(event.target.value, 1)}
-                  helperText="Ingresá el código URi de Spotify. "
-                />
-              </Grid>
-            </Grid>}
-
-          {currentAlbumData.allOtherArtists.length > 0 &&
-            <Grid item xs={12}>
-              <Button variant="contained" color="secondary" onClick={addOneArtistSkeleton}>
-                Agregar Artista
-              </Button>
-            </Grid>}
+          <AddOtherArtistsForm sx={textFieldStyle} />
 
           <Grid container item xs={12}>
             <Grid item xs={6}>
@@ -540,14 +436,6 @@ const NewAlbum = ({ editing }) => {
         </Grid>
 
         <Grid container item xs={12} paddingTop={4} justifyContent="center">
-
-          {/* <Grid item xs={12} style={{ textAlign: '-moz-center' }}>
-            <p style={{ width: '800px', textAlign: 'justify' }}>
-              Agregá los Tracks de tu Lanzamiento!
-              <br />Completá todos los datos de las canciones con cuidado, exactamente como quieras que se vean en las tiendas.
-              <br />Respetá minúsculas, mayúsculas y acentos en los títulos.
-            </p>
-          </Grid> */}
 
           <Grid item xs={8}>
             <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={() => setOpenNewTrackDialog(true)} />

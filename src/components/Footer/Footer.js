@@ -9,30 +9,14 @@ import { Grid } from '@mui/material';
 
 export default function Footer(props) {
   const classes = styles;
-  console.log(styles);
   return (
     <footer style={classes.footer}>
       <Grid container >
         <Grid item xs={4} sx={{ textAlign: "initial" }}>
           <List sx={classes.list}>
             <ListItem>
-              <a href="#home">
+              <a href="dashboard">
                 Home
-              </a>
-            </ListItem>
-            <ListItem>
-              <a href="#company">
-                Company
-              </a>
-            </ListItem>
-            <ListItem>
-              <a href="#portfolio">
-                Portfolio
-              </a>
-            </ListItem>
-            <ListItem>
-              <a href="#blog">
-                Blog
               </a>
             </ListItem>
           </List>
@@ -40,13 +24,12 @@ export default function Footer(props) {
         <Grid item xs={8} sx={classes.gridLaFlotaDer}>
           <p >
             <span>
-              &copy; {1900 + new Date().getYear()}{" "}
               <a
-                href="https://www.creative-tim.com?ref=mdr-footer"
+                href="https://laflota.com.ar"
                 target="_blank"
                 style={classes.a}
               >
-                La Flota
+                {`La Flota | Distribución Digital | 2016 - ${1900 + new Date().getYear()}`}
               </a>
             </span>
           </p>

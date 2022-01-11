@@ -11,8 +11,6 @@ import {
   Box,
   Grid,
   Container,
-  ThemeProvider,
-  StyledEngineProvider,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import makeStyles from '@mui/styles/makeStyles';
@@ -23,14 +21,13 @@ import { useSelector, useDispatch } from "react-redux";
 import SimpleReactValidator from "simple-react-validator";
 
 // import * as actions from 'redux/actions/AuthActions.js';
-import { SIGNUP_ERROR } from 'redux/actions/Types.js';
 import Copyright from 'components/Copyright/Copyright.js';
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
-
 import Danger from 'components/Typography/Danger.js';
 import * as actions from '../../redux/actions/AuthActions';
 
 import { createTheme } from '@mui/material/styles';
+import TextFieldPassword from 'components/TextField/TextFieldPassword';
+import { useForceUpdate } from 'utils';
 
 function to(promise) {
   return promise.then(data => {
@@ -104,6 +101,10 @@ const SignUp = () => {
 
   const changeApellido = text => {
     setApellido(text);
+  }
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') signUp();
   }
 
   return (
@@ -185,23 +186,14 @@ const SignUp = () => {
 
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
+
+              <TextFieldPassword
                 fullWidth
-                name="password"
-                label="Contraseña"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                value={password}
+                password={password}
                 onChange={(evento) => changePassword(evento.target.value)}
+                validator={simpleValidator}
               />
-              {simpleValidator.current.message('password', password, 'required|min:8|max:100"', {
-                className: 'text-danger',
-                messages: { default: "Debes ingresar una contraseña que tenga un mínimo de 8 carácteres y máximo de 100." },
-                element: (message) => errorFormat(message)
-              })}
+
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel

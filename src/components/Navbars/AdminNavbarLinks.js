@@ -4,10 +4,9 @@ import * as actions from 'redux/actions/AuthActions.js';
 import { useDispatch } from "react-redux";
 import makeStyles from '@mui/styles/makeStyles';
 import { MenuItem, MenuList, Divider, Menu, Badge } from "@mui/material";
-import { Person, Notifications, Dashboard, Search } from "@mui/icons-material";
+import { Person, Notifications, Dashboard } from "@mui/icons-material";
 
 // core components
-import CustomInput from "components/CustomInput/CustomInput.js";
 import Button from "components/CustomButtons/Button.js";
 
 import styles from "assets/jss/material-dashboard-react/components/headerLinksStyle.js";

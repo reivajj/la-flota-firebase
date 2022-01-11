@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import { Provider } from "react-redux";
-import { useSelector } from "react-redux";
 
 import { store, persistor } from "redux/store/Store";
 import { PersistGate } from 'redux-persist/es/integration/react';

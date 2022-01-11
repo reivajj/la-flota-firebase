@@ -218,11 +218,12 @@ footer ul li a:hover {
   text-decoration: none;
 }
 
-@media (maxWidth: 991px) {
+@media (maxwidth: 991px) {
   body,
   html {
     position: relative;
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
   #bodyClick {
@@ -251,7 +252,6 @@ footer ul li a:hover {
   border-radius: 8px 0 0 8px;
   text-align: center;
   top: 120px;
-  .badge-primary-background-color: #9c27b0;
 }
 
 .fixed-plugin .SocialMediaShareButton,

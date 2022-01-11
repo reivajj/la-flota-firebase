@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import Danger from 'components/Typography/Danger';
 
 export const to = promise => {
@@ -19,3 +20,11 @@ export const getChildData = (obj, key) => obj[key];
 
 // Limited to only JSON supported types.
 export const cloneDeepLimited = obj => JSON.parse(JSON.stringify(obj));
+
+export const useForceUpdate = () => {
+  const [, setTick] = useState(0);
+  const update = useCallback(() => {
+    setTick(tick => tick + 1);
+  }, [])
+  return update;
+}

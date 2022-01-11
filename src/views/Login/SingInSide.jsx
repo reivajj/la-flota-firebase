@@ -15,6 +15,7 @@ import { SIGNUP_ERROR } from '../../redux/actions/Types';
 import { Image } from 'mui-image'
 import { to } from 'utils';
 import GoogleColorIcon from '../Icons/GoogleColorIcon';
+import TextFieldPassword from '../../components/TextField/TextFieldPassword';
 
 const SignInSide = () => {
 
@@ -25,6 +26,8 @@ const SignInSide = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
 
   useEffect(() => {
     user ? navigate("/admin/dashboard") : console.log("HEME AQUI DESLOGUEADO");
@@ -92,19 +95,14 @@ const SignInSide = () => {
               value={email}
               onChange={(evento) => changeEmail(evento.target.value)}
             />
-            <TextField
-              margin="normal"
-              required
+
+            <TextFieldPassword
               fullWidth
-              name="password"
-              label="Contraseña"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(evento) => changePassword(evento.target.value)}
+              password={password}
               onKeyPress={handleKeyPress}
+              onChange={(evento) => changePassword(evento.target.value)}
             />
+
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
@@ -135,7 +133,7 @@ const SignInSide = () => {
 
             <Grid container padding={2}>
               <Grid item>
-                <GoogleColorIcon sx={{ height: "50px" }}/>
+                <GoogleColorIcon sx={{ height: "50px" }} />
               </Grid>
             </Grid>
 

@@ -9,7 +9,6 @@ import { Save, LockOpen } from '@mui/icons-material';
 import SimpleReactValidator from 'simple-react-validator';
 import { unstable_createMuiStrictModeTheme as createTheme } from '@mui/material';
 import ReauthenticateDialog from "../../components/Dialogs/ReauthenticateDialog";
-import useForceUpdate from 'components/Varios/ForceUpdate.js';
 
 import { provincias } from "variables/varias";
 import { allFugaGenres } from "variables/genres";
@@ -18,7 +17,7 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-import { errorFormat, to } from 'utils';
+import { errorFormat, to, useForceUpdate } from 'utils';
 import { editPerfil } from "redux/actions/UserDataActions";
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 

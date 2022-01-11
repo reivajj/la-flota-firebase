@@ -45,7 +45,7 @@ const cardHeaderStyle = {
       width: "56px",
       height: "56px",
       textAlign: "center",
-      overflow: "unset",
+      overflow: "hidden",
       marginBottom: "1px"
     },
     "&$cardHeaderStats$cardHeaderIcon": {

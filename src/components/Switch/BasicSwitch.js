@@ -9,7 +9,6 @@ const BasicSwitch = ({ onChange, label, checked }) => {
         checked={checked}
         onChange={onChange}
         inputProps={{ 'aria-label': 'controlled' }}
-        label={label}
       />
     </>
   );

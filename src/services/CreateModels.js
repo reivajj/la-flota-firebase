@@ -12,12 +12,16 @@ export const createArtistModel = (dataArtist, editing) => {
   return rawDataArtist;
 }
 
-export const createAlbumModel = dataAlbum => {
+export const createAlbumModel = (dataAlbum, allOtherArtists) => {
+  console.log("ALL OTHER ARITSTS CREATED", allOtherArtists)
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
 
   let artistsArray = [{ primary: true, id: dataAlbum.artistFugaId }];
+  allOtherArtists.forEach(otherArtist => artistsArray.push({ primary: true, id: otherArtist.fugaId }))
   
+  console.log("data album post: ", artistsArray);
+
   formDataAlbum.append("name", dataAlbum.title);
   formDataAlbum.append("label", dataAlbum.labelFugaId);
   formDataAlbum.append("catalog_number", uuidv4());

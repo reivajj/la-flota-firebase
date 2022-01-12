@@ -13,7 +13,7 @@ const editAndAddArtist = (oldArtists, editedFieldsFromArtist) => {
 
 const initialState = {
   artists: [],
-  addingArtist: { name: "", biography: "", imagenUrl: "", id: "", spotify_uri: "", apple_id: "" }
+  addingArtist: { name: "", biography: "", imagenUrl: "", id: "", spotify_uri: "", apple_id: "", imagenRef: "" }
 }
 
 const ArtistsReducer = (state = initialState, action) => {
@@ -39,15 +39,15 @@ const ArtistsReducer = (state = initialState, action) => {
       return { ...state, addingArtist: { ...state.addingArtist, biography: action.payload } }
 
     case ReducerTypes.ADDING_ARTIST_IMAGEN_URL:
-      return { ...state, addingArtist: { ...state.addingArtist, imagenUrl: action.payload } }
+      return { ...state, addingArtist: { ...state.addingArtist, imagenUrl: action.payload.imagenUrl, imagenRef: action.payload.imagenRef } }
 
     case ReducerTypes.ADDING_ARTIST_ID:
       return { ...state, addingArtist: { ...state.addingArtist, id: action.payload } }
 
     case ReducerTypes.ADDING_ARTIST_SPOTIFY_URI:
       return { ...state, addingArtist: { ...state.addingArtist, spotify_uri: action.payload } }
-    case ReducerTypes.ADDING_ARTIST_APPLE_ID:
       
+    case ReducerTypes.ADDING_ARTIST_APPLE_ID:
       return { ...state, addingArtist: { ...state.addingArtist, apple_id: action.payload } }
     default:
       return state;

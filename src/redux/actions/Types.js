@@ -39,8 +39,10 @@ export const LABEL_DELETE_WITH_ID = "label_delete_with_id";
 export const ADD_ALBUMS = "add_albums";
 export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ALBUMS_UPDATE_ADDING_ALBUM = "albums_update_adding_album";
+export const ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE = "albums_update_adding_album_imagen_url_and_file";
 export const ALBUMS_UPDATE_OTHER_ARTIST_NAME = "albums_update_other_artist_name";
 export const ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI = "albums_update_other_artist_spotify_uri";
+export const ALBUMS_UPDATE_OTHER_ARTIST_PRIMARY = "albums_update_other_artist_primary";
 
 //Tracks Types
 export const ADD_TRACKS = "add_tracks";
@@ -49,6 +51,12 @@ export const TRACKS_SIGN_OUT = "tracks_sign_out";
 export const EDIT_TRACK = "edit_track";
 export const EDIT_TRACK_POST_UPLOAD_IN_DB = "edit_track_post_upload_in_db";
 export const SET_TRACK_UPLOAD_PROGRESS = "set_track_upload_progress";
+
+// ArtistsInvited Types
+export const ADD_INVITED_ARTISTS = "add_invited_artists";
+export const EDIT_INVITED_ARTIST_WITH_ID = "edit_invited_artist_with_id";
+export const INVITED_ARTIST_DELETE_WITH_ID = "invited_artist_delete_with_id";
+export const INVITED_ARTISTS_SIGN_OUT = "invited_artists_sign_out";
 
 //ErrorHandler
 export const ERROR_FROM_BACKEND = "error_from_backend";

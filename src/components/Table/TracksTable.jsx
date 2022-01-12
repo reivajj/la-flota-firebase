@@ -11,12 +11,14 @@ import { AddCircleOutline } from '@mui/icons-material/';
 
 const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
   return (
-    <Grid item xs={12}>
+    <Grid container item xs={12}>
       <Card style={cardStyle}>
-        <CardHeader color="primary" style={{ width: "70em" }}>
-          <Typography sx={cardTitleWhiteStyles}>Canciones</Typography>
-        </CardHeader>
-        <CardBody>
+
+          <CardHeader color="primary" style={{width: "60%"}}>
+            <Typography sx={cardTitleWhiteStyles}>Canciones</Typography>
+          </CardHeader>
+
+        <CardBody style={{width: "90%"}}>
           <Table
             tableHeaderColor="primary"
             tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Lenguaje", "Explicito", "Acciones", "Carga"]}
@@ -24,7 +26,7 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
           />
         </CardBody>
 
-        <CardFooter>
+        <CardFooter style={{width: "25%"}}>
           <Grid item xs={12}>
             <Button
               variant="contained"
@@ -47,7 +49,7 @@ export default TracksTable;
 
 const cardStyle = {
   alignItems: "center",
-  backgroundColor: "cornsilk"
+  backgroundColor: "cornsilk",
 }
 
 const cardTitleWhiteStyles = {

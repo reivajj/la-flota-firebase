@@ -1,5 +1,5 @@
 import firebaseApp from "firebaseConfig/firebase.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { to } from 'utils';
 
@@ -47,3 +47,8 @@ export const manageAddImageToStorage = async (file, imageUuid, storageBucketName
     }
   })
 };
+
+export const deleteFile = async fileRef => {
+  console.log("FILE REF: ", fileRef);
+  deleteObject(fileRef).then(result => console.log(result)).catch(error => console.log(error));
+}

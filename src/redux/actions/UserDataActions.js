@@ -1,9 +1,10 @@
 import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
+import { addArtistsInvited } from './ArtistsInvitedActions';
 
 // ACTION CREATORS
-export const userDataSignIn = (userInfo, albums, artists, labels) => async dispatch => {
-
+export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists) => async dispatch => {
+  console.log("INVITED ARTISTS: ", invitedArtists);
   dispatch({
     type: ReducerTypes.USER_DATA_SIGN_IN,
     payload: userInfo
@@ -23,6 +24,10 @@ export const userDataSignIn = (userInfo, albums, artists, labels) => async dispa
     type: ReducerTypes.ADD_LABELS,
     payload: labels
   });
+
+  dispatch(addArtistsInvited(invitedArtists));
+
+  return;
 
 };
 
@@ -45,6 +50,10 @@ export const userDataSignOut = () => async dispatch => {
 
   dispatch({
     type: ReducerTypes.TRACKS_SIGN_OUT
+  })
+
+  dispatch({
+    type: ReducerTypes.INVITED_ARTISTS_SIGN_OUT
   })
 };
 

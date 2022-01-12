@@ -3,8 +3,10 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createArtistModel } from '../../services/CreateModels';
 
-export const createArtistRedux = (artist, photoFile, userId) => async dispatch => {
+// TypeOfArtists = ["artists", "artistsInvited"];
+export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => async dispatch => {
 
+  delete artist.imagenRef;
   let formDataArtist = createArtistModel(artist, false);
   let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist, dispatch);
   if (artistFromThirdWebApi === "ERROR") return "ERROR";
@@ -15,8 +17,10 @@ export const createArtistRedux = (artist, photoFile, userId) => async dispatch =
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
 
-  await FirestoreServices.createElementFS(artist, artist.id, userId, "artists", "totalArtists", 1, dispatch);
+  await FirestoreServices.createElementFS(artist, artist.id, userId, typeOfArtist, totalField, 1, dispatch);
 
+  if (typeOfArtist !== "artists") return "SUCCESS";
+  
   dispatch({
     type: ReducerTypes.ADD_ARTISTS,
     payload: [artist]
@@ -78,10 +82,10 @@ export const saveAddingArtistBiography = artistTempBio => {
   }
 }
 
-export const saveAddingArtistImagenUrl = artistTempImagenUrl => {
+export const saveAddingArtistImagenUrlAndReference = (imagenUrl, imagenRef) => {
   return {
     type: ReducerTypes.ADDING_ARTIST_IMAGEN_URL,
-    payload: artistTempImagenUrl
+    payload: { imagenUrl, imagenRef }
   }
 }
 

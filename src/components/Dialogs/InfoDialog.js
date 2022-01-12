@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import {
   Button, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions
 } from '@mui/material';
-import Typography from '@mui/material/Typography';
 
 const InfoDialog = (props) => {
 
@@ -17,7 +16,7 @@ const InfoDialog = (props) => {
       open={isOpen}
       onClose={handleClose}>
       <DialogTitle id="title-info-dialog">
-        <Typography variant="h4">{title}</Typography>
+        {title}
       </DialogTitle>
       <DialogContent>
         {contentTexts.map((contentText, index) =>

@@ -12,7 +12,6 @@ import { deleteArtistRedux } from "redux/actions/ArtistsActions";
 const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Album en el que esté el Artista."
 
 const Artist = ({ dataArtist, index }) => {
-  console.log("DATAARTIST: ", dataArtist);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

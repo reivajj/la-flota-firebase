@@ -14,7 +14,7 @@ import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import BasicSwitch from "components/Switch/BasicSwitch";
+import InfoSwitch from "components/Switch/InfoSwitch";
 import { languages } from "variables/varias";
 import { errorFormat, useForceUpdate } from "utils";
 
@@ -250,10 +250,12 @@ export const NewTrackDialog = (props) => {
             </Grid>
 
           <Grid item xs={2}>
-            <BasicSwitch
+            <InfoSwitch
               label="Explicito"
               onChange={handleExplicitChange}
-              checked={trackData.explicit} />
+              checked={trackData.explicit}
+              infoTooltip="Indica si la letra de la canción es apta para todo público. 
+              No contiene palabras ofensivas, etc,  etc. " />
           </Grid>
 
           <Grid item xs={12}>

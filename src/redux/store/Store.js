@@ -6,7 +6,7 @@ import { createLogger } from 'redux-logger'
 // Para darle comportamiento (OPTIONS) especifico al logger, ver documentacion: https://www.npmjs.com/package/redux-logger
 
 const composeEnhancers = (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
-window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: true, traceLimit: 10 })) || compose;
+window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: false, traceLimit: 10 })) || compose;
 
 const logger = createLogger({
   // ...options

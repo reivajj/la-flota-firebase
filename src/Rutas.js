@@ -18,6 +18,7 @@ import NewLabel from 'views/Labels/NewLabel';
 import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
 import UserProfile from 'views/UserProfile/UserProfile';
+import { AddTrackTest } from 'views/ViewTest/AddTrackTest';
 
 const Rutas = () => {
   return (
@@ -51,6 +52,8 @@ const Rutas = () => {
           <Route path="new-album" element={<NewAlbum editing={false} />} />
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
+
+          <Route path="test" element={<AddTrackTest />} />
         </Route>
 
       </Routes>

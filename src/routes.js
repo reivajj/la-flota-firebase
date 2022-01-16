@@ -8,6 +8,7 @@ import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
 import UserProfile from "views/UserProfile/UserProfile";
+import { AddTrackTest } from "views/ViewTest/AddTrackTest";
 
 const dashboardRoutes = [
   {
@@ -71,6 +72,13 @@ const dashboardRoutes = [
     name: "Perfil",
     icon: Person,
     component: UserProfile,
+    layout: "/admin"
+  },
+  {
+    path: "/test",
+    name: "TEST",
+    icon: Person,
+    component: AddTrackTest,
     layout: "/admin"
   }
 ];

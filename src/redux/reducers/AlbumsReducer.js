@@ -11,7 +11,6 @@ const editOtherArtistName = ({ nameValue, otherArtistIndex }, allOtherArtistOld)
 
 const editOtherArtistSpotifyUri = ({ spotifyUri, otherArtistIndex }, allOtherArtistOld) => {
   allOtherArtistOld[otherArtistIndex].spotify_uri = spotifyUri;
-  console.log("ALL OTHER:", allOtherArtistOld);
   return allOtherArtistOld;
 }
 
@@ -23,10 +22,11 @@ const editOtherArtistPrimary = ({ isPrimary, otherArtistIndex }, allOtherArtistO
 const initialState = {
   albums: [],
   addingAlbum: {
-    nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "",
+    nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false,
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
     month: "", year: "", genre: "", language: "", disc_number: "", colaborativo: false,
-    allOtherArtists: [], artistFugaId: "", artistId: "",
+    allOtherArtists: [], artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "",
+    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", 
   }
 }
 

@@ -20,9 +20,7 @@ const setUploadProgress = (position, percentageProgress) => {
   }
 }
 
-
 const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, dispatch) => {
-  console.log("entro al create track:", dataTrack);
   let formDataTrack = createTrackModel(dataTrack);
 
   let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dispatch);

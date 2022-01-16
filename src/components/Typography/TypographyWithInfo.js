@@ -3,7 +3,7 @@ import { Grid, Typography, Tooltip, IconButton } from '@mui/material';
 import { Info } from '@mui/icons-material';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 
-const TypographyWithInfo = ({ infoTooltip, infoDialog, title }) => {
+const TypographyWithInfo = ({ infoTooltip, infoDialog, title, sx }) => {
 
   const [openInfoDialog, setOpenInfoDialog] = useState(false);
 
@@ -12,7 +12,7 @@ const TypographyWithInfo = ({ infoTooltip, infoDialog, title }) => {
       <Grid container item xs={3} justifyContent="center">
 
         <Grid item xs={9} textAlign="end">
-          <Typography variant="h5">{title}</Typography>
+          <Typography variant="h5" sx={sx}>{title}</Typography>
         </Grid>
 
         <Grid item xs={2}>

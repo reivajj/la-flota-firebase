@@ -27,11 +27,13 @@ import { toWithOutError, to, useForceUpdate, publicationDateWarning } from "util
 import { deleteFile, manageAddImageToStorage } from "services/StorageServices";
 import { languages } from "variables/varias";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
-import AddOtherArtistsForm from 'components/Forms/AddOtherArtistsForm';
+import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
 import ImageInput from "components/Input/ImageInput";
 import { createOtherArtistsInFuga } from '../../redux/actions/ArtistsInvitedActions';
 import { updateAddingAlbumImageUrlAndCoverRedux } from '../../redux/actions/AlbumsActions';
 import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
+import { cloneDeepLimited } from '../../utils';
+import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
 
 const NewAlbum = ({ editing }) => {
 
@@ -47,8 +49,6 @@ const NewAlbum = ({ editing }) => {
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
   const artistsInvited = useSelector(store => store.artistsInvited);
-
-  console.log("Invited: ", artistsInvited);
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
@@ -81,7 +81,7 @@ const NewAlbum = ({ editing }) => {
       `${trackWithAllInfo.position}`,
       `${trackWithAllInfo.title}`,
       `${trackWithAllInfo.isrc}`,
-      `${trackWithAllInfo.other_artists}`,
+      `${trackWithAllInfo.allOtherArtists.length > 0 ? "SI" : "NO"}`,
       `${trackWithAllInfo.track_language}`,
       `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
@@ -97,14 +97,13 @@ const NewAlbum = ({ editing }) => {
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
-  const [openInfoDialog, setOpenInfoDialog] = useState(false);
 
   const [trackData, setTrackData] = useState({
     disc_number: cantAlbumsFromUser, explicit: 0,
     position: tracksDataTable.length + 1, title: "", track: "",
     price: "", lyrics: "", isrc: "", track_language: "",
-    other_artists: "", composers: "", producers: "", primary_artist: "",
-    artistId: "", progress: 0, allOtherArtists: []
+    composers: "", producers: "", primary_artist: "",
+    artistId: "", progress: 0, allOtherArtists: [], collaborators: [],
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -115,17 +114,6 @@ const NewAlbum = ({ editing }) => {
       simpleValidator.current.showMessages();
       forceUpdate();
     }
-  }
-
-  const addOtherArtists = async () => {
-    setOpenLoader(true);
-    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsInFuga(currentAlbumData.allOtherArtists, currentUserId)))
-    // let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
-    if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
-      setButtonState("error");
-      setButtonText("Error");
-    }
-    setOpenLoader(false);
   }
 
   const createAlbum = async () => {
@@ -196,10 +184,22 @@ const NewAlbum = ({ editing }) => {
   const handlerDayOfMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, dayOfMonth: event.target.value }));
   const handlerMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, month: event.target.value }));
   const handlerYear = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, year: event.target.value }));
+  const handlerPreOrderDayOfMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderDayOfMonth: event.target.value }));
+  const handlerPreOrderMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderMonth: event.target.value }));
+  const handlerPreOrderYear = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderYear: event.target.value }));
   const handlerLanguageChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, language: event.target.value }));
   const handlerGenreChoose = event => {
     setTrackData({ ...trackData, genre: event.target.value });
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: event.target.value }));
+  }
+  const handleCheckedPreOrder = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrder: event.target.checked }));
+  const handleCheckedPreview = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preview: event.target.checked }))
+  const handleClickAddTrack = () => {
+    let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, id: currentAlbumData.artistFugaId, primary: true }];
+    let allOtherArtistsWithPrimary = cloneDeepLimited(currentAlbumData.allOtherArtists);
+
+    setTrackData({ ...trackData, allOtherArtists: [...artistFromLaFlota, ...allOtherArtistsWithPrimary] })
+    setOpenNewTrackDialog(true);
   }
 
   const yearsArray = Array.from({ length: 30 }, (x, i) => 2021 - i);
@@ -230,7 +230,6 @@ const NewAlbum = ({ editing }) => {
                 required
                 select
                 label="Artista Principal perteneciente a La Flota"
-                error={false}
                 value={currentAlbumData.nombreArtist}
                 onChange={handlerArtistChoose}
                 helperText="Selecciona al Artista Principal, si es que ya lo tienes en el sistema. Si no, primero debés crear un Artista."
@@ -242,16 +241,17 @@ const NewAlbum = ({ editing }) => {
             </Grid>
           </Grid>
 
-          <AddOtherArtistsForm sx={textFieldStyle} />
+          <AddOtherArtistsAlbumForm
+            checkBoxLabel="¿Es un lanzamiento Colaborativo?"
+            checkBoxHelper={lanzamientoColaborativoTooltip}
+          />
 
           <Grid container item xs={12}>
             <Grid item xs={6}>
               <TextFieldWithInfo
                 name="title"
                 sx={textFieldStyle}
-                id="title"
                 required
-                margin="normal"
                 label="Título del Lanzamiento"
                 value={currentAlbumData.title}
                 onChange={handlerAlbumTitle}
@@ -263,9 +263,7 @@ const NewAlbum = ({ editing }) => {
               <TextFieldWithInfo
                 name="label_name"
                 sx={textFieldStyle}
-                id="label_name"
                 required
-                margin="normal"
                 select
                 label="Sello Discográfico"
                 value={currentAlbumData.label_name}
@@ -358,6 +356,29 @@ const NewAlbum = ({ editing }) => {
           <SelectDateInputDDMMYYYY dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
             setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={simpleValidator} />
 
+          <CheckboxWithInfo
+            label="Permitir Pre-Comprar antes del lanzamiento"
+            checked={currentAlbumData.preOrder}
+            onChecked={handleCheckedPreOrder}
+            checkBoxHelper="Podés permitir que tus seguidores compren tu trabajo en iTunes, Amazon y Google Play antes de la fecha del lanzamiento
+             (les llegará el álbum el día del lanzamiento). Es ideal para generar campañas de marketing alrededor de la fecha de lanzamiento. 
+             Para que funcione debés elegir una fecha de inicio de Pre-Compra anterior a la fecha del lanzamiento que seleccionaste. La Fecha de 
+             Lanzamiento debe ser de al menos 10 días en el futuro. Por ej: si la fecha de lanzamiento que seleccionaste es en 10 días desde hoy, el Pre-Order podría iniciar en 5 días desde hoy."
+          />
+
+          {currentAlbumData.preOrder &&
+            <SelectDateInputDDMMYYYY dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
+              setDayOfMonth={handlerPreOrderDayOfMonth} setMonth={handlerPreOrderMonth} setYear={handlerPreOrderYear} simpleValidator={simpleValidator} />
+          }
+          {currentAlbumData.preOrder &&
+            <CheckboxWithInfo
+              label="Habilitar Pre-Escucha para la Pre-Compra"
+              checked={currentAlbumData.preview}
+              onChecked={handleCheckedPreview}
+              checkBoxHelper="Permitir que los usuarios escuchen un fragmento (30 segundos) de las canciones durante la etapa de Pre-Compra."
+            />
+          }
+
           <Grid container item spacing={2} xs={12} justifyContent="center" paddingTop={3}>
             <Grid item xs={12}>
               <Typography variant="h5">Idioma y Género</Typography>
@@ -379,10 +400,8 @@ const NewAlbum = ({ editing }) => {
             <Grid item xs={3}>
               <TextFieldWithInfo
                 name="generosMusicales"
-                id="generosMusicales"
                 fullWidth
                 required
-                margin="normal"
                 select
                 label="Género Musical Principal"
                 value={currentAlbumData.genre}
@@ -399,7 +418,7 @@ const NewAlbum = ({ editing }) => {
         <Grid container item xs={12} paddingTop={4} justifyContent="center">
 
           <Grid item xs={8} >
-            <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={() => setOpenNewTrackDialog(true)} />
+            <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
           </Grid>
 
         </Grid>
@@ -415,8 +434,8 @@ const NewAlbum = ({ editing }) => {
               textButton={buttonText}
               loading={openLoader}
               buttonState={buttonState}
-              // onClickHandler={allFieldsValidCreateAlbum}
-              onClickHandler={createAlbum}
+              onClickHandler={allFieldsValidCreateAlbum}
+              // onClickHandler={createAlbum}
               noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
               noFab={false} />
           </CardFooter>
@@ -429,13 +448,10 @@ const NewAlbum = ({ editing }) => {
 
 export default NewAlbum;
 
-const textFieldStyle = {
-  width: "60%"
-}
+const lanzamientoColaborativoTooltip = "Seleccioná si el lanzamiento pertenece a dos o más artistas";
 
-const textFieldLaFlotaArtistStyle = {
-  width: "40%"
-}
+const textFieldStyle = { width: "60%" };
+const textFieldLaFlotaArtistStyle = { width: "40%" };
 
 const buttonSuccessStyle = {
   backgroundColor: green[500],

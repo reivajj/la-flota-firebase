@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Grid, Tooltip, Button, IconButton } from '@mui/material';
@@ -11,14 +11,20 @@ import InfoSwitch from "components/Switch/InfoSwitch";
 import { updatePrimaryOtherArtistsAlbumRedux } from '../../redux/actions/AlbumsActions';
 import BasicSwitch from 'components/Switch/BasicSwitch';
 
-const lanzamientoColaborativoTooltip = "Seleccioná si el lanzamiento pertenece a dos o más artistas";
+const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor }) => {
 
-const AddOtherArtistsForm = () => {
+  const buttonColorStyle = {
+    backgroundColor: buttonColor,
+    '&:hover': {
+      backgroundColor: buttonColor,
+    },
+  }
 
   const dispatch = useDispatch();
   const currentAddingAlbum = useSelector(store => store.albums.addingAlbum);
 
   const addOneArtistSkeleton = () => {
+    if (currentAddingAlbum.allOtherArtists.length >= 4) return;
     let artist = { name: "", spotify_uri: "", id: uuidv4(), primary: false };
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] }));
     // setTrackData({ ...trackData, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] });
@@ -54,13 +60,14 @@ const AddOtherArtistsForm = () => {
       <Grid container item xs={12}>
         <Grid item xs={7} textAlign="end">
           <BasicCheckbox
-            label={"Es un lanzamiento colaborativo?"}
+            label={checkBoxLabel}
             onChecked={handleOnChangeCheckBox}
             checked={currentAddingAlbum.allOtherArtists.length > 0}
+            color={checkBoxColor}
           />
         </Grid>
         <Grid item xs={1} textAlign="start">
-          <Tooltip title={lanzamientoColaborativoTooltip} >
+          <Tooltip title={checkBoxHelper} >
             <IconButton>{<Info />}</IconButton>
           </Tooltip>
         </Grid>
@@ -77,13 +84,13 @@ const AddOtherArtistsForm = () => {
                 onChange={(event) => handleChangeArtistPrimary(event.target.checked, index)}
                 checked={otherArtist.primary}
                 infoTooltip="Indica si el Artista será Principal o  Featuring. 
-              Presionar para más información." />
+              Presionar para más información."
+                infoAtLeft={true} />
               : <BasicSwitch
                 label={otherArtist.primary ? "Principal" : "Featuring"}
                 onChange={(event) => handleChangeArtistPrimary(event.target.checked, index)}
                 checked={otherArtist.primary} />
             }
-
           </Grid>
 
           <Grid item sx={gridNameStyle} key={index + "nameGrid"} textAlign="left">
@@ -112,7 +119,7 @@ const AddOtherArtistsForm = () => {
 
       {currentAddingAlbum.allOtherArtists.length > 0 &&
         <Grid item xs={12}>
-          <Button variant="contained" color="secondary" onClick={addOneArtistSkeleton}>
+          <Button variant="contained" sx={buttonColorStyle} onClick={addOneArtistSkeleton}>
             Agregar Artista
           </Button>
         </Grid>}
@@ -127,3 +134,4 @@ const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
 const gridNameStyle = { width: "45%" }
 const gridUriStyle = { width: "45%", textAlign: "left" };
+

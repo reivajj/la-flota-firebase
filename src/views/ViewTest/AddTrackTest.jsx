@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 // import InputLabel from "@mui/material/InputLabel";
 // core components
 import Button from "components/CustomButtons/Button.js";
@@ -6,7 +6,7 @@ import SimpleReactValidator from "simple-react-validator";
 
 import Success from "components/Typography/Success";
 import {
-  Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton
+  TextField, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, MenuItem
 } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { createTrackLocalRedux } from '../../redux/actions/TracksActions';
@@ -16,12 +16,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import { languages } from "variables/varias";
-import { useForceUpdate } from "utils";
+import { errorFormat, useForceUpdate } from "utils";
 import ArtistInAddTrack from '../Artists/ArtistInAddTrack';
 import { cloneDeepLimited } from '../../utils';
-import AddCollaboratorsForm from '../../components/Forms/AddCollaboratorsForm';
 import AddOtherArtistsTrackForm from '../../components/Forms/AddOtherArtistsTrackForm';
-import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
+import AddCollaboratorsForm from '../../components/Forms/AddCollaboratorsForm';
 
 export const trackActions = track => {
   return (
@@ -40,21 +39,32 @@ export const trackActions = track => {
   );
 };
 
-export const NewTrackDialog = (props) => {
+export const AddTrackTest = (props) => {
 
-  let { openDialog, setOpenNewTrackDialog, setTracksDataTable, tracksDataTable, trackData, setTrackData, circularProgress } = props;
+  let { setOpenNewTrackDialog, circularProgress } = props;
+
+  let openDialog = true;
+  let tracksDataTable = {};
+  // let setTrackData = () => console.log();
+  let setTracksDataTable = () => console.log();
+  // let trackData = { position: 1, title: "A", isrc: "isrc", other_artist: [], track_language: "Spanish", explicit: false, progress: 0 }
 
   const dispatch = useDispatch();
   const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
   const currentUserId = useSelector(store => store.userData.id);
-  const currentAlbumData = useSelector(store => store.albums.addingAlbum);
+  const artistsInvited = useSelector(store => store.artistsInvited);
+  const artistsInvitedWithPrimary = artistsInvited.map(a => {
+    a.primary = true;
+    return a;
+  });
 
-  console.log("ARTISTS: ", trackData);
-  useEffect(() => {
-    console.log("ARTISTS useEffect: ", trackData);
-  }, [])
+  const [trackData, setTrackData] = useState({
+    explicit: false, allOtherArtists: artistsInvitedWithPrimary, collaborators: [],
+    position: tracksDataTable.length + 1, title: "", track: "",
+    price: "", lyrics: "", isrc: "", track_language: "",
+  })
 
   // Luego sacar Spanish y pedirlo en el Form.
   // useEffect(() => {
@@ -83,6 +93,7 @@ export const NewTrackDialog = (props) => {
       `${trackData.position}`,
       `${trackData.title}`,
       `${trackData.isrc}`,
+      `${trackData.other_artists}`,
       `${trackData.track_language}`,
       `${trackData.explicit ? "NO" : "SI"}`,
       trackActions(trackData),
@@ -112,7 +123,6 @@ export const NewTrackDialog = (props) => {
     setTrackData({ ...trackData, allOtherArtists: newArtists });
   };
 
-
   return (
     <Dialog
       open={openDialog}
@@ -134,7 +144,7 @@ export const NewTrackDialog = (props) => {
         <Grid container spacing={2} style={{ textAlign: "center" }} >
 
           <Grid container item xs={12} spacing={2} sx={{ marginTop: "10px" }}>
-            {trackData.allOtherArtists.length > 0
+            {trackData.allOtherArtists
               ? trackData.allOtherArtists.map((_, index) =>
                 <ArtistInAddTrack
                   key={index}
@@ -173,29 +183,42 @@ export const NewTrackDialog = (props) => {
 
           <>
             <Grid item xs={6}>
-              <TextFieldWithInfo
+              <TextField
                 name="title"
+                id="title"
                 fullWidth
+                variant="outlined"
                 required
+                margin="normal"
                 label="Nombre de la Canción"
                 value={trackData.title}
                 onChange={(event) => setTrackData({ ...trackData, title: event.target.value })}
                 helperText="Nombre exacto de la canción, respetando mayúsculas, minúsculas y acentos."
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título de la Canción.", validator: simpleValidator }}
               />
+              {simpleValidator.current.message('title', trackData.title, 'required|max:50', {
+                className: 'text-danger',
+                messages: { default: "Debes ingresar el Título de la Canción." },
+                element: (message) => errorFormat(message)
+              })}
             </Grid>
 
             <Grid item xs={3}>
-              <TextFieldWithInfo
-                name="language"
+              <TextField
+                name="isrc"
                 fullWidth
-                required
-                select
-                label="Idioma de la Canción"
-                value={trackData.track_language}
-                onChange={handlerLanguageChoose}
-                selectItems={languages}
+                id="isrc"
+                variant="outlined"
+                margin="normal"
+                label="ISRC (Formato: CC-XXX-00-12345)"
+                value={trackData.isrc}
+                onChange={(event) => setTrackData({ ...trackData, isrc: event.target.value })}
+                helperText="Completa sólo si ya tenés un Código ISRC. Formato: CC-XXX-00-12345"
               />
+              {simpleValidator.current.message('isrc', trackData.isrc, 'max:20', {
+                className: 'text-danger',
+                messages: { default: "El formato del ISRC es inválido." },
+                element: (message) => errorFormat(message)
+              })}
             </Grid>
 
             <Grid item xs={2} sx={{ marginTop: "1.4%" }}>
@@ -209,17 +232,24 @@ export const NewTrackDialog = (props) => {
           </>
 
           <Grid item xs={4}>
-            <TextFieldWithInfo
-              name="isrc"
+            <TextField
+              name="language"
               fullWidth
-              label="ISRC (Formato: CC-XXX-00-12345)"
-              value={trackData.isrc}
-              onChange={(event) => setTrackData({ ...trackData, isrc: event.target.value })}
-              helperText="Completa sólo si ya tenés un Código ISRC. Formato: CC-XXX-00-12345"
-              validatorProps={{ restrictions: 'max:20', message: "El formato del ISRC es inválido.", validator: simpleValidator }}
-            />
+              id="language"
+              required
+              margin="normal"
+              select
+              label="Idioma de la Canción"
+              value={trackData.track_language}
+              onChange={handlerLanguageChoose}
+            >
+              {languages.map(language => (
+                <MenuItem key={language} value={language}>
+                  {language}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
-
 
           <Grid item xs={12}>
             <ButtonWithInputFile

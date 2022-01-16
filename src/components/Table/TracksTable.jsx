@@ -14,19 +14,19 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
     <Grid container item xs={12}>
       <Card style={cardStyle}>
 
-          <CardHeader color="primary" style={{width: "60%"}}>
-            <Typography sx={cardTitleWhiteStyles}>Canciones</Typography>
-          </CardHeader>
+        <CardHeader color="primary" style={{ width: "60%" }}>
+          <Typography sx={cardTitleWhiteStyles}>Canciones</Typography>
+        </CardHeader>
 
-        <CardBody style={{width: "90%"}}>
+        <CardBody style={{ width: "90%" }}>
           <Table
             tableHeaderColor="primary"
-            tableHead={["Nº Track", "Título", "ISRC", "Artistas Invitados", "Lenguaje", "Explicito", "Acciones", "Carga"]}
+            tableHead={["Posición", "Título", "ISRC", "Artistas Invitados", "Lenguaje", "¿Explícito?", "Acciones", "Carga"]}
             tableData={tracksTableData}
           />
         </CardBody>
 
-        <CardFooter style={{width: "25%"}}>
+        <CardFooter style={{ width: "25%" }}>
           <Grid item xs={12}>
             <Button
               variant="contained"

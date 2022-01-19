@@ -24,7 +24,7 @@ import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save } from '@mui/icons-material/';
 
 import { toWithOutError, to, useForceUpdate, publicationDateWarning } from "utils";
-import { deleteFile, manageAddImageToStorage } from "services/StorageServices";
+import { manageAddImageToStorage } from "services/StorageServices";
 import { languages } from "variables/varias";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
@@ -32,8 +32,9 @@ import ImageInput from "components/Input/ImageInput";
 import { createOtherArtistsInFuga } from '../../redux/actions/ArtistsInvitedActions';
 import { updateAddingAlbumImageUrlAndCoverRedux } from '../../redux/actions/AlbumsActions';
 import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
-import { cloneDeepLimited } from '../../utils';
 import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
+import { createCollaboratorsInFuga } from "redux/actions/CollaboratorsActions";
+import { languagesFuga } from '../../variables/varias';
 
 const NewAlbum = ({ editing }) => {
 
@@ -81,8 +82,8 @@ const NewAlbum = ({ editing }) => {
       `${trackWithAllInfo.position}`,
       `${trackWithAllInfo.title}`,
       `${trackWithAllInfo.isrc}`,
-      `${trackWithAllInfo.allOtherArtists.length > 0 ? "SI" : "NO"}`,
-      `${trackWithAllInfo.track_language}`,
+      `${trackWithAllInfo.artists.length > 1 ? "SI" : "NO"}`,
+      `${trackWithAllInfo.track_language_name}`,
       `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
       trackActions(),
       trackUploadProgress(trackWithAllInfo.progress),
@@ -101,9 +102,8 @@ const NewAlbum = ({ editing }) => {
   const [trackData, setTrackData] = useState({
     disc_number: cantAlbumsFromUser, explicit: 0,
     position: tracksDataTable.length + 1, title: "", track: "",
-    price: "", lyrics: "", isrc: "", track_language: "",
-    composers: "", producers: "", primary_artist: "",
-    artistId: "", progress: 0, allOtherArtists: [], collaborators: [],
+    price: "", lyrics: "", isrc: "", track_language_name: currentAlbumData.languageName,
+    track_language_id: currentAlbumData.languageId, progress: 0, artists: [], collaborators: [],
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -118,24 +118,31 @@ const NewAlbum = ({ editing }) => {
 
   const createAlbum = async () => {
     setOpenLoader(true);
-    // const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsInFuga(currentAlbumData.allOtherArtists, currentUserId)))
-    // if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    //   return;
-    // }
 
-    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, artistsInvited)));
+    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsInFuga(currentAlbumData.allOtherArtists, currentUserId)))
+    if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      return;
+    }
+
+    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
     if (albumDataFromFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
     }
 
-    // let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId)));
-    // if (responseTracksFromFuga === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error");
-    // }
+    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId)));
+    if (responseTracksFromFuga === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      return;
+    }
 
-    setButtonState("success");
+    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsInFuga(responseTracksFromFuga, currentUserId)))
+    if (tracksCollaboratorsResponse === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    }
+    else setButtonState("success");
+
     setOpenLoader(false);
     // navigate(-1);
   }
@@ -187,22 +194,25 @@ const NewAlbum = ({ editing }) => {
   const handlerPreOrderDayOfMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderDayOfMonth: event.target.value }));
   const handlerPreOrderMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderMonth: event.target.value }));
   const handlerPreOrderYear = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderYear: event.target.value }));
-  const handlerLanguageChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, language: event.target.value }));
+  const handlerLanguageChoose = event => {
+    let languageId = languagesFuga.find(l => l.name === event.target.value).id;
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, languageId, languageName: event.target.value }));
+  }
   const handlerGenreChoose = event => {
-    setTrackData({ ...trackData, genre: event.target.value });
+    let genreId = allFugaGenres.find(g => g.name === event.target.value).id;
+    setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: event.target.value }));
   }
   const handleCheckedPreOrder = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrder: event.target.checked }));
   const handleCheckedPreview = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preview: event.target.checked }))
-  const handleClickAddTrack = () => {
-    let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, id: currentAlbumData.artistFugaId, primary: true }];
-    let allOtherArtistsWithPrimary = cloneDeepLimited(currentAlbumData.allOtherArtists);
 
-    setTrackData({ ...trackData, allOtherArtists: [...artistFromLaFlota, ...allOtherArtistsWithPrimary] })
+  const handleClickAddTrack = () => {
+    let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, fugaId: currentAlbumData.artistFugaId, primary: true, id: currentAlbumData.artistId }];
+    setTrackData({ ...trackData, artists: [...artistFromLaFlota, ...currentAlbumData.allOtherArtists] })
     setOpenNewTrackDialog(true);
   }
 
-  const yearsArray = Array.from({ length: 30 }, (x, i) => 2021 - i);
+  const yearsArray = Array.from({ length: 30 }, (_, i) => 2021 - i);
 
   return (
     <Grid container style={{ textAlign: "center" }}>
@@ -218,7 +228,8 @@ const NewAlbum = ({ editing }) => {
 
           <ImageInput imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage} textButton="Arte de Tapa"
             progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
-            El archivo debe ser JPG colores RGB de mínimo 1400*1400px (si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."/>
+            El archivo debe ser JPG colores RGB de mínimo 1400*1400px (si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
+          />
 
           <Grid container item xs={12} >
 
@@ -391,9 +402,11 @@ const NewAlbum = ({ editing }) => {
                 required
                 select
                 label="Idioma Principal del Lanzamiento"
-                value={currentAlbumData.language}
+                value={currentAlbumData.languageName}
                 onChange={handlerLanguageChoose}
-                selectItems={languages}
+                selectItems={languagesFuga}
+                selectKeyField="id"
+                selectValueField="name"
               />
             </Grid>
 
@@ -415,13 +428,12 @@ const NewAlbum = ({ editing }) => {
           </Grid>
         </Grid>
 
-        <Grid container item xs={12} paddingTop={4} justifyContent="center">
-
-          <Grid item xs={8} >
-            <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
-          </Grid>
-
-        </Grid>
+        {currentAlbumData.nombreArtist &&
+          <Grid container item xs={12} paddingTop={4} justifyContent="center">
+            <Grid item xs={8} >
+              <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
+            </Grid>
+          </Grid>}
 
         <Grid item xs={12}>
           <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
@@ -434,8 +446,8 @@ const NewAlbum = ({ editing }) => {
               textButton={buttonText}
               loading={openLoader}
               buttonState={buttonState}
-              onClickHandler={allFieldsValidCreateAlbum}
-              // onClickHandler={createAlbum}
+              // onClickHandler={allFieldsValidCreateAlbum}
+              onClickHandler={createAlbum}
               noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
               noFab={false} />
           </CardFooter>

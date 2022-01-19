@@ -1,10 +1,9 @@
 import React from "react";
 
-import { Grid, Tooltip, Button, IconButton, FormControl, InputLabel, Select, Box, Chip, OutlinedInput, MenuItem } from '@mui/material';
+import { Grid, Tooltip, Button, IconButton, FormControl, InputLabel, Select, OutlinedInput, MenuItem } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 import { Info, Delete } from '@mui/icons-material';
-import { cloneDeepLimited } from '../../utils';
 import { peopleRoles } from "variables/varias";
 
 const ITEM_HEIGHT = 48;
@@ -18,12 +17,12 @@ const MenuProps = {
   },
 };
 
-const AddCollaboratorsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData }) => {
+const AddCollaboratorsForm = ({ setTrackData, trackData }) => {
 
   const buttonColorStyle = {
-    backgroundColor: buttonColor,
+    backgroundColor: "#508062",
     '&:hover': {
-      backgroundColor: buttonColor,
+      backgroundColor: "#508062",
     },
   }
 
@@ -33,55 +32,36 @@ const AddCollaboratorsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, bu
     setTrackData({ ...trackData, collaborators: [...trackData.collaborators, collaborator] });
   }
 
-  const deleteCollaborators = () => {
-    setTrackData({ ...trackData, collaborators: [] });
-  }
-
-  const handleOnChangeCheckBox = (event) => {
-    if (event.target.checked) addOneCollaboratorSkeleton();
-    else deleteCollaborators();
-  }
-
-  const handleDeleteCollaborator = collaboratorIndex => {
-    let newCollaborators = cloneDeepLimited(trackData.collaborators);
-    newCollaborators = newCollaborators.filter((_, i) => i !== collaboratorIndex);
-    console.log("NEW :", newCollaborators, "PARAMS:", collaboratorIndex);
-    setTrackData({ ...trackData, collaborators: newCollaborators });
-  }
-
-  const handleAddNameToCollaborator = (collaboratorName, index) => {
-    const newCollaborators = cloneDeepLimited(trackData.collaborators);
-    newCollaborators[index].name = collaboratorName;
-    setTrackData({ ...trackData, collaborators: newCollaborators });
-  }
-
-  const handleSelectRole = (newRoles, index) => {
-    const newCollaborators = cloneDeepLimited(trackData.collaborators);
-    newCollaborators[index].roles = newRoles;
-    setTrackData({ ...trackData, collaborators: newCollaborators });
-  }
+  const deleteCollaborators = () => setTrackData({ ...trackData, collaborators: [] });
+  const handleOnChangeCheckBox = event => event.target.checked ? addOneCollaboratorSkeleton() : deleteCollaborators();
+  const handleDeleteCollaborator = cIndex => setTrackData({ ...trackData, collaborators: trackData.collaborators.filter((_, i) => i !== cIndex) });
+  const handleAddNameToCollaborator = (cName, index) => setTrackData({ ...trackData, collaborators: trackData.collaborators.map((coll, i) => i === index ? { ...coll, name: cName } : coll) });
+  const handleSelectRole = (newRoles, index) => setTrackData({ ...trackData, collaborators: trackData.collaborators.map((coll, i) => i === index ? { ...coll, roles: newRoles } : coll) });
 
   return (
     <>
       <Grid container item xs={12}>
+
         <Grid item xs={7} textAlign="end">
           <BasicCheckbox
-            label={checkBoxLabel}
+            label={"¿Quieres agregar colaboradores?"}
             onChecked={handleOnChangeCheckBox}
             checked={trackData.collaborators.length > 0}
-            color={checkBoxColor}
+            color={"#508062"}
           />
         </Grid>
+
         <Grid item xs={1} textAlign="start">
-          <Tooltip title={checkBoxHelper} >
+          <Tooltip title={"Agrega artistas que hayan colaborado en esta canción."} >
             <IconButton>{<Info />}</IconButton>
           </Tooltip>
         </Grid>
+
       </Grid>
 
       {trackData.collaborators.map((collaborator, index) => (
 
-        < Grid container item key={index + "bigGrid"} >
+        <Grid container item key={index + "bigGrid-coll"}>
 
           <Grid item sx={gridDeleteStyle} key="switch-primary">
             <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
@@ -89,19 +69,19 @@ const AddCollaboratorsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, bu
             </IconButton>
           </Grid>
 
-          <Grid item sx={gridNameStyle} key={index + "nameGrid"} textAlign="left">
+          <Grid item sx={gridNameStyle} key={index + "nameGrid=coll"} textAlign="left">
             <TextFieldWithInfo
               name={`Colaborador ${index + 1}`}
               required
               sx={textFiedNameStyle}
               label={`Colaborador ${index + 1}`}
               value={collaborator.name}
-              onChange={(event) => handleAddNameToCollaborator(event.target.value, index)}
+              onChange={event => handleAddNameToCollaborator(event.target.value, index)}
               helperText={index === 0 ? "Ingresá el nombre como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. " : ""}
             />
           </Grid>
 
-          <Grid item sx={gridUriStyle} key={index + "selectRol"}>
+          <Grid item sx={gridUriStyle} key={index + "selectRol-coll"}>
 
             <FormControl sx={textFieldRoleStyle} required >
               <InputLabel id="roles">Elige su o sus Roles</InputLabel>
@@ -114,7 +94,7 @@ const AddCollaboratorsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, bu
                 value={collaborator.roles}
                 onChange={event => handleSelectRole(event.target.value, index)}
                 input={<OutlinedInput id="roles" label="Chip" />}
-                renderValue={(selected) => (
+                renderValue={selected => (
                   selected.map((value, index) => (
                     `${index === 0 ? value : `, ${value}`}`
                   ))

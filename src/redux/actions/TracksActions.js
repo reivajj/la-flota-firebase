@@ -4,6 +4,7 @@ import * as BackendCommunication from 'services/BackendCommunication.js';
 import { v4 as uuidv4 } from 'uuid';
 import { createTrackModel } from 'services/CreateModels';
 import { to } from '../../utils';
+import { toWithOutError } from 'utils';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
@@ -35,7 +36,7 @@ const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, d
 
   await FirestoreServices.createTrack(dataTrack, dispatch).catch(error => { console.log("Error en Firestore: ", error) });
 
-  return `Track de nombre: ${dataTrack.title} creado correctamente en posicion: ${dataTrack.position}`;
+  return dataTrack;
 }
 
 export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId) => async dispatch => {
@@ -55,13 +56,13 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId)
     });
   });
 
-  let [errorCreatingAllTracksToAlbum, successCreatingAllTracksToAlbum] = await to(Promise.all(uploadTracksOneByOne));
-  if (errorCreatingAllTracksToAlbum) {
-    console.log("ERROR EN EL PROMISE ALL :", errorCreatingAllTracksToAlbum);
+  let responseCreatingAllTracksToAlbum = await toWithOutError(Promise.all(uploadTracksOneByOne));
+  if (responseCreatingAllTracksToAlbum === "ERROR" || responseCreatingAllTracksToAlbum.includes("ERROR")) {
+    console.log("ERROR EN EL PROMISE ALL :", responseCreatingAllTracksToAlbum);
     return "ERROR";
   }
 
-  console.log("Success creando los tracks en el album: ", successCreatingAllTracksToAlbum);
+  console.log("Success creando los tracks en el album: ", responseCreatingAllTracksToAlbum);
   console.log("Los tracks despues de agregar todo: ", tracksData);
 
   dispatch({
@@ -69,5 +70,5 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId)
     payload: tracksData
   });
 
-  return "SUCCESS";
+  return tracksData;
 }

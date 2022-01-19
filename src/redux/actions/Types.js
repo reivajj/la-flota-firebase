@@ -58,6 +58,10 @@ export const EDIT_INVITED_ARTIST_WITH_ID = "edit_invited_artist_with_id";
 export const INVITED_ARTIST_DELETE_WITH_ID = "invited_artist_delete_with_id";
 export const INVITED_ARTISTS_SIGN_OUT = "invited_artists_sign_out";
 
+// Collaborators Types
+export const ADD_COLLABORATORS = "add_collaborators";
+export const COLLABORATORS_SIGN_OUT = "collaborators_sign_out";
+
 //ErrorHandler
 export const ERROR_FROM_BACKEND = "error_from_backend";
 export const ERROR_FROM_FIRESTORE = "error_from_firestore";

@@ -22,6 +22,10 @@ import { cloneDeepLimited } from '../../utils';
 import AddCollaboratorsForm from '../../components/Forms/AddCollaboratorsForm';
 import AddOtherArtistsTrackForm from '../../components/Forms/AddOtherArtistsTrackForm';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
+import { languagesFuga } from '../../variables/varias';
+import { allFugaGenres } from 'variables/genres';
+
+const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
 export const trackActions = track => {
   return (
@@ -49,69 +53,62 @@ export const NewTrackDialog = (props) => {
   const forceUpdate = useForceUpdate();
 
   const currentUserId = useSelector(store => store.userData.id);
-  const currentAlbumData = useSelector(store => store.albums.addingAlbum);
-
-  console.log("ARTISTS: ", trackData);
-  useEffect(() => {
-    console.log("ARTISTS useEffect: ", trackData);
-  }, [])
-
-  // Luego sacar Spanish y pedirlo en el Form.
-  // useEffect(() => {
-  //   setTrackData({
-  //     ...trackData, explicit: false, allOtherArtists: artistsInvited, collaborators: [],
-  //     position: tracksDataTable.length + 1, title: "", track: "",
-  //     price: "", lyrics: "", isrc: "", track_language: "",
-  //   });
-  // }, [tracksDataTable]);
-
 
   const handleCancelDialog = () => {
     setOpenNewTrackDialog(false);
     setTrackData({
-      ...trackData, explicit: false,
+      ...trackData, explicit: false, genre: trackData.genre || "", genreName: trackData.genreName || "",
       position: tracksDataTable.length + 1, title: "", track: "",
-      price: "", lyrics: "", isrc: "", track_language: "",
-      progress: 0, allOtherArtists: [], collaborators: [],
+      price: "", lyrics: "", isrc: "", track_language_id: trackData.track_language_id,
+      progress: 0, artists: [], collaborators: trackData.collaborators,
+      track_language_name: trackData.track_language_name,
     });
   };
 
-  const handleSubscribeDialog = async () => {
-    dispatch(createTrackLocalRedux(trackData, currentUserId))
-    setOpenNewTrackDialog(false);
+  const handleCreateTrack = async () => {
+    dispatch(createTrackLocalRedux(trackData, currentUserId));
     setTracksDataTable([...tracksDataTable, [
       `${trackData.position}`,
       `${trackData.title}`,
       `${trackData.isrc}`,
-      `${trackData.track_language}`,
+      `${trackData.artists.length > 1 ? "SI" : "NO"}`,
+      `${trackData.track_language_name}`,
       `${trackData.explicit ? "NO" : "SI"}`,
       trackActions(trackData),
       circularProgress(trackData.progress)
     ]]);
+    handleCancelDialog();
   }
 
   const allFieldsValidCreateTrack = () => {
     if (simpleValidator.current.allValid()) {
-      handleSubscribeDialog();
+      handleCreateTrack();
     } else {
       simpleValidator.current.showMessages();
       forceUpdate();
     }
   }
 
-  const deleteArtistFromArtists = index => trackData.allOtherArtists.filter((_, i) => i !== index);
-
-  const getTrackFromLocal = (event) => setTrackData({ ...trackData, track: event.target.files[0] });
-  const handlerLanguageChoose = event => setTrackData({ ...trackData, track_language: event.target.value });
+  const deleteArtistFromArtists = index => trackData.artists.filter((_, i) => i !== index);
+  const getTrackFromLocal = event => setTrackData({ ...trackData, track: event.target.files[0] });
   const handleExplicitChange = newExplicitEvent => setTrackData({ ...trackData, explicit: newExplicitEvent.target.checked });
-  const handleDeleteOtherArtist = indexOtherArtist => setTrackData({ ...trackData, allOtherArtists: deleteArtistFromArtists(indexOtherArtist) })
+  const handleDeleteOtherArtist = indexOtherArtist => setTrackData({ ...trackData, artists: deleteArtistFromArtists(indexOtherArtist) })
+  
+  const handlerGenreChoose = event => {
+    let genreId = allFugaGenres.find(g => g.name === event.target.value).id;
+    setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
+  }
 
   const handleChangePrimaryOtherArtist = (index, newPrimaryValue) => {
-    const newArtists = cloneDeepLimited(trackData.allOtherArtists);
+    const newArtists = cloneDeepLimited(trackData.artists);
     newArtists[index].primary = newPrimaryValue;
-    setTrackData({ ...trackData, allOtherArtists: newArtists });
+    setTrackData({ ...trackData, artists: newArtists });
   };
 
+  const handlerLanguageChoose = event => {
+    let track_language_id = languagesFuga.find(l => l.name === event.target.value).id;
+    setTrackData({ ...trackData, track_language_id, track_language_name: event.target.value });
+  }
 
   return (
     <Dialog
@@ -127,48 +124,39 @@ export const NewTrackDialog = (props) => {
         <DialogTitle id="agregarArtist-title" sx={agregarArtistaTitleStyle}>Artistas de la Canción</DialogTitle>
 
         <DialogContentText>
-          Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean
-          artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezacan en ésta canción.
+          {newTrackArtistsInfo}
         </DialogContentText>
 
         <Grid container spacing={2} style={{ textAlign: "center" }} >
 
           <Grid container item xs={12} spacing={2} sx={{ marginTop: "10px" }}>
-            {trackData.allOtherArtists.length > 0
-              ? trackData.allOtherArtists.map((_, index) =>
+            {trackData.artists.length > 0
+              ? trackData.artists.map((_, index) =>
                 <ArtistInAddTrack
                   key={index}
                   index={index}
                   handleDelete={handleDeleteOtherArtist}
                   handleSliderChange={handleChangePrimaryOtherArtist}
-                  trackData={trackData} />)
+                  artists={trackData.artists} />)
               : []
             }
           </Grid>
 
-          <AddOtherArtistsTrackForm
+          {/* <AddOtherArtistsTrackForm
             checkBoxLabel="¿Quieres agregar otro artista?"
             checkBoxHelper="Agrega artistas Principales o Featuring que no aparecen en el Album."
             checkBoxColor="#508062"
             buttonColor="#508062"
-          />
+          /> */}
 
           <Grid item xs={12} >
             <DialogTitle id="collaborators-dialog-title" sx={collaboratorsTitleStyle}>Colaboradores de la Canción</DialogTitle>
           </Grid>
 
-          <AddCollaboratorsForm
-            checkBoxLabel="¿Quieres agregar colaboradores?"
-            checkBoxHelper="Agrega artistas que hayan colaborado en esta canción."
-            checkBoxColor="#508062"
-            buttonColor="#508062"
-            setTrackData={setTrackData}
-            trackData={trackData}
-          />
-
+          <AddCollaboratorsForm setTrackData={setTrackData} trackData={trackData} />
 
           <Grid item xs={12} >
-            <DialogTitle id="collaborators-dialog-title" sx={collaboratorsTitleStyle}>Información General</DialogTitle>
+            <DialogTitle id="info-general-dialog-title" sx={collaboratorsTitleStyle}>Información General</DialogTitle>
           </Grid>
 
           <>
@@ -192,9 +180,11 @@ export const NewTrackDialog = (props) => {
                 required
                 select
                 label="Idioma de la Canción"
-                value={trackData.track_language}
+                value={trackData.track_language_name}
                 onChange={handlerLanguageChoose}
-                selectItems={languages}
+                selectItems={languagesFuga}
+                selectKeyField="id"
+                selectValueField="name"
               />
             </Grid>
 
@@ -220,6 +210,20 @@ export const NewTrackDialog = (props) => {
             />
           </Grid>
 
+          <Grid item xs={3}>
+            <TextFieldWithInfo
+              name="generosMusicales"
+              fullWidth
+              required
+              select
+              label="Género Musical Principal"
+              value={trackData.genreName || ""}
+              onChange={handlerGenreChoose}
+              selectItems={allFugaGenres}
+              selectKeyField="id"
+              selectValueField="name"
+            />
+          </Grid>
 
           <Grid item xs={12}>
             <ButtonWithInputFile

@@ -99,6 +99,29 @@ export const createTrackFuga = async (formDataTrack, onUploadProgress, dispatch)
   return trackFromThirdWebApi;
 }
 
+export const createPersonsFuga = async (formDataPeople, dispatch) => {
+  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${localUrl}people/addAll`, formDataPeople));
+  if (errorUploadingPersonsInThirdWebApi) {
+    dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
+    return "ERROR";
+  }
+  console.log("La respuesta de crear el track en Fuga: ", personsFromThirdWebApi);
+  let personsWithId = personsFromThirdWebApi.data.response;
+  return personsWithId;
+}
+
+export const createCollaboratorFuga = async (collaborator, dispatch) => {
+  let rawDataCollaborator = { person: collaborator.person, role: collaborator.role };
+  let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${localUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
+  if (errorAttachingCollaboratorInThirdWebApi) {
+    dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
+    return "ERROR";
+  }
+  console.log("La respuesta de crear el track en Fuga: ", collaboratorFromThirdWebApi);
+  let personsWithId = collaboratorFromThirdWebApi.data.response.id;
+  return personsWithId;
+}
+
 // ======================================USERS=============================================\\
 
 export const userExistInWpDB = async (email, dispatch) => {

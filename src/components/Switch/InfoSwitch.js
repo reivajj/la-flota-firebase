@@ -28,7 +28,7 @@ const InfoSwitch = ({ onChange, label, checked, infoTooltip, infoDialog, infoAtL
       </Grid>
 
       <Switch
-        checked={checked}
+        checked={Boolean(checked)}
         onChange={onChange}
         inputProps={{ 'aria-label': 'controlled' }}
       />

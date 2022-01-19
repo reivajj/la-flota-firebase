@@ -2,10 +2,10 @@ import * as ReducerTypes from 'redux/actions/Types';
 import { createArtistRedux } from './ArtistsActions';
 import { toWithOutError, to } from 'utils';
 
-export const createOtherArtistsInFuga = (allOtherPrimaryArtistsAlbum, ownerId) => async dispatch => {
-  allOtherPrimaryArtistsAlbum = allOtherPrimaryArtistsAlbum.filter(otherArtist => otherArtist.name !== "");
+export const createOtherArtistsInFuga = (allOtherArtistsAlbum, ownerId) => async dispatch => {
+  let allOtherArtistsNotEmptyAlbum = allOtherArtistsAlbum.filter(otherArtist => otherArtist.name !== "");
 
-  const createOtherArtistOneByOne = allOtherPrimaryArtistsAlbum.map(async dataArtist => {
+  const createOtherArtistOneByOne = allOtherArtistsNotEmptyAlbum.map(async dataArtist => {
     dataArtist.ownerId = ownerId;
     let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataArtist, ownerId, "artistsInvited", "totalArtistsInvited")));
     if (artistCreatedResult === "ERROR") return "ERROR";
@@ -19,11 +19,11 @@ export const createOtherArtistsInFuga = (allOtherPrimaryArtistsAlbum, ownerId) =
   }
 
   console.log("Success creando los tracks en el album: ", successCreatingAllArtists);
-  console.log("Los artists despues de agregar todo: ", allOtherPrimaryArtistsAlbum);
+  console.log("Los artists despues de agregar todo: ", allOtherArtistsNotEmptyAlbum);
 
   dispatch({
     type: ReducerTypes.ADD_INVITED_ARTISTS,
-    payload: allOtherPrimaryArtistsAlbum
+    payload: allOtherArtistsNotEmptyAlbum
   });
 
   return "SUCCESS";

@@ -6,7 +6,7 @@ const BasicSwitch = ({ onChange, label, checked }) => {
     <>
       <Typography>{label}</Typography>
       <Switch
-        checked={checked}
+        checked={Boolean(checked)}
         onChange={onChange}
         inputProps={{ 'aria-label': 'controlled' }}
       />

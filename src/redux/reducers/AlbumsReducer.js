@@ -24,9 +24,9 @@ const initialState = {
   addingAlbum: {
     nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false,
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
-    month: "", year: "", genre: "", language: "", disc_number: "", colaborativo: false,
-    allOtherArtists: [], artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "",
-    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", 
+    month: "", year: "", genre: "", languageId: "ES", languageName: "Spanish", disc_number: "", allOtherArtists: [],
+    artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "",
+    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "",
   }
 }
 

@@ -18,7 +18,7 @@ const LabelledAndColoredSwitch = ({ size, label, color, labelPlacement, checked,
   return (
     <FormControl component="fieldset">
       <FormControlLabel
-        control={<ColorSwitch size={size} sx={{ color: color }} checked={checked} onChange={onChange} inputProps={{ 'aria-label': 'controlled' }} />}
+        control={<ColorSwitch size={size} sx={{ color: color }} checked={Boolean(checked)} onChange={onChange} inputProps={{ 'aria-label': 'controlled' }} />}
         label={label}
         labelPlacement={labelPlacement}
       />

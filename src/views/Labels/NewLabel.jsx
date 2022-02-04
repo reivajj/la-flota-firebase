@@ -18,7 +18,7 @@ import SaveIcon from '@mui/icons-material/Save';
 const NewLabel = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const simpleValidator = useRef(new SimpleReactValidator());
+  const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
   const currentUserId = useSelector(store => store.userData.id);
@@ -31,10 +31,10 @@ const NewLabel = () => {
   const [buttonText, setButtonText] = useState("Finalizar");
 
   const allFieldsValidCreateLabel = () => {
-    if (simpleValidator.current.allValid()) {
+    if (validator.current.allValid()) {
       createLabel();
     } else {
-      simpleValidator.current.showMessages();
+      validator.current.showMessages();
       forceUpdate();
     }
   }
@@ -48,6 +48,11 @@ const NewLabel = () => {
       setButtonText("Error");
       setOpenLoader(false);
     }
+  }
+
+  const handleLabelDetails = (evento) => {
+    if (evento.target.value.length <= 201) setDetails(evento.target.value)
+    validator.current.showMessageFor('details');
   }
 
   return (
@@ -71,7 +76,7 @@ const NewLabel = () => {
                 value={name}
                 onChange={evento => setName(evento.target.value)}
               />
-              {simpleValidator.current.message('nombre', name, 'required', {
+              {validator.current.message('nombre', name, 'required', {
                 className: 'text-danger',
                 messages: { default: "Debes ingresar un nombre." },
                 element: (message) => errorFormat(message)
@@ -83,13 +88,15 @@ const NewLabel = () => {
                 margin="normal"
                 id="details"
                 name="details"
-                label="Breve Descripción del Sello (max 100 caracteres, opcional)"
+                label="Breve Descripción del Sello (opcional)"
                 fullWidth
                 value={details}
-                multiline={true}
-                inputProps={{ maxLength: 100 }}
-                maxRows="3"
-                onChange={(evento) => setDetails(evento.target.value)} />
+                onChange={handleLabelDetails} />
+              {validator.current.message('details', details, 'max:200', {
+                className: 'text-danger',
+                messages: { default: "Puedes ingresar un máximo de 200 carácteres." },
+                element: (message) => errorFormat(message)
+              })}
             </Grid>
           </CardBody>
 

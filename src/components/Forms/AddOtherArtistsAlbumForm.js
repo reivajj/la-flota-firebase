@@ -1,17 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, Tooltip, Button, IconButton } from '@mui/material';
+import { Grid, Button } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
-import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
-import { Info } from '@mui/icons-material';
 import { updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateSpotifyUriOtherArtistsAlbumRedux } from 'redux/actions/AlbumsActions';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import { updatePrimaryOtherArtistsAlbumRedux } from '../../redux/actions/AlbumsActions';
 import BasicSwitch from 'components/Switch/BasicSwitch';
+import ImageDialog from '../Dialogs/ImageDialog';
+import CheckboxWithInfo from "components/Checkbox/CheckboxWithInfo";
+import { infoSpotifyUri } from "utils/textToShow.utils";
+
 
 const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor }) => {
+
+  const [openTutorialDialog, setOpenTutorialDialog] = useState(false);
 
   const buttonColorStyle = {
     backgroundColor: buttonColor,
@@ -55,22 +59,23 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
     return ["Segundo Artista Principal", "Tercer Artista Principal", "Cuarto Artista Principal", "Quinto Artista Principal"][otherArtistIndex];
   }
 
+  const handleTutorialDialog = () => setOpenTutorialDialog(!openTutorialDialog);
+
   return (
     <>
       <Grid container item xs={12}>
-        <Grid item xs={7} textAlign="end">
-          <BasicCheckbox
-            label={checkBoxLabel}
-            onChecked={handleOnChangeCheckBox}
-            checked={currentAddingAlbum.allOtherArtists.length > 0}
-            color={checkBoxColor}
-          />
-        </Grid>
-        <Grid item xs={1} textAlign="start">
-          <Tooltip title={checkBoxHelper} >
-            <IconButton>{<Info />}</IconButton>
-          </Tooltip>
-        </Grid>
+        <CheckboxWithInfo
+          label={checkBoxLabel}
+          onChecked={handleOnChangeCheckBox}
+          checked={currentAddingAlbum.allOtherArtists.length > 0}
+          color={checkBoxColor}
+          checkBoxHelper={checkBoxHelper}
+          onClickInfo={handleTutorialDialog}
+          
+        />
+
+        <ImageDialog title="Ejemplo de un Album con dos artistas Principales:" contentTexts={[[""]]}
+          handleClose={handleTutorialDialog} isOpen={openTutorialDialog} imageSource="/images/ejemploDosArtistasPrincipales.png" />
       </Grid>
 
       {currentAddingAlbum.allOtherArtists.map((otherArtist, index) => (
@@ -111,7 +116,9 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               label="Codigo Uri de Spotify"
               value={otherArtist.spotify_uri}
               onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el código URi de Spotify. " : ""}
+              helperText={index === 0 ? infoSpotifyUri : ""}
+              hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
+              targetHref="_blank"
             />
           </Grid>
         </Grid>)
@@ -134,4 +141,3 @@ const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
 const gridNameStyle = { width: "45%" }
 const gridUriStyle = { width: "45%", textAlign: "left" };
-

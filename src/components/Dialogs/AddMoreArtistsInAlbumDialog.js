@@ -1,49 +1,79 @@
 import React from "react";
-import PropTypes from "prop-types";
 import {
-  Button, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Typography
 } from '@mui/material';
-import Typography from '@mui/material/Typography';
+import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
+import { useSelector } from 'react-redux';
 
-const AddMoreArtistsInAlbumDialog = (props) => {
 
-  const { isOpen, handleClose, title } = props;
+export const AddMoreArtistsInAlbumDialog = (props) => {
+
+  const { validator, isOpen, handleClose, title, changeArtistName, changeArtistBio, changeAppleId, changeSpotifyUri, progressButton } = props;
+
+  const currentArtistData = useSelector(store => store.artists.addingArtist);
 
   return (
     <Dialog
-      maxWidth="xs"
+      maxWidth="sm"
       fullWidth
       id="collaborative-dialog"
       open={isOpen}
       onClose={handleClose}>
 
-      <DialogTitle id="title-info-dialog">
-        <Typography variant="h4">{title}</Typography>
+      <DialogTitle id="add-artist-dialog">
+        <Typography >{title}</Typography>
       </DialogTitle>
 
-      {/* <DialogContent>
-        <DialogContentText key={index}>
-          {contentText}
-        </DialogContentText>
-      </DialogContent> */}
+      <DialogContent>
+        <Grid container spacing={2} sx={{ textAlign: "center", paddingTop: "6px" }}>
 
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          OK
-        </Button>
+          <TextFieldWithInfo
+            name="name"
+            required
+            fullWidth
+            label="Nombre del Artista"
+            autoFocus
+            value={currentArtistData.name}
+            onChange={changeArtistName}
+            validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar un nombre.", validator }}
+          />
+
+          <TextFieldWithInfo
+            name="spotify_uri"
+            fullWidth
+            label="Spotify Uri"
+            value={currentArtistData.spotify_uri}
+            onChange={changeSpotifyUri}
+          />
+
+          <TextFieldWithInfo
+            name="apple_id"
+            fullWidth
+            label="Apple ID"
+            value={currentArtistData.apple_id}
+            onChange={changeAppleId}
+            helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
+                    Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)."
+          />
+
+          <TextField
+            margin="normal"
+            id="bio"
+            name="bio"
+            label="Breve Biografía (max 500 caracteres)"
+            fullWidth
+            value={currentArtistData.biography}
+            multiline={true}
+            inputProps={{ maxLength: 500 }}
+            maxRows="3"
+            onChange={changeArtistBio} />
+
+        </Grid>
+      </DialogContent >
+
+      <DialogActions sx={{ overflow: "scroll" }}>
+        {progressButton}
       </DialogActions>
-    </Dialog>
+    </Dialog >
   )
-}
-
-export default AddMoreArtistsInAlbumDialog;
-
-AddMoreArtistsInAlbumDialog.defaultProps = {
-  isOpen: false,
-}
-
-AddMoreArtistsInAlbumDialog.propTypes = {
-  title: PropTypes.string.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired,
 }

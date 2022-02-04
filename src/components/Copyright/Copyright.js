@@ -4,12 +4,10 @@ import { Typography, Link } from '@mui/material';
 const Copyright = () => {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
+      {/* {'Copyright © '} */}
       <Link underline="hover" color="inherit" href="https://www.laflota.com.ar/">
-        La Flota
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
+        {`La Flota ♡ Distribución Digital ♫ 2016 - ${1900 + new Date().getYear()} ♫ Patagonia `}
+      </Link>
     </Typography>
   );
 }

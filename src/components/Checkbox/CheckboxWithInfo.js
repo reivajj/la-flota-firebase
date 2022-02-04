@@ -3,7 +3,7 @@ import { Grid, Tooltip, IconButton } from '@mui/material';
 import { Info } from '@mui/icons-material';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 
-const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper }) => {
+const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper, onClickInfo }) => {
 
   return (
     <Grid container item xs={12} sx={{ paddingTop: "1%" }}>
@@ -17,7 +17,7 @@ const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper }) 
       </Grid>
       <Grid item xs={1} textAlign="start">
         <Tooltip title={checkBoxHelper} >
-          <IconButton>{<Info />}</IconButton>
+          <IconButton onClick={onClickInfo ? onClickInfo : null} >{<Info />}</IconButton>
         </Tooltip>
       </Grid>
     </Grid>

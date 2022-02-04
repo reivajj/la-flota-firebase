@@ -6,6 +6,9 @@ import List from "@mui/material/List";
 // core components
 import styles from "assets/jss/material-dashboard-react/components/footerStyle.js";
 import { Grid } from '@mui/material';
+import GoogleColorIcon from '../../views/Icons/GoogleColorIcon';
+import { IconButton } from '@mui/material';
+import { Facebook, Google, Instagram, Twitter } from '@mui/icons-material';
 
 export default function Footer(props) {
   const classes = styles;
@@ -15,9 +18,18 @@ export default function Footer(props) {
         <Grid item xs={4} sx={{ textAlign: "initial" }}>
           <List sx={classes.list}>
             <ListItem>
-              <a href="dashboard">
-                Home
-              </a>
+              <IconButton href="https://goo.gl/maps/SXDovofbcrCFBsxE9" target="_blank">
+                <Google />
+              </IconButton>
+              <IconButton href="https://www.facebook.com/laflota.distribuciondigital" target="_blank">
+                <Facebook />
+              </IconButton>
+              <IconButton href="https://www.instagram.com/laflota.distribuciondigital/" target="_blank">
+                <Instagram />
+              </IconButton>
+              <IconButton href="https://twitter.com/LaflotaD" target="_blank">
+                <Twitter />
+              </IconButton>
             </ListItem>
           </List>
         </Grid>
@@ -29,7 +41,7 @@ export default function Footer(props) {
                 target="_blank"
                 style={classes.a}
               >
-                {`La Flota | Distribución Digital | 2016 - ${1900 + new Date().getYear()}`}
+                {`La Flota ♡ Distribución Digital ♫ 2016 - ${1900 + new Date().getYear()} ♫ Patagonia `}
               </a>
             </span>
           </p>

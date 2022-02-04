@@ -4,7 +4,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import { TextField, Grid, Typography, Button } from "@mui/material";
+import { TextField, Grid, Typography } from "@mui/material";
 
 import SimpleReactValidator from "simple-react-validator";
 import { useDispatch, useSelector } from 'react-redux';
@@ -22,14 +22,13 @@ import { deleteFile, manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useForceUpdate } from 'utils';
 import ImageInput from 'components/Input/ImageInput';
-import { AddMoreArtistsInAlbumDialog } from 'components/Dialogs/AddMoreArtistsInAlbumDialog';
 
-const NewArtist = ({ editing, isOpen, handleClose, view }) => {
+const NewArtistDialog = ({ editing }) => {
 
   const dispatch = useDispatch();
   const { artistId } = useParams();
   const navigate = useNavigate();
-  const validator = useRef(new SimpleReactValidator());
+  const simpleValidator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
   const currentUserId = useSelector(store => store.userData.id);
@@ -62,10 +61,10 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const [appleIdEdited, setAppleIdEdited] = useState(false);
 
   const allFieldsValidCreateArtist = () => {
-    if (validator.current.allValid()) {
+    if (simpleValidator.current.allValid()) {
       createArtist();
     } else {
-      validator.current.showMessages();
+      simpleValidator.current.showMessages();
       forceUpdate();
     }
   }
@@ -78,7 +77,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
         : createArtistRedux(currentArtistData, currentUserId, "artists", "totalArtists")));
     if (result === "SUCCESS") {
       setButtonState("success");
-      (view !== "dialog") ? navigate('/admin/artists') : handleClose(); 
+      navigate('/admin/artists');
     }
     else {
       setButtonState("error");
@@ -87,8 +86,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     }
   }
 
-  const onClickAddImageArtist = async (event) => {
-    console.log("AAAAAAAIMAGE");
+  const onClickAddImage = async (event) => {
     changeArtistImagenUrlAndReference("");
     setMessage("");
     let img = new Image()
@@ -130,103 +128,94 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     dispatch(saveAddingArtistAppleId(event.target.value));
   }
 
-  const imageInput = <ImageInput key={"artist-photo"} imagenUrl={artistDataToShow.imagenUrl} onClickAddImage={onClickAddImageArtist} textButton="Imagen"
-    progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
-    El archivo debe ser JPG colores RGB de mínimo 1400*1400px"/>;
-
-  const progressButton = <ProgressButton textButton={buttonText} loading={openLoader} buttonState={buttonState}
-    onClickHandler={allFieldsValidCreateArtist} noneIcon={<SaveIcon sx={{ color: "rgba(255,255,255, 1)" }} />} noFab={false} />
-
-  const title = "Agregar un Artista Principal";
-  const propsToAddArtistDialog = {
-    validator, isOpen, handleClose, title, changeArtistName, changeArtistBio, changeAppleId,
-    changeSpotifyUri, imageInput, progressButton
-  };
-
   return (
-    <>
-      {view === "dialog"
-        ? <AddMoreArtistsInAlbumDialog {...propsToAddArtistDialog} />
+    <Grid container justifyContent="center">
+      <Grid item xs={12} sm={12} md={6}>
 
-        : <Grid container justifyContent="center">
-          <Grid item xs={12} sm={12} md={6}>
+        <Card>
 
-            <Card>
+          <CardHeader color="primary">
+            <Typography sx={cardTitleWhiteStyles}>Crear Artista</Typography>
+          </CardHeader>
 
-              <CardHeader color="primary">
-                <Typography sx={cardTitleWhiteStyles}>Crear Artista</Typography>
-              </CardHeader>
+          <CardBody>
+            <Grid container spacing={2} sx={{ textAlign: "center", paddingTop: `${editing ? "2em" : "0"}` }}>
 
-              <CardBody>
-                <Grid container spacing={2} sx={{ textAlign: "center", paddingTop: `${editing ? "2em" : "0"}` }}>
+              {!editing &&
+                <ImageInput imagenUrl={artistDataToShow.imagenUrl} onClickAddImage={onClickAddImage} textButton="Imagen"
+                  progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
+                  El archivo debe ser JPG colores RGB de mínimo 1400*1400px"/>}
 
-                  {!editing && imageInput}
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="name"
+                  required
+                  fullWidth
+                  label="Nombre del Artista"
+                  autoFocus
+                  value={(editing && !nameEdited) ? artistDataToShow.name : currentArtistData.name}
+                  onChange={changeArtistName}
+                  validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar un nombre.", validator: simpleValidator }}
+                />
+              </Grid>
 
-                  <Grid item xs={12}>
-                    <TextFieldWithInfo
-                      name="name"
-                      required
-                      fullWidth
-                      label="Nombre del Artista"
-                      autoFocus
-                      value={(editing && !nameEdited) ? artistDataToShow.name : currentArtistData.name}
-                      onChange={changeArtistName}
-                      validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar un nombre.", validator: validator }}
-                    />
-                  </Grid>
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="spotify_uri"
+                  fullWidth
+                  label="Spotify Uri"
+                  value={(editing && !spotifyUriEdited) ? artistDataToShow.spotify_uri : currentArtistData.spotify_uri}
+                  onChange={changeSpotifyUri}
+                />
+              </Grid>
 
-                  <Grid item xs={12}>
-                    <TextFieldWithInfo
-                      name="spotify_uri"
-                      fullWidth
-                      label="Spotify Uri"
-                      value={(editing && !spotifyUriEdited) ? artistDataToShow.spotify_uri : currentArtistData.spotify_uri}
-                      onChange={changeSpotifyUri}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextFieldWithInfo
-                      name="apple_id"
-                      fullWidth
-                      label="Apple ID"
-                      value={(editing && !appleIdEdited) ? artistDataToShow.apple_id : currentArtistData.apple_id}
-                      onChange={changeAppleId}
-                      helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="apple_id"
+                  fullWidth
+                  label="Apple ID"
+                  value={(editing && !appleIdEdited) ? artistDataToShow.apple_id : currentArtistData.apple_id}
+                  onChange={changeAppleId}
+                  helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
                     Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)."
-                    />
-                  </Grid>
+                />
+              </Grid>
 
-                  <Grid item xs={12}>
-                    <TextField
-                      margin="normal"
-                      id="bio"
-                      name="bio"
-                      label="Breve Biografía (max 500 caracteres)"
-                      fullWidth
-                      value={(editing && !biographyEdited) ? artistDataToShow.biography : currentArtistData.biography}
-                      multiline={true}
-                      inputProps={{ maxLength: 500 }}
-                      maxRows="3"
-                      onChange={changeArtistBio} />
-                  </Grid>
-                </Grid>
-              </CardBody>
+              <Grid item xs={12}>
+                <TextField
+                  margin="normal"
+                  id="bio"
+                  name="bio"
+                  label="Breve Biografía (max 500 caracteres)"
+                  fullWidth
+                  value={(editing && !biographyEdited) ? artistDataToShow.biography : currentArtistData.biography}
+                  multiline={true}
+                  inputProps={{ maxLength: 500 }}
+                  maxRows="3"
+                  onChange={changeArtistBio} />
+              </Grid>
+            </Grid>
+          </CardBody>
 
-              <CardFooter>
-                <Grid justifyContent="center" container >
-                  {progressButton}
-                </Grid>
-              </CardFooter>
+          <CardFooter>
+            <Grid justifyContent="center" container >
+              <ProgressButton
+                textButton={buttonText}
+                loading={openLoader}
+                buttonState={buttonState}
+                onClickHandler={allFieldsValidCreateArtist}
+                noneIcon={<SaveIcon sx={{ color: "rgba(255,255,255, 1)" }} />}
+                noFab={false} />
+            </Grid>
+          </CardFooter>
 
-            </Card>
-          </Grid>
-        </Grid>}
-    </>
+        </Card>
+      </Grid>
+    </Grid>
   );
 }
 
-export default NewArtist;
+export default NewArtistDialog;
 
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",

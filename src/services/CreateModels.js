@@ -40,6 +40,8 @@ export const createAlbumModel = dataAlbum => {
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
   if (dataAlbum.upc) formDataAlbum.append("upc", dataAlbum.upc);
+  if (dataAlbum.version) formDataAlbum.append("version", dataAlbum.version);
+  if (dataAlbum.format) formDataAlbum.append("format", dataAlbum.format);
 
   return formDataAlbum;
 };

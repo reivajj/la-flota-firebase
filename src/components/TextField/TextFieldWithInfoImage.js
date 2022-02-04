@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { TextField, Tooltip, InputAdornment, IconButton, MenuItem } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { errorFormat } from 'utils';
+import ImageDialog from "../Dialogs/ImageDialog";
 
-const TextFieldWithInfo = (props) => {
+const TextFieldWithInfoImage = (props) => {
 
   const { name, sx, label, value, onChange, error, required, helperText, select, selectItems, selectKeyField
-    , selectValueField, validatorProps, fullWidth, multiline, autoFocus, onClickInfo, hrefInfo, targetHref } = props
+    , selectValueField, validatorProps, fullWidth, multiline, autoFocus, imageSource, contentTexts } = props
+
+  const [openImageDialog, setOpenImageDialog] = useState(false);
 
   const endAddormentJSX = <InputAdornment position="end">
     <Tooltip title={helperText ? helperText : ""} >
@@ -15,9 +18,7 @@ const TextFieldWithInfo = (props) => {
         aria-label={"info" + name}
         edge="end"
         sx={{ marginRight: "0.5em" }}
-        onClick={onClickInfo ? onClickInfo : null}
-        href={hrefInfo}
-        target={targetHref}>
+        onClick={() => setOpenImageDialog(!openImageDialog)}>
         {<InfoIcon />}
       </IconButton>
     </Tooltip>
@@ -54,8 +55,11 @@ const TextFieldWithInfo = (props) => {
         messages: { default: validatorProps.message },
         element: (message) => errorFormat(message)
       }) : ""}
+
+      <ImageDialog title="Ejemplo de un Album con su Versión en el Título." contentTexts={contentTexts ? contentTexts : [[""]]}
+        imageSource={imageSource} isOpen={openImageDialog} handleClose={() => setOpenImageDialog(!openImageDialog)} />
     </>
   )
 }
 
-export default TextFieldWithInfo;
+export default TextFieldWithInfoImage;

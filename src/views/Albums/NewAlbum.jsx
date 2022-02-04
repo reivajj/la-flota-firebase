@@ -6,8 +6,7 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-
-import { Grid, Typography, CircularProgress, Fab } from '@mui/material';
+import { Grid, Typography, CircularProgress, Fab, Button } from '@mui/material';
 import SimpleReactValidator from "simple-react-validator";
 import { createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
@@ -21,11 +20,10 @@ import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
-import { Save } from '@mui/icons-material/';
-
-import { toWithOutError, to, useForceUpdate, publicationDateWarning } from "utils";
+import { Save, AddCircleOutline } from '@mui/icons-material/';
+import { lanzamientoColaborativoTooltip, preSaleCheckBoxHelper, publicationDateWarning } from '../../utils/textToShow.utils';
+import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
-import { languages } from "variables/varias";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
 import ImageInput from "components/Input/ImageInput";
@@ -35,12 +33,14 @@ import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
 import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
 import { createCollaboratorsInFuga } from "redux/actions/CollaboratorsActions";
 import { languagesFuga } from '../../variables/varias';
+import TextFieldWithInfoImage from '../../components/TextField/TextFieldWithInfoImage';
+import NewArtist from 'views/Artists/NewArtist';
 
 const NewAlbum = ({ editing }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const simpleValidator = useRef(new SimpleReactValidator());
+  const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
   const currentUserData = useSelector(store => store.userData);
@@ -50,6 +50,7 @@ const NewAlbum = ({ editing }) => {
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
   const artistsInvited = useSelector(store => store.artistsInvited);
+
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
@@ -90,6 +91,8 @@ const NewAlbum = ({ editing }) => {
     ]);
   }
 
+  const [openAddArtistDialog, setOpenAddArtistDialog] = useState(false);
+
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks) || [[]]);
@@ -108,10 +111,10 @@ const NewAlbum = ({ editing }) => {
 
   // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
-    if (simpleValidator.current.allValid() && currentAlbumData.cover) {
+    if (validator.current.allValid() && currentAlbumData.cover) {
       createAlbum();
     } else {
-      simpleValidator.current.showMessages();
+      validator.current.showMessages();
       forceUpdate();
     }
   }
@@ -211,6 +214,18 @@ const NewAlbum = ({ editing }) => {
     setTrackData({ ...trackData, artists: [...artistFromLaFlota, ...currentAlbumData.allOtherArtists] })
     setOpenNewTrackDialog(true);
   }
+  const handlerVersion = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, version: event.target.value }));
+  const handlerFormatChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, format: event.target.value }));
+
+  const handlerSubgenreChoose = event => {
+    let subgenreId = allFugaGenres.find(g => g.name === event.target.value).id;
+    setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
+  }
+  const handlerUPC = event => {
+    if (event.target.value.length <= 14) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
+    validator.current.showMessageFor('upc');
+  }
 
   const yearsArray = Array.from({ length: 30 }, (_, i) => 2021 - i);
 
@@ -226,12 +241,24 @@ const NewAlbum = ({ editing }) => {
 
         <Grid container item xs={12} paddingTop={4} >
 
-          <ImageInput imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage} textButton="Arte de Tapa"
+          <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage} textButton="Arte de Tapa"
             progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
-            El archivo debe ser JPG colores RGB de mínimo 1400*1400px (si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
+            El archivo debe ser JPG de colores RGB de mínimo 1400*1400px y siempre debe ser CUADRADA (si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
           />
 
+          <NewArtist editing={false} view="dialog" isOpen={openAddArtistDialog} handleClose={() => setOpenAddArtistDialog(false)} />
+
           <Grid container item xs={12} >
+
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                onClick={() => setOpenAddArtistDialog(true)}
+                sx={buttonAddArtist}
+                endIcon={<AddCircleOutline />}>
+                Crear Artista Principal
+              </Button>
+            </Grid>
 
             <Grid item xs={12}>
               <TextFieldWithInfo
@@ -247,14 +274,17 @@ const NewAlbum = ({ editing }) => {
                 selectItems={myArtists}
                 selectKeyField="id"
                 selectValueField="name"
-                validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: simpleValidator }}
+                validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: validator }}
               />
             </Grid>
+
           </Grid>
 
           <AddOtherArtistsAlbumForm
-            checkBoxLabel="¿Es un lanzamiento Colaborativo?"
+            checkBoxLabel="¿Lanzamiento Colaborativo?"
             checkBoxHelper={lanzamientoColaborativoTooltip}
+            checkBoxColor="#9c27b0"
+            buttonColor="#9c27b0"
           />
 
           <Grid container item xs={12}>
@@ -266,7 +296,7 @@ const NewAlbum = ({ editing }) => {
                 label="Título del Lanzamiento"
                 value={currentAlbumData.title}
                 onChange={handlerAlbumTitle}
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: simpleValidator }}
+                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
               />
             </Grid>
 
@@ -283,48 +313,39 @@ const NewAlbum = ({ editing }) => {
                 selectItems={myLabels}
                 selectKeyField="name"
                 selectValueField="name"
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: simpleValidator }}
+                validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: validator }}
               />
             </Grid>
           </Grid>
 
-        </Grid>
+          <Grid container item xs={12}>
+            <Grid item xs={6}>
+              <TextFieldWithInfoImage
+                name="version"
+                sx={textFieldStyle}
+                label="Versión (Vivo, Acústico...)"
+                value={currentAlbumData.version}
+                helperText="Puedes especificar si el lanzamiento es una versión de otro lanzamiento. Por Ejemplo, una versión en Vivo o Acústica."
+                onChange={handlerVersion}
+                imageSource="/images/versionReleaseHelp.png"
+                contentTexts={[["No debés escribir los paréntesis, se incluirán solos."]]}
+              />
+            </Grid>
 
-
-        {/* <Grid item xs={6}>
-        <Divider variant="fullWidth" style={{ position: "inherit", height: "3px", backgroundColor: "darkslateblue" }} absolute={true} />
-      </Grid> */}
-
-        <Grid container item xs={12}>
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              sx={textFieldStyle}
-              name="p_year"
-              required
-              select
-              label="(P) Año de Publicación"
-              value={currentAlbumData.p_year}
-              onChange={handlerPYearChoose}
-              helperText="Año en que esta grabación del Álbum/Single fue publicada por primera vez."
-              selectItems={yearsArray}
-              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: simpleValidator }}
-            />
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="format"
+                sx={textFieldStyle}
+                select
+                label="Formato del Lanzamiento"
+                value={currentAlbumData.format}
+                onChange={handlerFormatChoose}
+                helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Album."
+                selectItems={["ALBUM", "SINGLE", "EP"]}
+              />
+            </Grid>
           </Grid>
 
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="p_line"
-              sx={textFieldStyle}
-              required
-              label="Publicador (Publisher)"
-              value={currentAlbumData.p_line}
-              onChange={handlerPLineChoose}
-              helperText="El dueño de los Derechos de Publicación de esta grabación.
-            → Ej. 1: Fito Paez | Ej. 2: Sony Music"
-              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.", validator: simpleValidator }}
-            />
-
-          </Grid>
         </Grid>
 
         <Grid container item xs={12}>
@@ -339,10 +360,26 @@ const NewAlbum = ({ editing }) => {
               onChange={handlerCYearChoose}
               helperText="Año en que el Álbum/Single fue publicado por primera vez."
               selectItems={yearsArray}
-              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: simpleValidator }}
+              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
             />
           </Grid>
+          <Grid item xs={6}>
+            <TextFieldWithInfo
+              sx={textFieldStyle}
+              name="p_year"
+              required
+              select
+              label="(P) Año de Publicación"
+              value={currentAlbumData.p_year}
+              onChange={handlerPYearChoose}
+              helperText="Año en que esta grabación del Álbum/Single fue publicada por primera vez."
+              selectItems={yearsArray}
+              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
+            />
+          </Grid>
+        </Grid>
 
+        <Grid container item xs={12}>
           <Grid item xs={6}>
             <TextFieldWithInfo
               name="c_line"
@@ -353,33 +390,55 @@ const NewAlbum = ({ editing }) => {
               onChange={handlerCLineChoose}
               helperText="El dueño de los Derechos de Autor.
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
-              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.", validator: simpleValidator }}
+              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.", validator: validator }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextFieldWithInfo
+              name="p_line"
+              sx={textFieldStyle}
+              required
+              label="Publisher"
+              value={currentAlbumData.p_line}
+              onChange={handlerPLineChoose}
+              helperText="El dueño de los Derechos de Publicación de esta grabación.
+            → Ej. 1: Fito Paez | Ej. 2: Sony Music"
+              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.", validator: validator }}
             />
           </Grid>
         </Grid>
 
         <Grid container item xs={12} paddingTop={3} justifyContent="center">
 
+          <Grid item xs={12}>
+            <TextFieldWithInfo
+              name="upc"
+              sx={textFieldLaFlotaArtistStyle}
+              label="UPC"
+              value={currentAlbumData.upc}
+              helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
+              onChange={handlerUPC}
+              validatorProps={{ restrictions: 'max:13|numeric', message: "Formato inválido: El UPC es un código de máximo 13 números", validator: validator }}
+            />
+          </Grid>
+
           <TypographyWithInfo
             infoTooltip={"Presionar para más información"} infoDialog={publicationDateWarning} title="Fecha del Lanzamiento"
           />
 
           <SelectDateInputDDMMYYYY dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
-            setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={simpleValidator} />
+            setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={validator} />
 
           <CheckboxWithInfo
             label="Permitir Pre-Comprar antes del lanzamiento"
             checked={currentAlbumData.preOrder}
             onChecked={handleCheckedPreOrder}
-            checkBoxHelper="Podés permitir que tus seguidores compren tu trabajo en iTunes, Amazon y Google Play antes de la fecha del lanzamiento
-             (les llegará el álbum el día del lanzamiento). Es ideal para generar campañas de marketing alrededor de la fecha de lanzamiento. 
-             Para que funcione debés elegir una fecha de inicio de Pre-Compra anterior a la fecha del lanzamiento que seleccionaste. La Fecha de 
-             Lanzamiento debe ser de al menos 10 días en el futuro. Por ej: si la fecha de lanzamiento que seleccionaste es en 10 días desde hoy, el Pre-Order podría iniciar en 5 días desde hoy."
+            checkBoxHelper={preSaleCheckBoxHelper}
           />
 
           {currentAlbumData.preOrder &&
             <SelectDateInputDDMMYYYY dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
-              setDayOfMonth={handlerPreOrderDayOfMonth} setMonth={handlerPreOrderMonth} setYear={handlerPreOrderYear} simpleValidator={simpleValidator} />
+              setDayOfMonth={handlerPreOrderDayOfMonth} setMonth={handlerPreOrderMonth} setYear={handlerPreOrderYear} simpleValidator={validator} />
           }
           {currentAlbumData.preOrder &&
             <CheckboxWithInfo
@@ -395,7 +454,7 @@ const NewAlbum = ({ editing }) => {
               <Typography variant="h5">Idioma y Género</Typography>
             </Grid>
 
-            <Grid item xs={3}>
+            <Grid item xs={6}>
               <TextFieldWithInfo
                 name="language"
                 fullWidth
@@ -409,7 +468,9 @@ const NewAlbum = ({ editing }) => {
                 selectValueField="name"
               />
             </Grid>
+          </Grid>
 
+          <Grid container item spacing={2} xs={12} justifyContent="center" paddingTop={3}>
             <Grid item xs={3}>
               <TextFieldWithInfo
                 name="generosMusicales"
@@ -419,6 +480,20 @@ const NewAlbum = ({ editing }) => {
                 label="Género Musical Principal"
                 value={currentAlbumData.genre}
                 onChange={handlerGenreChoose}
+                selectItems={allFugaGenres}
+                selectKeyField="id"
+                selectValueField="name"
+              />
+            </Grid>
+
+            <Grid item xs={3}>
+              <TextFieldWithInfo
+                name="subgenerosMusicales"
+                fullWidth
+                select
+                label="Género Musical Secudario"
+                value={currentAlbumData.subgenreName}
+                onChange={handlerSubgenreChoose}
                 selectItems={allFugaGenres}
                 selectKeyField="id"
                 selectValueField="name"
@@ -460,8 +535,6 @@ const NewAlbum = ({ editing }) => {
 
 export default NewAlbum;
 
-const lanzamientoColaborativoTooltip = "Seleccioná si el lanzamiento pertenece a dos o más artistas";
-
 const textFieldStyle = { width: "60%" };
 const textFieldLaFlotaArtistStyle = { width: "40%" };
 
@@ -482,4 +555,12 @@ const cardTitleWhiteStyles = {
   fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
   marginBottom: "3px",
   textDecoration: "none"
+}
+
+const buttonAddArtist = {
+  marginTop: "2%",
+  backgroundColor: "#9c27b0",
+  '&:hover': {
+    backgroundColor: "#9c27b0",
+  },
 }

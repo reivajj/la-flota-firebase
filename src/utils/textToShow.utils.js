@@ -28,3 +28,10 @@ export const lanzamientoColaborativoTooltip = [
   "esta opción publicará el álbum en los perfiles de cada uno de los artistas y pertenecerá a ambos.", <br />,
   "Presionar para ver Ejemplo de un Lanzamiento con dos Artistas en Spotify."
 ]
+
+export const albumCoverHelperText = [
+  "El arte de tapa debe ser una imagen de alta calidad.",
+  "El archivo debe ser JPG de colores RGB de mínimo 1400 * 1400px y siempre debe ser CUADRADA(si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
+]
+
+export const deleteAlbumDialogText = "Confirma que quieres eliminar el Album. Se eliminarán todas las canciones que lo componen y se dará de baja de todas las Tiendas.";

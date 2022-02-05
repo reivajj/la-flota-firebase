@@ -17,11 +17,11 @@ const initialState = [];
 const ArtistsInvitedReducer = (state = initialState, action) => {
   switch (action.type) {
 
-    case ReducerTypes.ADD_INVITED_ARTISTS:
+    case ReducerTypes.INVITED_ARTISTS_ADD:
       const newArtistsInvited = filterArtistsWithSameIdThanNewOne(state, action.payload);
       return [...state, ...newArtistsInvited]
 
-    case ReducerTypes.EDIT_INVITED_ARTIST_WITH_ID:
+    case ReducerTypes.INVITED_ARTIST_EDIT_WITH_ID:
       return editAndAddArtist(state, action.payload);
 
     case ReducerTypes.INVITED_ARTIST_DELETE_WITH_ID:

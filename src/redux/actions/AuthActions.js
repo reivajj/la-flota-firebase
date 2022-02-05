@@ -31,12 +31,13 @@ export const passwordChanged = (text) => {
 };
 
 const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) => {
-  let albums = await FirestoreServices.getElements(userUid, "albums", dispatch);
-  let artists = await FirestoreServices.getElements(userUid, "artists", dispatch);
-  let labels = await FirestoreServices.getElements(userUid, "labels", dispatch);
+  const albums = await FirestoreServices.getElements(userUid, "albums", dispatch);
+  const artists = await FirestoreServices.getElements(userUid, "artists", dispatch);
+  const labels = await FirestoreServices.getElements(userUid, "labels", dispatch);
   const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch);
+  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch);
 
-  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists));
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators));
 }
 
 const getAllDataFromDBToStore = async (userUid, userDataFromDB, dispatch) => {

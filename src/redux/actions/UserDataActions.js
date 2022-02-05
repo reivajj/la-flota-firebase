@@ -1,36 +1,27 @@
 import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
-import { addArtistsInvited } from './ArtistsInvitedActions';
-import { addCollaborators } from './CollaboratorsActions';
+import { addArtistsInvited, invitedArtistSignOut } from './ArtistsInvitedActions';
+import { addCollaborators, collaboratorsSignOut } from './CollaboratorsActions';
+import { albumsAddStore } from './AlbumsActions';
+import { labelsAddStore } from './LabelsActions';
+import { artistsAddStore } from './ArtistsActions';
+
+export const userDataAddInfoStore = userInfo => {
+  return {
+    type: ReducerTypes.USER_DATA_SIGN_IN,
+    payload: userInfo
+  }
+}
 
 // ACTION CREATORS
 export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists, collaborators) => async dispatch => {
-  console.log("INVITED ARTISTS: ", invitedArtists);
-  dispatch({
-    type: ReducerTypes.USER_DATA_SIGN_IN,
-    payload: userInfo
-  });
-
-  dispatch({
-    type: ReducerTypes.ADD_ARTISTS,
-    payload: artists
-  });
-
-  dispatch({
-    type: ReducerTypes.ADD_ALBUMS,
-    payload: albums
-  });
-
-  dispatch({
-    type: ReducerTypes.ADD_LABELS,
-    payload: labels
-  });
-
+  dispatch(userDataAddInfoStore(userInfo));
+  dispatch(artistsAddStore(artists));
+  dispatch(albumsAddStore(albums));
+  dispatch(labelsAddStore(labels));
   dispatch(addArtistsInvited(invitedArtists));
   dispatch(addCollaborators(collaborators));
-
   return;
-
 };
 
 export const userDataSignOut = () => async dispatch => {
@@ -54,9 +45,8 @@ export const userDataSignOut = () => async dispatch => {
     type: ReducerTypes.TRACKS_SIGN_OUT
   })
 
-  dispatch({
-    type: ReducerTypes.INVITED_ARTISTS_SIGN_OUT
-  })
+  dispatch(invitedArtistSignOut());
+  dispatch(collaboratorsSignOut());
 };
 
 export const userDataAddImage = (urlImage) => {

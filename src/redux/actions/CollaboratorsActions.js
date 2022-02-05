@@ -6,6 +6,20 @@ import { createPersonsModel } from 'services/CreateModels';
 import { v4 as uuidv4 } from 'uuid';
 
 
+export const addCollaborators = collaborators => {
+  console.log("Collaborators: ", collaborators);
+  return {
+    type: ReducerTypes.ADD_COLLABORATORS,
+    payload: collaborators
+  };
+};
+
+export const collaboratorsSignOut = () => {
+  return {
+    type: ReducerTypes.COLLABORATORS_SIGN_OUT
+  }
+}
+
 export const createCollaboratorRedux = (collaborator, userId) => async dispatch => {
 
   let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, dispatch);
@@ -56,7 +70,6 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
 }
 
 export const createCollaboratorsInFuga = (tracksCreated, ownerId) => async dispatch => {
-  console.log("COLL CREATED: ", tracksCreated);
 
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
   let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch);
@@ -86,10 +99,3 @@ export const createCollaboratorsInFuga = (tracksCreated, ownerId) => async dispa
 
   return "SUCCESS";
 }
-
-export const addCollaborators = collaborators => {
-  return {
-    type: ReducerTypes.ADD_COLLABORATORS,
-    payload: collaborators
-  };
-};

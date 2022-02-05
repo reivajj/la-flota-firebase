@@ -11,7 +11,7 @@ import { deleteArtistRedux } from "redux/actions/ArtistsActions";
 
 const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Album en el que esté el Artista."
 
-const Artist = ({ dataArtist, index }) => {
+const ArtistCard = ({ dataArtist, index }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -135,38 +135,10 @@ const Artist = ({ dataArtist, index }) => {
   );
 }
 
-export default Artist;
+export default ArtistCard;
 
-const imageStyle = {
-  borderRadius: "30px",
-  marginTop: "20px",
-  width: "15em",
-  height: "15em"
-}
-
-const cardElementStyle = {
-  borderRadius: "30px",
-  marginTop: "20px",
-  width: "22em",
-  height: "32em"
-}
-const cardSubtitleBlackStyles = {
-  color: "rgba(0,0,0,0.5)",
-  margin: "0",
-  fontSize: "14px",
-  marginTop: "1em",
-  marginBottom: "0"
-}
-
-const cardTitleBlackStyles = {
-  color: "rgba(0,0,0,1)",
-  fontWeight: "300px",
-  fontSize: "30px",
-  marginBottom: "3px",
-}
-
-const dividerStyle = {
-  width: "18em",
-  borderColor: "rgba(0,0,0,0.2)",
-  borderBottomWidth: "0.15em",
-}
+const imageStyle = { borderRadius: "30px", marginTop: "20px", width: "15em", height: "15em" };
+const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em", height: "32em" };
+const cardSubtitleBlackStyles = { color: "rgba(0,0,0,0.5)", margin: "0", fontSize: "14px", marginTop: "1em", marginBottom: "0" };
+const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
+const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };

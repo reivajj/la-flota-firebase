@@ -3,6 +3,13 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createArtistModel } from '../../services/CreateModels';
 
+export const artistsAddStore = artists => {
+  return {
+    type: ReducerTypes.ADD_ARTISTS,
+    payload: artists
+  }
+}
+
 // TypeOfArtists = ["artists", "artistsInvited"];
 export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => async dispatch => {
 
@@ -20,7 +27,7 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
   await FirestoreServices.createElementFS(artist, artist.id, userId, typeOfArtist, totalField, 1, dispatch);
 
   if (typeOfArtist !== "artists") return "SUCCESS";
-  
+
   dispatch({
     type: ReducerTypes.ADD_ARTISTS,
     payload: [artist]

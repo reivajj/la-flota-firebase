@@ -21,7 +21,7 @@ import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
-import { lanzamientoColaborativoTooltip, preSaleCheckBoxHelper, publicationDateWarning } from '../../utils/textToShow.utils';
+import { albumCoverHelperText, lanzamientoColaborativoTooltip, preSaleCheckBoxHelper, publicationDateWarning } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
@@ -242,8 +242,7 @@ const NewAlbum = ({ editing }) => {
         <Grid container item xs={12} paddingTop={4} >
 
           <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage} textButton="Arte de Tapa"
-            progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
-            El archivo debe ser JPG de colores RGB de mínimo 1400*1400px y siempre debe ser CUADRADA (si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
+            progress={progress} message={message} helperText={albumCoverHelperText}
           />
 
           <NewArtist editing={false} view="dialog" isOpen={openAddArtistDialog} handleClose={() => setOpenAddArtistDialog(false)} />

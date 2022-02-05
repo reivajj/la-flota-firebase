@@ -12,17 +12,14 @@ export const createOtherArtistsInFuga = (allOtherArtistsAlbum, ownerId) => async
     return "SUCCESS";
   });
 
-  let [errorCreatingAllArtists, successCreatingAllArtists] = await to(Promise.all(createOtherArtistOneByOne));
+  let [errorCreatingAllArtists] = await to(Promise.all(createOtherArtistOneByOne));
   if (errorCreatingAllArtists) {
     console.log("ERROR EN EL PROMISE ALL :", errorCreatingAllArtists);
     return "ERROR";
   }
 
-  console.log("Success creando los tracks en el album: ", successCreatingAllArtists);
-  console.log("Los artists despues de agregar todo: ", allOtherArtistsNotEmptyAlbum);
-
   dispatch({
-    type: ReducerTypes.ADD_INVITED_ARTISTS,
+    type: ReducerTypes.INVITED_ARTISTS_ADD,
     payload: allOtherArtistsNotEmptyAlbum
   });
 
@@ -31,7 +28,13 @@ export const createOtherArtistsInFuga = (allOtherArtistsAlbum, ownerId) => async
 
 export const addArtistsInvited = artistsInvited => {
   return {
-    type: ReducerTypes.ADD_INVITED_ARTISTS,
+    type: ReducerTypes.INVITED_ARTISTS_ADD,
     payload: artistsInvited
   };
 };
+
+export const invitedArtistSignOut = () => {
+  return {
+    type: ReducerTypes.INVITED_ARTISTS_SIGN_OUT
+  }
+}

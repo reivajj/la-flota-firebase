@@ -3,6 +3,13 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel } from 'services/CreateModels';
 
+export const albumsAddStore = albums => {
+  return {
+    type: ReducerTypes.ADD_ALBUMS,
+    payload: albums
+  }
+}
+
 //Los errores los manejan las funciones a las que llamo.
 export const createAlbumRedux = (album, userId) => async dispatch => {
 
@@ -12,18 +19,32 @@ export const createAlbumRedux = (album, userId) => async dispatch => {
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
   album.fugaId = albumFromThirdWebApi.data.response.albumId;
-  album.whenCreatedTS = new Date().getTime(); 
+  album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
   delete album.cover;
 
   await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);
-  
+
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,
     payload: [album]
   });
 
   return album;
+}
+
+export const deleteAlbumRedux = (albumId, albumFugaId, userId) => async dispatch => {
+  // let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
+  // if (deleteResponse === "ERROR") return "ERROR";
+
+  // await FirestoreServices.deleteElementFS(artistId, userId, "artists", "totalArtists", -1, dispatch);
+
+  // dispatch({
+  //   type: ReducerTypes.ARTIST_DELETE_WITH_ID,
+  //   payload: artistId
+  // });
+
+  return "SUCCESS";
 }
 
 export const updateAddingAlbumRedux = newAddingAlbum => {

@@ -44,7 +44,7 @@ const TextFieldWithInfo = (props) => {
         multiline={multiline}
       >
         {select ? selectItems.map((item) => (
-          <MenuItem key={selectKeyField ? item[`${selectKeyField}`] : item} value={selectValueField ? item[`${selectValueField}`] : item}>
+          <MenuItem key={selectKeyField ? name + item[`${selectKeyField}`] : name + item} value={selectValueField ? item[`${selectValueField}`] : item}>
             {selectValueField ? item[`${selectValueField}`] : item}
           </MenuItem>
         )) : ""}

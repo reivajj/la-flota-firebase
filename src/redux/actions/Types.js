@@ -53,8 +53,8 @@ export const EDIT_TRACK_POST_UPLOAD_IN_DB = "edit_track_post_upload_in_db";
 export const SET_TRACK_UPLOAD_PROGRESS = "set_track_upload_progress";
 
 // ArtistsInvited Types
-export const ADD_INVITED_ARTISTS = "add_invited_artists";
-export const EDIT_INVITED_ARTIST_WITH_ID = "edit_invited_artist_with_id";
+export const INVITED_ARTISTS_ADD = "INVITED_ARTISTS_ADD";
+export const INVITED_ARTIST_EDIT_WITH_ID = "INVITED_ARTIST_EDIT_WITH_ID";
 export const INVITED_ARTIST_DELETE_WITH_ID = "invited_artist_delete_with_id";
 export const INVITED_ARTISTS_SIGN_OUT = "invited_artists_sign_out";
 

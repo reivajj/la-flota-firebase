@@ -12,6 +12,11 @@ export const infoSpotifyUri = [
   "Haz click para más información."
 ];
 
+export const infoHelperTextAppleId = [
+  "Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo.", <br />,
+  "Podes encontrarla en tu perfil en iTunes(son los últimos dígitos de la URL de tu perfil)."
+]
+
 export const preSaleCheckBoxHelper = [
   "Podés permitir que tus seguidores compren tu trabajo en iTunes, Amazon y Google Play antes de la fecha del lanzamiento",
   <br />,
@@ -35,3 +40,15 @@ export const albumCoverHelperText = [
 ]
 
 export const deleteAlbumDialogText = "Confirma que quieres eliminar el Album. Se eliminarán todas las canciones que lo componen y se dará de baja de todas las Tiendas.";
+
+export const getNumeracionOrdinalFromIndex = [
+  "Primer", "Segundo", "Tercer", "Cuarto", "Quinto", "Séptimo", "Octavo", "Noveno", "Décimo", "Undécimo", "Duodécimo", "Decimotercer",
+  "Decimocuarto", "Decimoquinto", "Decimosexto", "Decimoséptimo", "Decimoctavo", "Decimonoveno", "Vigésimo"
+]
+
+export const getHelperCollaboratorText = indexCollaborator => {
+  if (indexCollaborator === 0) return "Ingresá el nombre del Compositor como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Compositor.";
+  if (indexCollaborator === 1) return "Ingresá el nombre del Liricista como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Liricista.";
+  if (indexCollaborator === 2) return "Ingresá el nombre como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. ";
+  return "";
+}

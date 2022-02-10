@@ -6,7 +6,7 @@ import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper, onClickInfo }) => {
 
   return (
-    <Grid container item xs={12} sx={{ paddingTop: "1%" }}>
+    <Grid container item xs={12}>
       <Grid item xs={7} textAlign="end" >
         <BasicCheckbox
           label={label}

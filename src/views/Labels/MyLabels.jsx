@@ -1,8 +1,7 @@
 import React from "react";
-import makeStyles from '@mui/styles/makeStyles';
 // core components
 import Label from 'views/Labels/Label';
-import { Grid, Button } from '@mui/material';
+import { Grid, Button, Typography } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -28,9 +27,9 @@ const MyLabels = () => {
 
   return (
     <div>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} textAlign="center">
         <Grid item xs={12}>
-          <h1 >Mis Sellos</h1>
+        <Typography sx={labelsTitleStyles}>Sellos</Typography>
           <Button variant="contained" color="secondary" onClick={addLabel} endIcon={<AddCircleOutlineIcon />}>
             Agregar Sello
           </Button>
@@ -40,7 +39,7 @@ const MyLabels = () => {
         }
         <Grid item xs={12}>
           {myLabels.length === 0 &&
-            <h4 style={styles.cardTitleBlack}>No tienes Sellos</h4>}
+            <h4 style={noLabelsTitleBlackStyles}>No tienes Sellos</h4>}
         </Grid>
       </Grid>
     </div >
@@ -49,23 +48,5 @@ const MyLabels = () => {
 
 export default MyLabels;
 
-const styles = {
-  cardCategoryWhite: {
-    color: "rgba(255,255,255,.62)",
-    margin: "0",
-    fontSize: "14px",
-    marginTop: "0",
-    marginBottom: "0"
-  },
-  cardTitleBlack: {
-    color: "#000000",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none"
-  }
-};
-
-const useStyles = makeStyles(styles);
+const labelsTitleStyles = { color: "#000000", fontWeight: "400px", fontSize: "50px", marginBottom: "2%" };
+const noLabelsTitleBlackStyles = { color: "#000000", fontWeight: "300px", marginBottom: "3px" };

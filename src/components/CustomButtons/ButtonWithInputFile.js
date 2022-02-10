@@ -1,10 +1,12 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { green, red } from '@mui/material/colors';
-import Button from "components/CustomButtons/Button.js";
+// import Button from "components/CustomButtons/Button.js";
 import { createTheme } from '@mui/material/styles';
+import { Button } from '@mui/material';
 
 const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) => {
+  const buttonAdd = { backgroundColor: color, '&:hover': { backgroundColor: color } }
   const classes = useStyles();
 
   return (
@@ -20,7 +22,7 @@ const ButtonWithInputFile = ({ textButton, onClickHandler, fileType, color }) =>
             onChange={onClickHandler}
           />
           <Button
-            color={color}
+            sx={buttonAdd}
             variant="contained"
             component="span">
             {textButton}

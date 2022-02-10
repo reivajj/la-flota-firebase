@@ -5,7 +5,7 @@ import { Delete } from '@mui/icons-material';
 import ArtistAddedIcon from '../Icons/ArtistAddedIcon';
 import LabelledAndColoredSwitch from '../../components/Switch/LabelledAndColoredSwitch';
 
-const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists }) => {
+const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists, allOtherArtists }) => {
 
   return (
     <Grid item xs={3} justifyContent="center">
@@ -31,7 +31,7 @@ const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists }) 
                   label={(artists.length === 1 || artists[index].primary) ? "Principal" : "Featuring"} />
               </Grid>
 
-              {artists.length > 1 &&
+              {artists.length + allOtherArtists.filter(otherA => otherA.primary).length > 1 &&
                 <Grid item xs={4} sx={deleteGridStyle}>
                   <IconButton sx={deleteIconStyle} size="small" onClick={() => handleDelete(index)}>
                     <Delete fontSize="inherit" />

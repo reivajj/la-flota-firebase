@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useSelector } from 'react-redux';
+import { infoSpotifyUri } from 'utils/textToShow.utils';
 
 
 export const AddMoreArtistsInAlbumDialog = (props) => {
@@ -44,6 +45,9 @@ export const AddMoreArtistsInAlbumDialog = (props) => {
             label="Spotify Uri"
             value={currentArtistData.spotify_uri}
             onChange={changeSpotifyUri}
+            helperText={infoSpotifyUri}
+            hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
+            targetHref="_blank"
           />
 
           <TextFieldWithInfo

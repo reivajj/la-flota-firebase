@@ -1,43 +1,40 @@
 import React from "react";
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { Grid, Tooltip, Button, IconButton } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 import { Info } from '@mui/icons-material';
-import { updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateSpotifyUriOtherArtistsAlbumRedux } from 'redux/actions/AlbumsActions';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
-import { updatePrimaryOtherArtistsAlbumRedux } from '../../redux/actions/AlbumsActions';
 import BasicSwitch from 'components/Switch/BasicSwitch';
+import { getNumeracionOrdinalFromIndex } from "utils/textToShow.utils";
 
-const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor }) => {
+const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData }) => {
 
-  const buttonColorStyle = {
-    backgroundColor: buttonColor,
-    '&:hover': {
-      backgroundColor: buttonColor,
-    },
-  }
+  const buttonColorStyle = { backgroundColor: buttonColor, '&:hover': { backgroundColor: buttonColor } };
 
-  const dispatch = useDispatch();
   const currentAddingAlbum = useSelector(store => store.albums.addingAlbum);
 
   const addOneArtistSkeleton = () => {
-    if (currentAddingAlbum.allOtherArtists.length >= 4) return;
-    let artist = { name: "", spotify_uri: "", id: uuidv4(), primary: false };
-    dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] }));
-    // setTrackData({ ...trackData, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] });
+    // REVEER: TEMA ARTISTS IDENTIFIERS Y DAR MSJ DE ERROR (notification) POR MAS DE 20 ARTISTAS.
+    if (trackData.artists.length + trackData.allOtherArtists.length > 20) return;
+    let otherArtist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
+    setTrackData({ ...trackData, allOtherArtists: [...trackData.allOtherArtists, otherArtist] });
   }
 
-  const deleteAllOtherArtists = () => {
-    dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [] }));
-    // setTrackData({ ...trackData, allOtherArtists: [] });
+  const getNewOtherArtists = (targetField, value, index) => {
+    let newOtherArtists = [...trackData.allOtherArtists];
+    newOtherArtists[index][targetField] = value;
+    return newOtherArtists;
   }
 
-  const handleChangeArtistPrimary = (isPrimary, otherArtistIndex) => dispatch(updatePrimaryOtherArtistsAlbumRedux(isPrimary, otherArtistIndex));
-  const handlerAddNameToOtherArtists = (nameValue, otherArtistIndex) => dispatch(updateNameOtherArtistsAlbumRedux(nameValue, otherArtistIndex));
-  const handlerAddSpotifyUri = (spotifyUri, otherArtistIndex) => dispatch(updateSpotifyUriOtherArtistsAlbumRedux(spotifyUri, otherArtistIndex));
+  const deleteAllOtherArtists = () => setTrackData({ ...trackData, allOtherArtists: [] });
+  const handleChangeArtistPrimary = (isPrimary, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("primary", isPrimary, index) });
+  const handlerAddNameToOtherArtists = (nameValue, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("name", nameValue, index) });
+  const handlerAddSpotifyUri = (spotify_uri, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("spotify_uri", spotify_uri, index) });
+  const handlerAddAppleID = (apple_id, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("apple_id", apple_id, index) });
+  const handleDeleteOtherArtist = aIndex => setTrackData({ ...trackData, allOtherArtists: trackData.allOtherArtists.filter((_, i) => i !== aIndex) });
 
   const handleOnChangeCheckBox = (event) => {
     if (event.target.checked) addOneArtistSkeleton();
@@ -51,18 +48,18 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
   // }
 
   const getOtherArtistPositionFromIndex = otherArtistIndex => {
-    if (otherArtistIndex > 4) return "";
-    return ["Segundo Artista Principal", "Tercer Artista Principal", "Cuarto Artista Principal", "Quinto Artista Principal"][otherArtistIndex];
+    if (otherArtistIndex >= 20) return "NO PUEDES AGREGAR MÁS DE 20 ARTISTAS";
+    return `Nombre ${getNumeracionOrdinalFromIndex[otherArtistIndex]} Artista`;
   }
 
   return (
     <>
-      <Grid container item xs={12} sx={{ paddingTop: "1%" }}>
+      <Grid container item xs={12} sx={{ marginLeft: "6%" }}>
         <Grid item xs={7} textAlign="end" >
           <BasicCheckbox
             label={checkBoxLabel}
             onChecked={handleOnChangeCheckBox}
-            checked={currentAddingAlbum.allOtherArtists.length > 0}
+            checked={trackData.allOtherArtists.length > 0}
             color={checkBoxColor}
           />
         </Grid>
@@ -73,11 +70,11 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
         </Grid>
       </Grid>
 
-      {currentAddingAlbum.allOtherArtists.map((otherArtist, index) => (
+      {trackData.allOtherArtists.map((otherArtist, index) => (
 
-        < Grid container item xs={12} key={index + "bigGrid"} >
+        < Grid container item xs={12} key={index + "trackOtherBigGrid"} >
 
-          <Grid item sx={gridSwitcherStyle} key={"switch-primary"}>
+          <Grid item sx={gridSwitcherStyle} key={"track-other-switch-primary"}>
             {index === 0
               ? <InfoSwitch
                 label={otherArtist.primary ? "Principal" : "Featuring"}
@@ -93,18 +90,19 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
             }
           </Grid>
 
-          <Grid item sx={gridNameStyle} key={index + "nameGrid"} textAlign="left">
+          <Grid item sx={gridNameStyle} key={index + "trackOtherNameGrid"} textAlign="left">
             <TextFieldWithInfo
-              name={getOtherArtistPositionFromIndex(index)}
+              name={getOtherArtistPositionFromIndex(index + trackData.artists.length)}
               sx={textFiedNameStyle}
-              label={getOtherArtistPositionFromIndex(index)}
+              label={getOtherArtistPositionFromIndex(index + trackData.artists.length)}
               value={otherArtist.name}
+              required
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
               helperText={index === 0 ? "Ingresá el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
             />
           </Grid>
 
-          <Grid item sx={gridUriStyle} key={index + "spotifyUriGrid"}>
+          <Grid item sx={gridUriStyle} key={index + "trackOtherspotifyUriGrid"}>
             <TextFieldWithInfo
               name="spotifyUriSecondArtist"
               sx={textFieldURIStyle}
@@ -114,10 +112,21 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               helperText={index === 0 ? "Ingresá el código URi de Spotify. " : ""}
             />
           </Grid>
+
+          <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
+            <TextFieldWithInfo
+              name="appleIdOhterTackArtist"
+              sx={textFieldAppleIDStyle}
+              label="Apple ID"
+              value={otherArtist.apple_id}
+              onChange={(event) => handlerAddAppleID(event.target.value, index)}
+              helperText={index === 0 ? "Ingresá el Apple ID. " : ""}
+            />
+          </Grid>
         </Grid>)
       )}
 
-      {currentAddingAlbum.allOtherArtists.length > 0 &&
+      {trackData.allOtherArtists.length > 0 &&
         <Grid item xs={12}>
           <Button variant="contained" sx={buttonColorStyle} onClick={addOneArtistSkeleton}>
             Agregar Artista
@@ -129,9 +138,11 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
 
 export default AddOtherArtistsTrackForm;
 
-const textFiedNameStyle = { width: "66.8%" }
-const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
+const textFiedNameStyle = { width: "93%" }
+const textFieldURIStyle = { width: "90%" }
+const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "45%" }
-const gridUriStyle = { width: "45%", textAlign: "left" };
+const gridNameStyle = { width: "40%" }
+const gridUriStyle = { width: "22.5%", textAlign: "left" };
+const gridAppleStyle = { width: "22.5%", textAlign: "left" };
 

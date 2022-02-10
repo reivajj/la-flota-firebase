@@ -643,3 +643,5 @@ export const allFugaSubgenres = [
     "name": "world-music"
   }
 ]
+
+export const allFugaSubgenresNames = allFugaSubgenres.map(subgnreWithIdAndName => subgnreWithIdAndName.name);

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Grid, Button } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
-import { updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateSpotifyUriOtherArtistsAlbumRedux } from 'redux/actions/AlbumsActions';
+import { updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateIdentifierOtherArtistsAlbumRedux } from 'redux/actions/AlbumsActions';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import { updatePrimaryOtherArtistsAlbumRedux } from '../../redux/actions/AlbumsActions';
@@ -41,8 +41,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
   const handleChangeArtistPrimary = (isPrimary, otherArtistIndex) => dispatch(updatePrimaryOtherArtistsAlbumRedux(isPrimary, otherArtistIndex));
   const handlerAddNameToOtherArtists = (nameValue, otherArtistIndex) => dispatch(updateNameOtherArtistsAlbumRedux(nameValue, otherArtistIndex));
-  const handlerAddSpotifyUri = (spotifyUri, otherArtistIndex) => dispatch(updateSpotifyUriOtherArtistsAlbumRedux(spotifyUri, otherArtistIndex));
-
+  const handleAddIdentifier = (identifier, identifierField, otherArtistIndex) => dispatch(updateIdentifierOtherArtistsAlbumRedux(identifier, identifierField, otherArtistIndex))
   const handleOnChangeCheckBox = (event) => {
     if (event.target.checked) addOneArtistSkeleton();
     else deleteAllOtherArtists();
@@ -71,7 +70,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
           color={checkBoxColor}
           checkBoxHelper={checkBoxHelper}
           onClickInfo={handleTutorialDialog}
-          
+
         />
 
         <ImageDialog title="Ejemplo de un Album con dos artistas Principales:" contentTexts={[[""]]}
@@ -115,10 +114,21 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               sx={textFieldURIStyle}
               label="Codigo Uri de Spotify"
               value={otherArtist.spotify_uri}
-              onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
+              onChange={(event) => handleAddIdentifier(event.target.value, "spotify_uri", index)}
               helperText={index === 0 ? infoSpotifyUri : ""}
               hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
               targetHref="_blank"
+            />
+          </Grid>
+
+          <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
+            <TextFieldWithInfo
+              name="appleIdOhterTackArtist"
+              sx={textFieldAppleIDStyle}
+              label="Apple ID"
+              value={otherArtist.apple_id}
+              onChange={(event) => handleAddIdentifier(event.target.value, "apple_id", index)}
+              helperText={index === 0 ? "Ingresá el Apple ID. " : ""}
             />
           </Grid>
         </Grid>)
@@ -136,8 +146,16 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
 export default AddOtherArtistsForm;
 
-const textFiedNameStyle = { width: "66.8%" }
-const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
+// const textFiedNameStyle = { width: "66.8%" }
+// const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
+// const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
+// const gridNameStyle = { width: "45%" }
+// const gridUriStyle = { width: "45%", textAlign: "left" };
+
+const textFiedNameStyle = { width: "93%" }
+const textFieldURIStyle = { width: "90%" }
+const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "45%" }
-const gridUriStyle = { width: "45%", textAlign: "left" };
+const gridNameStyle = { width: "40%" }
+const gridUriStyle = { width: "22.5%", textAlign: "left" };
+const gridAppleStyle = { width: "22.5%", textAlign: "left" };

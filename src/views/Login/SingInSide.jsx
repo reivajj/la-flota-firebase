@@ -14,7 +14,7 @@ import { signInWithGoogle } from 'services/AuthServices';
 import { SIGNUP_ERROR } from '../../redux/actions/Types';
 import { Image } from 'mui-image'
 import { to } from 'utils';
-import GoogleColorIcon from '../Icons/GoogleColorIcon';
+// import GoogleColorIcon from '../Icons/GoogleColorIcon';
 import TextFieldPassword from '../../components/TextField/TextFieldPassword';
 
 const SignInSide = () => {
@@ -22,7 +22,7 @@ const SignInSide = () => {
   const user = useSelector(store => store.auth.user);
   const email = useSelector(store => store.auth.email);
   const password = useSelector(store => store.auth.password);
-  const errorSignInStore = useSelector(store => store.auth.errorNoExisteUser);
+  const errorMsgSignInStore = useSelector(store => store.auth.errorMsg);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -30,13 +30,14 @@ const SignInSide = () => {
 
 
   useEffect(() => {
-    user ? navigate("/admin/dashboard") : console.log("HEME AQUI DESLOGUEADO");
+    user && navigate("/admin/dashboard");
   }, [user]);
 
   const login = async () => {
+    errorMsgSignInStore && dispatch(actions.loginErrorStore({ error: "", errorMsg: "" }));
     let [errorSignIn] = await to(dispatch(actions.signInDoubleSystem({ email, password, fromSignUp: false })));
     //  REVEER: Dar una pantalla de error correspondiente
-    if (errorSignIn) console.log("Error realizando el signIn: ", errorSignIn);
+    if (errorSignIn) return "ERROR";
   };
 
   const changeEmail = (text) => {
@@ -51,16 +52,16 @@ const SignInSide = () => {
     if (event.key === 'Enter') login();
   }
 
-  const goTosignInWithGoogle = async () => {
-    let userEmailAndUUID = await signInWithGoogle();
-    console.log("USER :", userEmailAndUUID);
-    let [errorAddingInfoToStore] = await to(dispatch(actions.signInFromGoogle(userEmailAndUUID)));
-    if (errorAddingInfoToStore) {
-      dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userEmailAndUUID } });
-      return;
-    }
-    navigate("/admin/dashboard");
-  }
+  // const goTosignInWithGoogle = async () => {
+  //   let userEmailAndUUID = await signInWithGoogle();
+  //   console.log("USER :", userEmailAndUUID);
+  //   let [errorAddingInfoToStore] = await to(dispatch(actions.signInFromGoogle(userEmailAndUUID)));
+  //   if (errorAddingInfoToStore) {
+  //     dispatch({ type: SIGNUP_ERROR, payload: { errorAddingInfoToStore, userEmailAndUUID } });
+  //     return;
+  //   }
+  //   navigate("/admin/dashboard");
+  // }
 
   return (
     <Grid container component="main" sx={rootStyle}>
@@ -69,6 +70,7 @@ const SignInSide = () => {
         <Image src="/images/login-full.jpg" alt="image" duration={30} />
       </Grid>
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+
         <div style={paperStyle}>
           <Box sx={avatarStyle}>
             <Image src="/images/login-avatar.png" alt="logo" duration={30} />
@@ -78,9 +80,9 @@ const SignInSide = () => {
           </Typography>
           <form style={formStyle} noValidate>
 
-            {errorSignInStore &&
+            {errorMsgSignInStore &&
               <Alert severity="error">
-                Combinación Usuario/Constraseña incorrecta, o no estas registrado
+                {errorMsgSignInStore}
               </Alert>}
 
             <TextField
@@ -120,22 +122,22 @@ const SignInSide = () => {
 
             <Grid container padding={1}>
               <Grid item xs>
-                <Link href="#" variant="body2" underline="hover">
+                <Link href="https://www.laflota.com.ar/dashboard/contrasena-perdida/" target="_blank" variant="body2" underline="hover">
                   Olvidaste tu contraseña?
                 </Link>
               </Grid>
-              <Grid item>
+              {/* <Grid item>
                 <Link component={RouterLink} to="/sign-up" underline="hover" variant="body2">
                   {"No tienes una cuenta? Regístrate"}
                 </Link>
-              </Grid>
+              </Grid> */}
             </Grid>
 
-            <Grid container padding={2}>
+            {/* <Grid container padding={2}>
               <Grid item>
                 <GoogleColorIcon sx={{ height: "50px" }} />
               </Grid>
-            </Grid>
+            </Grid> */}
 
             <Box mt={5}>
               <Copyright />

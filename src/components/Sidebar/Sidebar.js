@@ -81,7 +81,7 @@ const Sidebar = props => {
   var brand = (
     <div className={classes.logo}>
       <a
-        href="https://www.creative-tim.com?ref=mdr-sidebar"
+        href="https://www.laflota.com.ar/"
         className={classNames(classes.logoLink)}
         target="_blank"
       >

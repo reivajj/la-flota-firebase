@@ -75,9 +75,10 @@ export const updatePrimaryOtherArtistsAlbumRedux = (isPrimary, otherArtistIndex)
   }
 }
 
-export const updateSpotifyUriOtherArtistsAlbumRedux = (spotifyUri, otherArtistIndex) => {
+export const updateIdentifierOtherArtistsAlbumRedux = (identifier, identifierField, otherArtistIndex) => {
   return {
-    type: ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI,
-    payload: { spotifyUri, otherArtistIndex }
+    type: ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER,
+    payload: { identifier, identifierField, otherArtistIndex }
   }
 }
+

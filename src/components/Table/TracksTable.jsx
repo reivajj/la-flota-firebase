@@ -32,7 +32,7 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
               variant="contained"
               fullWidth
               onClick={handleClickAddTrack}
-              color="primary"
+              sx={addTrackButtonStyles}
               endIcon={<AddCircleOutline />}
             >
               Agregar Canción
@@ -47,10 +47,7 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
 
 export default TracksTable;
 
-const cardStyle = {
-  alignItems: "center",
-  backgroundColor: "cornsilk",
-}
+const cardStyle = { alignItems: "center", backgroundColor: "cornsilk" };
 
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",
@@ -62,3 +59,5 @@ const cardTitleWhiteStyles = {
   marginBottom: "3px",
   textDecoration: "none"
 }
+
+const addTrackButtonStyles = { backgroundColor: "#9c27b0", '&:hover': { backgroundColor: "#9c27b0" } }

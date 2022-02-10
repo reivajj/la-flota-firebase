@@ -1,6 +1,11 @@
-export const createUserDocItem = userData => {
+export const createUserDocItem = (userData, userInWp) => {
   return {
     email: userData.email,
+    userLogin: userInWp.userLogin,
+    userRegisteredInWp: userInWp.userRegistrered,
+    deletedInWp: userInWp.deleted,
+    userIdWp: userInWp.id,
+    userStatus: userInWp.userStatus,
     nombre: userData.nombre,
     apellido: userData.apellido,
     id: userData.id,
@@ -10,9 +15,9 @@ export const createUserDocItem = userData => {
     telefono: "",
     dni: "",
     imagenUrl: "",
-    timestampWhenCreatedUser: Date.now(),
+    timestampWhenCreatedUserInFB: Date.now(),
     rol: "user",
-    plan: "",
+    plan: "charly-garcia",
     stats: {
       totalAlbums: 0,
       totalArtists: 0,

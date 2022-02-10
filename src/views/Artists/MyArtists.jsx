@@ -19,7 +19,7 @@ const MyArtists = () => {
           <ArtistCard key={index} dataArtist={artista} index={index} />
         </Grid>
       )
-      : {}
+      : []
   }
 
   let misArtistas = misArtistasProfiles();
@@ -29,7 +29,7 @@ const MyArtists = () => {
   return (
     <Grid container spacing={2} sx={{ textAlign: "center" }}>
       <Grid item xs={12}>
-        <Typography sx={artistsTitleStyles}>Mis Artistas</Typography>
+        <Typography sx={artistsTitleStyles}>Artistas</Typography>
         <Button variant="contained" color="secondary" onClick={agregarArtista} endIcon={<PersonAddIcon />}>
           Agregar Artista
         </Button>
@@ -59,4 +59,4 @@ const cardTitleBlack = {
   textDecoration: "none"
 };
 
-const artistsTitleStyles = { color: "#000000", fontWeight: "400px", fontSize: "40px", marginBottom: "2%" }
+const artistsTitleStyles = { color: "#000000", fontWeight: "400px", fontSize: "50px", marginBottom: "2%" }

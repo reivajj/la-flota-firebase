@@ -26,7 +26,7 @@ const MyAlbums = () => {
   const navigateToNewAlbum = () => navigate("/admin/new-album");
 
   return (
-    <Grid container spacing={2} sx={{ textAlign: "center" }}>
+    <Grid container spacing={2} textAlign="center">
       <Grid item xs={12}>
         <Typography sx={albumsTitleStyles}>Lanzamientos</Typography>
         <Button variant="contained" color="secondary" onClick={navigateToNewAlbum} endIcon={<AddCircleOutlineIcon />}>
@@ -47,4 +47,4 @@ const MyAlbums = () => {
 export default MyAlbums;
 
 const noAlbumsTitleBlackStyles = { color: "#000000", fontWeight: "300px", marginBottom: "3px" }
-const albumsTitleStyles = { color: "#000000", fontWeight: "400px", fontSize: "40px", marginBottom: "2%" }
+const albumsTitleStyles = { color: "#000000", fontWeight: "400px", fontSize: "50px", marginBottom: "2%" }

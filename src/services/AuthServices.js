@@ -1,5 +1,5 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getAuth, reauthenticateWithCredential, updatePassword, updateEmail, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, reauthenticateWithCredential, updatePassword, updateEmail, signInWithPopup, GoogleAuthProvider, deleteUser } from "firebase/auth";
 import { to } from 'utils';
 
 const auth = getAuth(firebaseApp);
@@ -48,3 +48,7 @@ export const signInWithGoogle = async () => {
   return user;
 }
 
+export const deleteCurrentAuthUser = async () => {
+  const user = auth.currentUser;
+  deleteUser(user);
+}

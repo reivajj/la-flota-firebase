@@ -23,6 +23,8 @@ import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useForceUpdate } from 'utils';
 import ImageInput from 'components/Input/ImageInput';
 import { AddMoreArtistsInAlbumDialog } from 'components/Dialogs/AddMoreArtistsInAlbumDialog';
+import { infoSpotifyUri } from "utils/textToShow.utils";
+import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
@@ -78,7 +80,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
         : createArtistRedux(currentArtistData, currentUserId, "artists", "totalArtists")));
     if (result === "SUCCESS") {
       setButtonState("success");
-      (view !== "dialog") ? navigate('/admin/artists') : handleClose(); 
+      (view !== "dialog") ? navigate('/admin/artists') : handleClose();
     }
     else {
       setButtonState("error");
@@ -131,8 +133,8 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   }
 
   const imageInput = <ImageInput key={"artist-photo"} imagenUrl={artistDataToShow.imagenUrl} onClickAddImage={onClickAddImageArtist} textButton="Imagen"
-    progress={progress} message={message} helperText="El arte de tapa debe ser una imagen de alta calidad.
-    El archivo debe ser JPG colores RGB de mínimo 1400*1400px"/>;
+    progress={progress} message={message} helperText="La imagen del Artista debe ser una imagen de alta calidad.
+    La imagen debe ser cuadrada, JPG, colores RGB y de mínimo 1400*1400px"/>;
 
   const progressButton = <ProgressButton textButton={buttonText} loading={openLoader} buttonState={buttonState}
     onClickHandler={allFieldsValidCreateArtist} noneIcon={<SaveIcon sx={{ color: "rgba(255,255,255, 1)" }} />} noFab={false} />
@@ -177,11 +179,14 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
                   <Grid item xs={12}>
                     <TextFieldWithInfo
-                      name="spotify_uri"
+                      name="spotifyUriSecondArtist"
                       fullWidth
                       label="Spotify Uri"
                       value={(editing && !spotifyUriEdited) ? artistDataToShow.spotify_uri : currentArtistData.spotify_uri}
                       onChange={changeSpotifyUri}
+                      helperText={infoSpotifyUri}
+                      hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
+                      targetHref="_blank"
                     />
                   </Grid>
 
@@ -192,8 +197,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                       label="Apple ID"
                       value={(editing && !appleIdEdited) ? artistDataToShow.apple_id : currentArtistData.apple_id}
                       onChange={changeAppleId}
-                      helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
-                    Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)."
+                      helperText={infoHelperTextAppleId}
                     />
                   </Grid>
 

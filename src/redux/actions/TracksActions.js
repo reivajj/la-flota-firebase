@@ -72,3 +72,4 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId)
 
   return tracksData;
 }
+

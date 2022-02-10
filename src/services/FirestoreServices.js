@@ -1,9 +1,9 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import { getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment, deleteDoc } from "firebase/firestore";
-import { to } from 'utils';
+import { to, toWithOutError } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
-import { SIGN_IN_ERR } from 'redux/actions/Types';
 import { createUserDocItem } from 'factory/users.factory';
+import { loginErrorStore } from 'redux/actions/AuthActions';
 
 const db = getFirestore(firebaseApp);
 
@@ -19,13 +19,8 @@ export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
 
 export const getUserDoc = async (userId, dispatch) => {
   let userInDBRef = doc(db, "users", userId);
-
   let [errorGettingUserDoc, userDoc] = await to(getDoc(userInDBRef));
-  if (errorGettingUserDoc) {
-    dispatch({ type: SIGN_IN_ERR, payload: errorGettingUserDoc });
-    return { exists: false };
-  };
-
+  if (errorGettingUserDoc) return "ERROR";
   return userDoc;
 }
 
@@ -39,8 +34,8 @@ export const updateUserDoc = async (userId, userDoc, dispatch) => {
 
   let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
   if (errorUpdatingUserSignIn) {
-    dispatch({ type: SIGN_IN_ERR, payload: { error: errorUpdatingUserSignIn, msg: "error al actualizar lastTimeSignedIn" } });
-    return "error";
+    dispatch(loginErrorStore({ error: errorUpdatingUserSignIn, errorMsg: "Error al actualizar al usuario. Intente nuevamente." }));
+    return "ERROR";
   };
   return userDocData;
 }
@@ -62,31 +57,31 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
 // Elements es: LABEL, ARTIST, TRACK, ALBUMS. ARTISTS_INVITED, COLLABORATORS
 export const createElementFS = async (element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
-  
+  console.log({ element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement })
   const elementDbRef = doc(db, collection, elementId);
 
-  let [errorCreatingElementInCollection] = await to(setDoc(elementDbRef, element));
-  if (errorCreatingElementInCollection) {
-    console.log(`Error creating new element in ${collection} collection`, errorCreatingElementInCollection);
-    throw new Error({ msg: `Error creating new element in ${collection} collection`, error: errorCreatingElementInCollection });
+  let [errorCreatingElement] = await to(setDoc(elementDbRef, element))
+  if (errorCreatingElement) {
+    dispatch(loginErrorStore({ errorCreatingElement, errorMsg: `Error creating new element in ${collection} collection` }));
+    return "ERROR";
   }
 
   const elementStatsDbRef = doc(db, collection, "stats");
   let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amountToIncrement) }));
   if (errorUpdatingStatsInCollection) {
-    console.log(`Error updating stats in ${collection} : `, errorUpdatingStatsInCollection);
-    throw new Error({ msg: `Error updating stats in ${collection} : `, error: errorUpdatingStatsInCollection });
+    dispatch(loginErrorStore({ error: errorUpdatingStatsInCollection, errorMsg: `Error updating stats in ${collection}` }));
+    return "ERROR";
   }
 
   if (fieldToIncrementInUserStats !== "") {
     const usersDbRef = doc(db, "users", userId);
     let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToIncrementInUserStats}`]: increment(amountToIncrement) }));
     if (errorUpdatingStatsInUser) {
-      console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
-      throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
+      dispatch(loginErrorStore({ error: errorUpdatingStatsInUser, errorMsg: `Error updating total in users collection` }));
+      return "ERROR";
     };
   }
-
+  return "SUCCESS";
 }
 
 // Elements es: LABEL, ARTIST, TRACK, ALBUMS.
@@ -153,10 +148,13 @@ export const userByEmailInFS = async (email, dispatch) => {
 }
 
 export const createUserDocs = async (newUserData, dispatch) => {
-  let userDataComplete = createUserDocItem(newUserData);
+  const { id, email, userInWp } = newUserData;
+  let userDataComplete = createUserDocItem(newUserData, userInWp);
+  console.log("antes de crear el doc:", { id, email, userInWp });
 
-  await createElementFS(userDataComplete, newUserData.id, newUserData.id, "users", "", 1, dispatch);
-  await createElementFS(userDataComplete, newUserData.email, "", "usersByEmail", "", 1, dispatch);
-
+  let [errorCreatingDocInUsers] = await to(createElementFS(userDataComplete, id, id, "users", "", 1, dispatch));
+  if (errorCreatingDocInUsers) return "ERROR";
+  let [resultCreatingDocInUserEmails] = await to(createElementFS(userDataComplete, email, "", "usersByEmail", "", 1, dispatch));
+  if (resultCreatingDocInUserEmails === "ERROR") return "ERROR";
   return userDataComplete;
 }

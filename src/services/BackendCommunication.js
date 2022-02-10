@@ -1,19 +1,19 @@
 import { getFunctions, httpsCallable } from "firebase/functions";
 import axios from 'axios';
 import { to } from '../utils';
-import { SIGN_IN_ERR } from "redux/actions/Types";
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
+import { loginErrorStore } from 'redux/actions/AuthActions';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
-
+const targetUrl = webUrl;
 const functions = getFunctions();
 
 // ======================================LABELS=============================================\\
 
 export const createLabelFuga = async (labelName, dispatch) => {
   let [errorCreatingLabelInThirdWebApi, labelFromThirdWebApi] = await to(
-    axios.post(`${localUrl}labels`, { name: labelName }));
+    axios.post(`${targetUrl}labels`, { name: labelName }));
 
   if (errorCreatingLabelInThirdWebApi) {
     dispatch(createBackendError(errorCreatingLabelInThirdWebApi));
@@ -26,7 +26,7 @@ export const createLabelFuga = async (labelName, dispatch) => {
 
 export const deleteLabelFuga = async (labelFugaId, dispatch) => {
   let [errorDeletingLabelInThirdWebApi] = await to(
-    axios.delete(`${localUrl}labels/${labelFugaId}`));
+    axios.delete(`${targetUrl}labels/${labelFugaId}`));
 
   if (errorDeletingLabelInThirdWebApi) {
     dispatch(createBackendError(errorDeletingLabelInThirdWebApi));
@@ -41,7 +41,7 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
 
 export const createArtistFuga = async (formDataArtist, dispatch) => {
   let [errorUploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
-    axios.post(`${localUrl}artists`, formDataArtist));
+    axios.post(`${targetUrl}artists`, formDataArtist));
 
   if (errorUploadingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUploadingArtistInThirdWebApi));
@@ -53,7 +53,7 @@ export const createArtistFuga = async (formDataArtist, dispatch) => {
 
 export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) => {
   let [errorUpdatingArtistInThirdWebApi] = await to(
-    axios.put(`${localUrl}artists/${artistFugaId}`, formDataArtist));
+    axios.put(`${targetUrl}artists/${artistFugaId}`, formDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
@@ -66,7 +66,7 @@ export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) =
 
 export const deleteArtistFuga = async (artistFugaId, dispatch) => {
   let [errorDeletingArtistInThirdWebApi] = await to(
-    axios.delete(`${localUrl}artists/${artistFugaId}`));
+    axios.delete(`${targetUrl}artists/${artistFugaId}`));
 
   if (errorDeletingArtistInThirdWebApi) {
     dispatch(createBackendError(errorDeletingArtistInThirdWebApi));
@@ -78,7 +78,7 @@ export const deleteArtistFuga = async (artistFugaId, dispatch) => {
 // ======================================ALBUMS=============================================\\
 
 export const createAlbumFuga = async (formDataAlbum, dispatch) => {
-  let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${localUrl}albums`, formDataAlbum));
+  let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${targetUrl}albums`, formDataAlbum));
   if (errorUploadingAlbumInThirdWebApi) {
     dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
     return "ERROR";
@@ -89,7 +89,7 @@ export const createAlbumFuga = async (formDataAlbum, dispatch) => {
 // ======================================TRACKS=============================================\\
 
 export const createTrackFuga = async (formDataTrack, onUploadProgress, dispatch) => {
-  let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${localUrl}tracks/`, formDataTrack, { onUploadProgress }));
+  let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
     return "ERROR";
@@ -100,7 +100,7 @@ export const createTrackFuga = async (formDataTrack, onUploadProgress, dispatch)
 }
 
 export const createPersonsFuga = async (formDataPeople, dispatch) => {
-  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${localUrl}people/addAll`, formDataPeople));
+  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, formDataPeople));
   if (errorUploadingPersonsInThirdWebApi) {
     dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
     return "ERROR";
@@ -112,7 +112,7 @@ export const createPersonsFuga = async (formDataPeople, dispatch) => {
 
 export const createCollaboratorFuga = async (collaborator, dispatch) => {
   let rawDataCollaborator = { person: collaborator.person, role: collaborator.role };
-  let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${localUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
+  let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
   if (errorAttachingCollaboratorInThirdWebApi) {
     dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
     return "ERROR";
@@ -125,8 +125,11 @@ export const createCollaboratorFuga = async (collaborator, dispatch) => {
 // ======================================USERS=============================================\\
 
 export const userExistInWpDB = async (email, dispatch) => {
-  let [errorCheckingUser, checkingUserResponse] = await to(axios.get(`${localUrl}users/searchByEmail/${email}`));
-  if (errorCheckingUser) dispatch({ type: SIGN_IN_ERR, payload: errorCheckingUser });
+  let [errorCheckingUser, checkingUserResponse] = await to(axios.get(`${targetUrl}users/searchByEmail/${email}`));
+  if (errorCheckingUser) {
+    dispatch(loginErrorStore({ error: errorCheckingUser, errorMsg: "No se pudo comprobar la existencia del Email. Intente nuevamente." }));
+    return "ERROR";
+  }
 
   if (checkingUserResponse.data.response.exist === false) return false;
   if (checkingUserResponse.data.response.exist === true) return checkingUserResponse.data.response.user;
@@ -134,15 +137,18 @@ export const userExistInWpDB = async (email, dispatch) => {
 
 export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => {
   let userInWp = await userExistInWpDB(email);
+  console.log("USER IN WP: ", userInWp);
+  if (userInWp === "ERROR") return "ERROR";
+
   if (userInWp) {
     const checkPasswordInWpDB = httpsCallable(functions, 'users-checkPasswordInWpDB');
     const passwordHashInDB = userInWp.userPass;
     const [errorCheckingPassword, passwordOk] = await to(checkPasswordInWpDB({ passwordHashInDB, password }));
     if (errorCheckingPassword) {
-      dispatch({ type: SIGN_IN_ERR, payload: errorCheckingPassword });
-      return;
+      dispatch(loginErrorStore({ error: errorCheckingPassword, errorMsg: "El email existe, pero la contraseña es incorrecta." }));
+      return "ERROR";
     }
-    return { existEmail: true, passwordCheck: passwordOk.data };
+    return { existEmail: true, passwordCheck: passwordOk.data, userInWp };
   }
   return { existEmail: false };
 }

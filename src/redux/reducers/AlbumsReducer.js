@@ -9,8 +9,8 @@ const editOtherArtistName = ({ nameValue, otherArtistIndex }, allOtherArtistOld)
   return allOtherArtistOld;
 }
 
-const editOtherArtistSpotifyUri = ({ spotifyUri, otherArtistIndex }, allOtherArtistOld) => {
-  allOtherArtistOld[otherArtistIndex].spotify_uri = spotifyUri;
+const editOtherArtistIdentifier = ({ identifierValue, identifierField, otherArtistIndex }, allOtherArtistOld) => {
+  allOtherArtistOld[otherArtistIndex][`${identifierField}`] = identifierValue;
   return allOtherArtistOld;
 }
 
@@ -48,8 +48,8 @@ const AlbumsReducer = (state = initialState, action) => {
       const newAllOtherArtists = editOtherArtistName(action.payload, state.addingAlbum.allOtherArtists)
       return { ...state, addingAlbum: { ...state.addingAlbum, allOtherArtists: newAllOtherArtists } }
 
-    case ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI:
-      const newAllOtherArtistsSpotify = editOtherArtistSpotifyUri(action.payload, state.addingAlbum.allOtherArtists)
+    case ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER:
+      const newAllOtherArtistsSpotify = editOtherArtistIdentifier(action.payload, state.addingAlbum.allOtherArtists)
       return { ...state, addingAlbum: { ...state.addingAlbum, allOtherArtists: newAllOtherArtistsSpotify } }
 
     case ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_PRIMARY:

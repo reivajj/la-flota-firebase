@@ -41,7 +41,7 @@ export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ALBUMS_UPDATE_ADDING_ALBUM = "albums_update_adding_album";
 export const ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE = "albums_update_adding_album_imagen_url_and_file";
 export const ALBUMS_UPDATE_OTHER_ARTIST_NAME = "albums_update_other_artist_name";
-export const ALBUMS_UPDATE_OTHER_ARTIST_SPOTIFY_URI = "albums_update_other_artist_spotify_uri";
+export const ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER = "albums_update_other_artist_identifier";
 export const ALBUMS_UPDATE_OTHER_ARTIST_PRIMARY = "albums_update_other_artist_primary";
 
 //Tracks Types

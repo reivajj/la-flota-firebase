@@ -22,7 +22,7 @@ import { green } from '@mui/material/colors';
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
 import { albumCoverHelperText, lanzamientoColaborativoTooltip, preSaleCheckBoxHelper, publicationDateWarning } from '../../utils/textToShow.utils';
-import { toWithOutError, to, useForceUpdate } from "utils";
+import { toWithOutError, to, useForceUpdate, combineArraysWithNoDuplicates } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
@@ -35,6 +35,7 @@ import { createCollaboratorsInFuga } from "redux/actions/CollaboratorsActions";
 import { languagesFuga } from '../../variables/varias';
 import TextFieldWithInfoImage from '../../components/TextField/TextFieldWithInfoImage';
 import NewArtist from 'views/Artists/NewArtist';
+import { getAllOtherArtistsFromAlbumAndTrack } from '../../utils/artists.utils';
 
 const NewAlbum = ({ editing }) => {
 
@@ -103,10 +104,13 @@ const NewAlbum = ({ editing }) => {
   const [buttonText, setButtonText] = useState("Finalizar");
 
   const [trackData, setTrackData] = useState({
-    disc_number: cantAlbumsFromUser, explicit: 0,
-    position: tracksDataTable.length + 1, title: "", track: "",
+    disc_number: cantAlbumsFromUser, explicit: 0, allOtherArtists: [],
+    subgenre: currentAlbumData.subgenre, genreName: currentAlbumData.genreName,
+    subgenreName: currentAlbumData.subgenreName, genre: currentAlbumData.genre,
+    position: tracksDataTable.length + 1, title: "", track: "", artists: [],
     price: "", lyrics: "", isrc: "", track_language_name: currentAlbumData.languageName,
-    track_language_id: currentAlbumData.languageId, progress: 0, artists: [], collaborators: [],
+    track_language_id: currentAlbumData.languageId, progress: 0,
+    collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LIRYCIST"] }],
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -169,6 +173,15 @@ const NewAlbum = ({ editing }) => {
     }
   }
 
+  const handleClickAddTrack = () => {
+    let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, fugaId: currentAlbumData.artistFugaId, primary: true, id: currentAlbumData.artistId }];
+    setTrackData({
+      ...trackData, artists: [...artistFromLaFlota,
+      ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], currentAlbumData.allOtherArtists, trackData.artists)]
+    })
+    setOpenNewTrackDialog(true);
+  }
+
   const getArtistIdAndFugaIdFromName = artistName => {
     let artistResult = myArtists.filter(artist => artist.name === artistName)[0];
     return { artistFugaId: artistResult.fugaId, artistId: artistResult.id };
@@ -186,17 +199,11 @@ const NewAlbum = ({ editing }) => {
     const labelFugaId = getLabelIdFromName(event.target.value);
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, label_name: event.target.value, labelFugaId }));
   }
-  const handlerAlbumTitle = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, title: event.target.value }));
-  const handlerPYearChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, p_year: event.target.value }));
-  const handlerPLineChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, p_line: event.target.value }));
-  const handlerCYearChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, c_year: event.target.value }));
-  const handlerCLineChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, c_line: event.target.value }));
-  const handlerDayOfMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, dayOfMonth: event.target.value }));
-  const handlerMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, month: event.target.value }));
-  const handlerYear = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, year: event.target.value }));
-  const handlerPreOrderDayOfMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderDayOfMonth: event.target.value }));
-  const handlerPreOrderMonth = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderMonth: event.target.value }));
-  const handlerPreOrderYear = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrderYear: event.target.value }));
+
+  const handlerBasicUpdateAlbum = (value, targetField) => {
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, [`${targetField}`]: value }));
+  }
+
   const handlerLanguageChoose = event => {
     let languageId = languagesFuga.find(l => l.name === event.target.value).id;
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, languageId, languageName: event.target.value }));
@@ -206,22 +213,13 @@ const NewAlbum = ({ editing }) => {
     setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: event.target.value }));
   }
-  const handleCheckedPreOrder = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preOrder: event.target.checked }));
-  const handleCheckedPreview = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, preview: event.target.checked }))
 
-  const handleClickAddTrack = () => {
-    let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, fugaId: currentAlbumData.artistFugaId, primary: true, id: currentAlbumData.artistId }];
-    setTrackData({ ...trackData, artists: [...artistFromLaFlota, ...currentAlbumData.allOtherArtists] })
-    setOpenNewTrackDialog(true);
-  }
-  const handlerVersion = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, version: event.target.value }));
-  const handlerFormatChoose = event => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, format: event.target.value }));
-
-  const handlerSubgenreChoose = event => {
-    let subgenreId = allFugaGenres.find(g => g.name === event.target.value).id;
-    setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
-    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
-  }
+  // const handlerSubgenreChoose = event => {
+  //   let subgenreId = allFugaGenres.find(g => g.name === event.target.value).id;
+  //   setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
+  //   dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
+  // }
+  
   const handlerUPC = event => {
     if (event.target.value.length <= 14) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
     validator.current.showMessageFor('upc');
@@ -230,8 +228,8 @@ const NewAlbum = ({ editing }) => {
   const yearsArray = Array.from({ length: 30 }, (_, i) => 2021 - i);
 
   return (
-    <Grid container style={{ textAlign: "center" }}>
-      <Card style={{ alignItems: "center" }} >
+    <Grid container textAlign="center">
+      <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
         <Grid item xs={12} sx={{ width: "60%" }}>
           <CardHeader color="primary">
@@ -294,7 +292,7 @@ const NewAlbum = ({ editing }) => {
                 required
                 label="Título del Lanzamiento"
                 value={currentAlbumData.title}
-                onChange={handlerAlbumTitle}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "title")}
                 validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
               />
             </Grid>
@@ -325,7 +323,7 @@ const NewAlbum = ({ editing }) => {
                 label="Versión (Vivo, Acústico...)"
                 value={currentAlbumData.version}
                 helperText="Puedes especificar si el lanzamiento es una versión de otro lanzamiento. Por Ejemplo, una versión en Vivo o Acústica."
-                onChange={handlerVersion}
+                onChange={event => handlerBasicUpdateAlbum(event.target.value, "version")}
                 imageSource="/images/versionReleaseHelp.png"
                 contentTexts={[["No debés escribir los paréntesis, se incluirán solos."]]}
               />
@@ -338,7 +336,7 @@ const NewAlbum = ({ editing }) => {
                 select
                 label="Formato del Lanzamiento"
                 value={currentAlbumData.format}
-                onChange={handlerFormatChoose}
+                onChange={event => handlerBasicUpdateAlbum(event.target.value, "format")}
                 helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Album."
                 selectItems={["ALBUM", "SINGLE", "EP"]}
               />
@@ -356,7 +354,7 @@ const NewAlbum = ({ editing }) => {
               select
               label="(C) Año de Copyright"
               value={currentAlbumData.c_year}
-              onChange={handlerCYearChoose}
+              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_year")}
               helperText="Año en que el Álbum/Single fue publicado por primera vez."
               selectItems={yearsArray}
               validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
@@ -370,7 +368,7 @@ const NewAlbum = ({ editing }) => {
               select
               label="(P) Año de Publicación"
               value={currentAlbumData.p_year}
-              onChange={handlerPYearChoose}
+              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
               helperText="Año en que esta grabación del Álbum/Single fue publicada por primera vez."
               selectItems={yearsArray}
               validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
@@ -386,7 +384,7 @@ const NewAlbum = ({ editing }) => {
               required
               label="Copyright"
               value={currentAlbumData.c_line}
-              onChange={handlerCLineChoose}
+              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_line")}
               helperText="El dueño de los Derechos de Autor.
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
               validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.", validator: validator }}
@@ -399,7 +397,7 @@ const NewAlbum = ({ editing }) => {
               required
               label="Publisher"
               value={currentAlbumData.p_line}
-              onChange={handlerPLineChoose}
+              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
               helperText="El dueño de los Derechos de Publicación de esta grabación.
             → Ej. 1: Fito Paez | Ej. 2: Sony Music"
               validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.", validator: validator }}
@@ -425,25 +423,29 @@ const NewAlbum = ({ editing }) => {
             infoTooltip={"Presionar para más información"} infoDialog={publicationDateWarning} title="Fecha del Lanzamiento"
           />
 
-          <SelectDateInputDDMMYYYY dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
-            setDayOfMonth={handlerDayOfMonth} setMonth={handlerMonth} setYear={handlerYear} simpleValidator={validator} />
+          <SelectDateInputDDMMYYYY type="release-date" dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
+            setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "dayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "month")}
+            setYear={event => handlerBasicUpdateAlbum(event.target.value, "year")} simpleValidator={validator} />
 
           <CheckboxWithInfo
             label="Permitir Pre-Comprar antes del lanzamiento"
             checked={currentAlbumData.preOrder}
-            onChecked={handleCheckedPreOrder}
+            onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "preOrder")}
             checkBoxHelper={preSaleCheckBoxHelper}
+            color="#9c27b0"
           />
 
           {currentAlbumData.preOrder &&
-            <SelectDateInputDDMMYYYY dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
-              setDayOfMonth={handlerPreOrderDayOfMonth} setMonth={handlerPreOrderMonth} setYear={handlerPreOrderYear} simpleValidator={validator} />
+            <SelectDateInputDDMMYYYY type="preOrder" dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
+              setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderMonth")}
+              setYear={event => handlerBasicUpdateAlbum(event.target.value, "preOrderYear")} simpleValidator={validator} />
           }
           {currentAlbumData.preOrder &&
             <CheckboxWithInfo
               label="Habilitar Pre-Escucha para la Pre-Compra"
               checked={currentAlbumData.preview}
-              onChecked={handleCheckedPreview}
+              onChecked={event => handlerBasicUpdateAlbum(event.target.checked, "preview")}
+              color="#9c27b0"
               checkBoxHelper="Permitir que los usuarios escuchen un fragmento (30 segundos) de las canciones durante la etapa de Pre-Compra."
             />
           }
@@ -482,10 +484,11 @@ const NewAlbum = ({ editing }) => {
                 selectItems={allFugaGenres}
                 selectKeyField="id"
                 selectValueField="name"
+                validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Album.", validator }}
               />
             </Grid>
 
-            <Grid item xs={3}>
+            {/* <Grid item xs={3}>
               <TextFieldWithInfo
                 name="subgenerosMusicales"
                 fullWidth
@@ -497,7 +500,7 @@ const NewAlbum = ({ editing }) => {
                 selectKeyField="id"
                 selectValueField="name"
               />
-            </Grid>
+            </Grid> */}
 
           </Grid>
         </Grid>
@@ -556,10 +559,4 @@ const cardTitleWhiteStyles = {
   textDecoration: "none"
 }
 
-const buttonAddArtist = {
-  marginTop: "2%",
-  backgroundColor: "#9c27b0",
-  '&:hover': {
-    backgroundColor: "#9c27b0",
-  },
-}
+const buttonAddArtist = { marginTop: "2%", backgroundColor: "#9c27b0", '&:hover': { backgroundColor: "#9c27b0" } }

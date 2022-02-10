@@ -28,3 +28,5 @@ export const useForceUpdate = () => {
   }, [])
   return update;
 }
+
+export const combineArraysWithNoDuplicates = (arr1, arr2) => [...new Set(arr1.concat(arr2))];

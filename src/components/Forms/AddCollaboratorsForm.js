@@ -5,6 +5,7 @@ import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 import { Info, Delete } from '@mui/icons-material';
 import { peopleRoles } from "variables/varias";
+import { getHelperCollaboratorText } from "utils/textToShow.utils";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -17,14 +18,7 @@ const MenuProps = {
   },
 };
 
-const AddCollaboratorsForm = ({ setTrackData, trackData }) => {
-
-  const buttonColorStyle = {
-    backgroundColor: "#508062",
-    '&:hover': {
-      backgroundColor: "#508062",
-    },
-  }
+const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
 
   const addOneCollaboratorSkeleton = () => {
     if (trackData.collaborators.length >= 20) return;
@@ -32,52 +26,40 @@ const AddCollaboratorsForm = ({ setTrackData, trackData }) => {
     setTrackData({ ...trackData, collaborators: [...trackData.collaborators, collaborator] });
   }
 
-  const deleteCollaborators = () => setTrackData({ ...trackData, collaborators: [] });
+  const deleteCollaborators = () => setTrackData({ ...trackData, collaborators: trackData.collaborators.filter((_, i) => i < 2) });
   const handleOnChangeCheckBox = event => event.target.checked ? addOneCollaboratorSkeleton() : deleteCollaborators();
   const handleDeleteCollaborator = cIndex => setTrackData({ ...trackData, collaborators: trackData.collaborators.filter((_, i) => i !== cIndex) });
   const handleAddNameToCollaborator = (cName, index) => setTrackData({ ...trackData, collaborators: trackData.collaborators.map((coll, i) => i === index ? { ...coll, name: cName } : coll) });
   const handleSelectRole = (newRoles, index) => setTrackData({ ...trackData, collaborators: trackData.collaborators.map((coll, i) => i === index ? { ...coll, roles: newRoles } : coll) });
 
+  const getValidatorProps = indexCollaborator => {
+    if (indexCollaborator === 0) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Compositor", validator };
+    if (indexCollaborator === 1) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
+    return null;
+  }
+
   return (
     <>
-      <Grid container item xs={12}>
-
-        <Grid item xs={7} textAlign="end">
-          <BasicCheckbox
-            label={"¿Quieres agregar colaboradores?"}
-            onChecked={handleOnChangeCheckBox}
-            checked={trackData.collaborators.length > 0}
-            color={"#508062"}
-          />
-        </Grid>
-
-        <Grid item xs={1} textAlign="start">
-          <Tooltip title={"Agrega artistas que hayan colaborado en esta canción."} >
-            <IconButton>{<Info />}</IconButton>
-          </Tooltip>
-        </Grid>
-
-      </Grid>
-
       {trackData.collaborators.map((collaborator, index) => (
 
         <Grid container item key={index + "bigGrid-coll"}>
 
           <Grid item sx={gridDeleteStyle} key="switch-primary">
-            <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
+            {index >= 2 && <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
               <Delete fontSize="inherit" />
-            </IconButton>
+            </IconButton>}
           </Grid>
 
           <Grid item sx={gridNameStyle} key={index + "nameGrid=coll"} textAlign="left">
             <TextFieldWithInfo
-              name={`Colaborador ${index + 1}`}
+              name={index >= 2 ? `Nombre Colaborador ${index - 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
               required
               sx={textFiedNameStyle}
-              label={`Colaborador ${index + 1}`}
+              label={index >= 2 ? `Nombre Colaborador ${index - 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
               value={collaborator.name}
               onChange={event => handleAddNameToCollaborator(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el nombre como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. " : ""}
+              helperText={getHelperCollaboratorText(index)}
+              validatorProps={getValidatorProps(index)}
             />
           </Grid>
 
@@ -92,6 +74,7 @@ const AddCollaboratorsForm = ({ setTrackData, trackData }) => {
                 id="roles"
                 multiple
                 value={collaborator.roles}
+                disabled={index < 2}
                 onChange={event => handleSelectRole(event.target.value, index)}
                 input={<OutlinedInput id="roles" label="Chip" />}
                 renderValue={selected => (
@@ -113,7 +96,26 @@ const AddCollaboratorsForm = ({ setTrackData, trackData }) => {
         </Grid>)
       )}
 
-      {trackData.collaborators.length > 0 &&
+      <Grid container item xs={12} sx={{ marginLeft: "6%" }}>
+
+        <Grid item xs={7} textAlign="end">
+          <BasicCheckbox
+            label={"¿Quieres agregar más colaboradores?"}
+            onChecked={handleOnChangeCheckBox}
+            checked={trackData.collaborators.length > 2}
+            color={"#508062"}
+          />
+        </Grid>
+
+        <Grid item xs={1} textAlign="start">
+          <Tooltip title={"Agrega artistas que hayan colaborado en esta canción."} >
+            <IconButton>{<Info />}</IconButton>
+          </Tooltip>
+        </Grid>
+
+      </Grid>
+
+      {trackData.collaborators.length > 2 &&
         <Grid item xs={12} sx={buttonGridtyle}>
           <Button variant="contained" sx={buttonColorStyle} onClick={addOneCollaboratorSkeleton}>
             Agregar Colaborador
@@ -131,4 +133,4 @@ const gridDeleteStyle = { width: "10%", marginTop: "1.4%", color: "gray" };
 const gridNameStyle = { width: "25%" }
 const gridUriStyle = { width: "65%", marginTop: "1.4%" };
 const buttonGridtyle = { padding: "16px" }
-
+const buttonColorStyle = { backgroundColor: "#508062", '&:hover': { backgroundColor: "#508062" } };

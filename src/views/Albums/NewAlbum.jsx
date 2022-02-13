@@ -15,27 +15,31 @@ import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
 import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
-import { uploadAllTracksToAlbum } from "redux/actions/TracksActions";
+import { deleteTrackInTracksUploading, editTrackInTracksUploading, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
 import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
-import { albumCoverHelperText, lanzamientoColaborativoTooltip, preSaleCheckBoxHelper, publicationDateWarning } from '../../utils/textToShow.utils';
-import { toWithOutError, to, useForceUpdate, combineArraysWithNoDuplicates } from "utils";
+import { albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip } from '../../utils/textToShow.utils';
+import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
 import ImageInput from "components/Input/ImageInput";
-import { createOtherArtistsInFuga } from '../../redux/actions/ArtistsInvitedActions';
+import { createOtherArtistsRedux } from '../../redux/actions/ArtistsInvitedActions';
 import { updateAddingAlbumImageUrlAndCoverRedux } from '../../redux/actions/AlbumsActions';
 import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
 import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
-import { createCollaboratorsInFuga } from "redux/actions/CollaboratorsActions";
+import { createCollaboratorsRedux } from "redux/actions/CollaboratorsActions";
 import { languagesFuga } from '../../variables/varias';
 import TextFieldWithInfoImage from '../../components/TextField/TextFieldWithInfoImage';
 import NewArtist from 'views/Artists/NewArtist';
-import { getAllOtherArtistsFromAlbumAndTrack } from '../../utils/artists.utils';
+import { getAllOtherArtistsFromAlbumAndTrack, artistsWithUniqueName } from '../../utils/artists.utils';
+import { editAction } from "views/Tracks/NewTrackDialog";
+import { deleteAction } from '../Tracks/NewTrackDialog';
+import useTimeout from '../../customHooks/useTimeout';
+import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 
 const NewAlbum = ({ editing }) => {
 
@@ -50,8 +54,6 @@ const NewAlbum = ({ editing }) => {
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
-  const artistsInvited = useSelector(store => store.artistsInvited);
-
 
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
@@ -62,7 +64,6 @@ const NewAlbum = ({ editing }) => {
 
   const changeAlbumId = () => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, id: uuidv4() }));
   const putAlbumIdOnEditingArtist = () => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, id: currentAlbumData.id }));
-
 
   useEffect(() => {
     if (!editing) changeAlbumId();
@@ -79,15 +80,20 @@ const NewAlbum = ({ editing }) => {
     )
   }
 
+  const handleDeleteTrack = trackInfo => dispatch(deleteTrackInTracksUploading(trackInfo.id));
+  const handleEditTrack = trackInfo => {
+    setTrackData(trackInfo);
+    setOpenNewTrackDialog(true);
+  }
+
   const getTracksAsDataTable = tracksTotalInfo => {
     return tracksTotalInfo.map(trackWithAllInfo => [
       `${trackWithAllInfo.position}`,
       `${trackWithAllInfo.title}`,
       `${trackWithAllInfo.isrc}`,
-      `${trackWithAllInfo.artists.length > 1 ? "SI" : "NO"}`,
-      `${trackWithAllInfo.track_language_name}`,
-      `${trackWithAllInfo.explicit === 0 ? "NO" : "SI"}`,
-      trackActions(),
+      `${trackWithAllInfo.artists ? trackWithAllInfo.artists.length > 1 ? "SI" : "NO" : "NO"}`,
+      editAction(trackWithAllInfo, handleEditTrack),
+      deleteAction(trackWithAllInfo, handleDeleteTrack),
       trackUploadProgress(trackWithAllInfo.progress),
     ]);
   }
@@ -100,6 +106,7 @@ const NewAlbum = ({ editing }) => {
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
 
   const [openLoader, setOpenLoader] = useState(false);
+  const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
 
@@ -109,8 +116,8 @@ const NewAlbum = ({ editing }) => {
     subgenreName: currentAlbumData.subgenreName, genre: currentAlbumData.genre,
     position: tracksDataTable.length + 1, title: "", track: "", artists: [],
     price: "", lyrics: "", isrc: "", track_language_name: currentAlbumData.languageName,
-    track_language_id: currentAlbumData.languageId, progress: 0,
-    collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LIRYCIST"] }],
+    track_language_id: currentAlbumData.languageId, progress: 0, id: "",
+    collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LYRICIST"] }],
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
@@ -126,30 +133,39 @@ const NewAlbum = ({ editing }) => {
   const createAlbum = async () => {
     setOpenLoader(true);
 
-    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsInFuga(currentAlbumData.allOtherArtists, currentUserId)))
-    if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-      return;
-    }
+    // const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
+    // console.log("All artists: ", allOtherArtistsNotRepeatedFromTracksAndAlbum);
 
-    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
-    if (albumDataFromFuga === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-      return;
-    }
+    // const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum, currentUserId)))
+    // if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
+    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    //   return;
+    // }
+    // setCreatingAlbumState("artists-created");
 
-    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbum(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId)));
-    if (responseTracksFromFuga === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-      return;
-    }
+    // let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
+    // if (albumDataFromFuga === "ERROR") {
+    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    //   return;
+    // }
+    // setCreatingAlbumState("album-created");
 
-    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsInFuga(responseTracksFromFuga, currentUserId)))
-    if (tracksCollaboratorsResponse === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    }
-    else setButtonState("success");
+    // let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId)));
+    // if (responseTracksFromFuga === "ERROR") {
+    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    //   return;
+    // }
+    // setCreatingAlbumState("tracks-created");
 
+    // const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId)))
+    // if (tracksCollaboratorsResponse === "ERROR") {
+    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    // }
+    // else {
+    //   setButtonState("success");
+    //   setCreatingAlbumState("success");
+    // }
+    setCreatingAlbumState("success");
     setOpenLoader(false);
     // navigate(-1);
   }
@@ -162,22 +178,22 @@ const NewAlbum = ({ editing }) => {
     img.onload = async () => {
       if (img.width >= 1400 && img.height >= 1400) {
         setMessage("");
-        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 10, setMessage, setProgress));
+        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessage, setProgress));
         if (errorAddingFile) {
           setMessage("Ha ocurrido un error, por favor, intente nuevamente. ");
           return;
         }
         dispatch(updateAddingAlbumImageUrlAndCoverRedux({ imagenUrl: urlAndFile.url, cover: urlAndFile.file }));
       }
-      else setMessage("La imagen debe tener una resolucion mínima de 1400x1400");
+      else setMessage("La imagen debe tener una resolucion mínima de 1400x1400 y un tamaño máximo de 20mb");
     }
   }
 
   const handleClickAddTrack = () => {
     let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, fugaId: currentAlbumData.artistFugaId, primary: true, id: currentAlbumData.artistId }];
     setTrackData({
-      ...trackData, artists: [...artistFromLaFlota,
-      ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], currentAlbumData.allOtherArtists, trackData.artists)]
+      ...trackData, position: tracksDataTable.length + 1, artists: [...artistFromLaFlota,
+      ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], artistsWithUniqueName(currentAlbumData.allOtherArtists), artistsWithUniqueName([...myTracks.map(track => track.allOtherArtists).flat()]))]
     })
     setOpenNewTrackDialog(true);
   }
@@ -219,7 +235,7 @@ const NewAlbum = ({ editing }) => {
   //   setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
   //   dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
   // }
-  
+
   const handlerUPC = event => {
     if (event.target.value.length <= 14) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
     validator.current.showMessageFor('upc');
@@ -230,6 +246,9 @@ const NewAlbum = ({ editing }) => {
   return (
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
+
+        <SuccessDialog isOpen={creatingAlbumState === "success"} title="Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
+          handleClose={() => navigate(-1)}/>
 
         <Grid item xs={12} sx={{ width: "60%" }}>
           <CardHeader color="primary">
@@ -338,7 +357,7 @@ const NewAlbum = ({ editing }) => {
                 value={currentAlbumData.format}
                 onChange={event => handlerBasicUpdateAlbum(event.target.value, "format")}
                 helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Album."
-                selectItems={["ALBUM", "SINGLE", "EP"]}
+                selectItems={["Single", "EP", "Álbum"]}
               />
             </Grid>
           </Grid>
@@ -369,7 +388,7 @@ const NewAlbum = ({ editing }) => {
               label="(P) Año de Publicación"
               value={currentAlbumData.p_year}
               onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
-              helperText="Año en que esta grabación del Álbum/Single fue publicada por primera vez."
+              helperText="Año en que esta grabación fue publicada."
               selectItems={yearsArray}
               validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
             />
@@ -390,6 +409,7 @@ const NewAlbum = ({ editing }) => {
               validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.", validator: validator }}
             />
           </Grid>
+
           <Grid item xs={6}>
             <TextFieldWithInfo
               name="p_line"
@@ -403,14 +423,11 @@ const NewAlbum = ({ editing }) => {
               validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.", validator: validator }}
             />
           </Grid>
-        </Grid>
 
-        <Grid container item xs={12} paddingTop={3} justifyContent="center">
-
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextFieldWithInfo
               name="upc"
-              sx={textFieldLaFlotaArtistStyle}
+              sx={textFieldStyle}
               label="UPC"
               value={currentAlbumData.upc}
               helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
@@ -418,17 +435,31 @@ const NewAlbum = ({ editing }) => {
               validatorProps={{ restrictions: 'max:13|numeric', message: "Formato inválido: El UPC es un código de máximo 13 números", validator: validator }}
             />
           </Grid>
+        </Grid>
 
-          <TypographyWithInfo
-            infoTooltip={"Presionar para más información"} infoDialog={publicationDateWarning} title="Fecha del Lanzamiento"
-          />
+        <Grid container item xs={12} paddingTop={3} justifyContent="center">
+
+          <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
 
           <SelectDateInputDDMMYYYY type="release-date" dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
             setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "dayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "month")}
             setYear={event => handlerBasicUpdateAlbum(event.target.value, "year")} simpleValidator={validator} />
 
           <CheckboxWithInfo
-            label="Permitir Pre-Comprar antes del lanzamiento"
+            label="¿El Lanzamiento fue publicado en el pasado?"
+            checked={currentAlbumData.oldRelease}
+            onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "oldRelease")}
+            checkBoxHelper={oldReleaseCheckBoxHelper}
+            color="#9c27b0"
+          />
+          {currentAlbumData.oldRelease &&
+            <SelectDateInputDDMMYYYY type="old-release-date" dayValue={currentAlbumData.originalDayOfMonth} monthValue={currentAlbumData.originalMonth} yearValue={currentAlbumData.originalYear}
+              setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalMonth")}
+              setYear={event => handlerBasicUpdateAlbum(event.target.value, "originalYear")} simpleValidator={validator} />
+          }
+
+          <CheckboxWithInfo
+            label="¿Permitir pre-comprar antes del lanzamiento?"
             checked={currentAlbumData.preOrder}
             onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "preOrder")}
             checkBoxHelper={preSaleCheckBoxHelper}
@@ -442,7 +473,7 @@ const NewAlbum = ({ editing }) => {
           }
           {currentAlbumData.preOrder &&
             <CheckboxWithInfo
-              label="Habilitar Pre-Escucha para la Pre-Compra"
+              label="Habilitar pre-escucha para la pre-compra"
               checked={currentAlbumData.preview}
               onChecked={event => handlerBasicUpdateAlbum(event.target.checked, "preview")}
               color="#9c27b0"
@@ -505,7 +536,7 @@ const NewAlbum = ({ editing }) => {
           </Grid>
         </Grid>
 
-        {currentAlbumData.nombreArtist &&
+        {(currentAlbumData.nombreArtist || openLoader) &&
           <Grid container item xs={12} paddingTop={4} justifyContent="center">
             <Grid item xs={8} >
               <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />

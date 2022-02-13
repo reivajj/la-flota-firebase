@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Typography
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Typography, Button
 } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useSelector } from 'react-redux';
@@ -78,6 +78,13 @@ export const AddMoreArtistsInAlbumDialog = (props) => {
       <DialogActions sx={{ overflow: "scroll" }}>
         {progressButton}
       </DialogActions>
+      <DialogActions>
+        <Button onClick={handleClose} sx={buttonColorStyle}>
+          Atras
+        </Button>
+      </DialogActions>
     </Dialog >
   )
 }
+
+const buttonColorStyle = { color: "#508062" };

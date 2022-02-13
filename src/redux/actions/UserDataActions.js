@@ -64,6 +64,6 @@ export const editPerfil = newProfile => async dispatch => {
       type: ReducerTypes.USER_DATA_EDIT_PERFIL,
       payload: newProfile
     })
-    return "success";
+    return "SUCCESS";
   }
 };

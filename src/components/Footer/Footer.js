@@ -41,7 +41,7 @@ export default function Footer(props) {
                 target="_blank"
                 style={classes.a}
               >
-                {`La Flota ♡ Distribución Digital ♫ 2016 - ${1900 + new Date().getYear()} ♫ Patagonia `}
+                {`La Flota ♡ Distribución Digital ♫ 2016 ✧ ${1900 + new Date().getYear()} ♫ Patagonia `}
               </a>
             </span>
           </p>

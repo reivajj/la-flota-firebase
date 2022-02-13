@@ -6,28 +6,29 @@ export const createArtistModel = (dataArtist, editing) => {
   if (dataArtist.name) rawDataArtist.name = dataArtist.name;
   if (!editing && dataArtist.id) rawDataArtist.proprietary_id = dataArtist.id;
   if (dataArtist.biography) rawDataArtist.biography = dataArtist.biography;
-  if (dataArtist.spotify_uri) rawDataArtist.spotify_uri = dataArtist.spotify_uri;
-  if (dataArtist.apple_id) rawDataArtist.apple_id = dataArtist.apple_id;
+  if (dataArtist.spotify_uri !== undefined) rawDataArtist.spotify_uri = dataArtist.spotify_uri || "";
+  if (dataArtist.apple_id !== undefined) rawDataArtist.apple_id = dataArtist.apple_id || "";
   // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
   return rawDataArtist;
 }
+
+const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const createAlbumModel = dataAlbum => {
   console.log("Album", dataAlbum)
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
+  let originalReleaseDate = `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}`;
   let preOrderDate = `${dataAlbum.preOrderYear}-${dataAlbum.preOrderMonth}-${dataAlbum.preOrderDayOfMonth}`;
 
   let artistsArray = [{ primary: true, id: dataAlbum.artistFugaId }];
   dataAlbum.allOtherArtists.forEach(otherArtist => artistsArray.push({ primary: otherArtist.primary, id: otherArtist.fugaId }));
 
-  console.log("data album artists: ", artistsArray);
-
   formDataAlbum.append("name", dataAlbum.title);
   formDataAlbum.append("label", dataAlbum.labelFugaId);
   formDataAlbum.append("language", dataAlbum.languageId);
   formDataAlbum.append("catalog_number", uuidv4());
-  formDataAlbum.append("release_format_type", "ALBUM");
+  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format]);
   formDataAlbum.append("c_line_text", dataAlbum.c_line);
   formDataAlbum.append("c_line_year", dataAlbum.c_year);
   formDataAlbum.append("p_line_text", dataAlbum.p_line);
@@ -35,13 +36,14 @@ export const createAlbumModel = dataAlbum => {
   formDataAlbum.append("genre", dataAlbum.genre);
   formDataAlbum.append("artists", JSON.stringify(artistsArray));
   formDataAlbum.append("consumer_release_date", saleAndReleaseDate);
-  formDataAlbum.append("original_release_date", saleAndReleaseDate);
+  formDataAlbum.append("original_release_date", originalReleaseDate);
   if (dataAlbum.preOrderYear > 0) formDataAlbum.append("preorder_date", preOrderDate);
+  if (dataAlbum.upc) formDataAlbum.append("upc", dataAlbum.upc);
+  if (dataAlbum.subgenre) formDataAlbum.append("subgenre", dataAlbum.subgenre);
+  if (dataAlbum.version) formDataAlbum.append("release_version", dataAlbum.version);
+
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
-  if (dataAlbum.upc) formDataAlbum.append("upc", dataAlbum.upc);
-  if (dataAlbum.version) formDataAlbum.append("version", dataAlbum.version);
-  if (dataAlbum.format) formDataAlbum.append("format", dataAlbum.format);
 
   return formDataAlbum;
 };
@@ -60,8 +62,8 @@ export const createTrackModel = dataTrack => {
   formDataTrack.append("track", dataTrack.track);
   formDataTrack.append("sequence", dataTrack.position);
   formDataTrack.append("language", dataTrack.track_language_id);
+  formDataTrack.append("audio_locale", dataTrack.track_language_id);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
-  if (dataTrack.price) formDataTrack.append("price", 1.29);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
   if (preOrderDate) {
     formDataTrack.append("preorder_date", preOrderDate);

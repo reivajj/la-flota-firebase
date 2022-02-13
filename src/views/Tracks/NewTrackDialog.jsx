@@ -27,22 +27,26 @@ import { allFugaGenres, allFugaSubgenres } from 'variables/genres';
 
 const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
-export const trackActions = track => {
+export const deleteAction = (track, handleDeleteTrack) => {
+
   return (
-    <Grid container direction="row">
-      <Grid item xs={6}>
-        <IconButton color="inherit" size="small" onClick={() => console.log("Elimino track: ", track)}>
-          <DeleteIcon fontSize="inherit" />
-        </IconButton>
-      </Grid>
-      <Grid item xs={6}>
-        <IconButton color="inherit" size="small" onClick={() => console.log("Edito track: ", track)}>
-          <EditIcon fontSize="inherit" />
-        </IconButton>
-      </Grid>
+    <Grid item xs={6}>
+      <IconButton color="inherit" size="small" onClick={() => handleDeleteTrack(track)}>
+        <DeleteIcon fontSize="inherit" />
+      </IconButton>
     </Grid>
   );
 };
+
+export const editAction = (track, handleEditTrack) => {
+  return (
+    <Grid item xs={12}>
+      <IconButton color="inherit" size="small" onClick={() => handleEditTrack(track)}>
+        <EditIcon fontSize="inherit" />
+      </IconButton>
+    </Grid>
+  )
+}
 
 export const NewTrackDialog = (props) => {
 
@@ -51,6 +55,9 @@ export const NewTrackDialog = (props) => {
   const dispatch = useDispatch();
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
+
+  console.log("TAbLE TRACJS LENJG: ", tracksDataTable.length + 1);
+  console.log("TRAK DATA: ", trackData.position);
 
   const currentUserId = useSelector(store => store.userData.id);
 
@@ -63,11 +70,13 @@ export const NewTrackDialog = (props) => {
       genre: trackData.genre || "", genreName: trackData.genreName || "", subgenre: trackData.subgenre || "",
       price: "", lyrics: "", isrc: "", track_language_id: trackData.track_language_id,
       progress: 0, artists: [...trackData.artists, ...trackData.allOtherArtists], collaborators: trackData.collaborators,
-      track_language_name: trackData.track_language_name, allOtherArtists: [],
+      track_language_name: trackData.track_language_name, allOtherArtists: [], id: ""
     });
   };
 
   const handleCreateTrack = async () => {
+    console.log("Tracks table len mas uno: ", tracksDataTable.length + 1)
+    trackData.position = tracksDataTable.length + 1;
     dispatch(createTrackLocalRedux(trackData, currentUserId));
     setTracksDataTable([...tracksDataTable, [
       `${trackData.position}`,
@@ -76,20 +85,21 @@ export const NewTrackDialog = (props) => {
       `${trackData.artists.length + trackData.allOtherArtists.length > 1 ? "SI" : "NO"}`,
       `${trackData.track_language_name}`,
       `${trackData.explicit ? "NO" : "SI"}`,
-      trackActions(trackData),
+      editAction(trackData),
+      deleteAction(trackData),
       circularProgress(trackData.progress)
     ]]);
     handleCancelDialog();
   }
 
   const allFieldsValidCreateTrack = () => {
-    if (validator.current.allValid() && trackData.track) {
-      handleCreateTrack();
-    } else {
-      validator.current.showMessages();
-      if (!trackData.track) setTrackMissing(true);
-      forceUpdate();
-    }
+    // if (validator.current.allValid() && trackData.track) {
+    handleCreateTrack();
+    // } else {
+    //   validator.current.showMessages();
+    //   if (!trackData.track) setTrackMissing(true);
+    //   forceUpdate();
+    // }
   }
 
   const deleteArtistFromArtists = index => trackData.artists.filter((_, i) => i !== index);

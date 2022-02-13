@@ -44,7 +44,7 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
 
         <Grid container item key={index + "bigGrid-coll"}>
 
-          <Grid item sx={gridDeleteStyle} key="switch-primary">
+          <Grid item sx={gridDeleteStyle} key={index + "switch-primary"}>
             {index >= 2 && <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
               <Delete fontSize="inherit" />
             </IconButton>}

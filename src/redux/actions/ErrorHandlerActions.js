@@ -21,6 +21,13 @@ export const createFireStoreError = (errorMessage, error) => {
   };
 }
 
+export const basicError = (errorMessage) => {
+  return {
+    type: ReducerTypes.ERROR_BASIC_MSG,
+    paylaod: { errorMessage }
+  }
+}
+
 export const cleanError = () => {
   return {
     type: ReducerTypes.ERROR_CLEAN_LAST

@@ -9,7 +9,7 @@ const TypographyWithInfo = ({ infoTooltip, infoDialog, title, sx }) => {
 
   return (
     <>
-      <Grid container item xs={3} justifyContent="center">
+      <Grid container item xs={3} justifyContent="center" paddingTop="1%">
 
         <Grid item xs={9} textAlign="end">
           <Typography variant="h5" sx={sx}>{title}</Typography>
@@ -27,7 +27,7 @@ const TypographyWithInfo = ({ infoTooltip, infoDialog, title, sx }) => {
         </Grid>
 
       </Grid>
-      <InfoDialog isOpen={openInfoDialog} handleClose={() => setOpenInfoDialog(false)} title={title} contentTexts={infoDialog} />
+      {infoDialog && <InfoDialog isOpen={openInfoDialog} handleClose={() => setOpenInfoDialog(false)} title={title} contentTexts={infoDialog} />}
     </>
   )
 }

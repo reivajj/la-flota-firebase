@@ -1,24 +1,26 @@
 import React from "react";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { Grid, Tooltip, Button, IconButton } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
-import { Info } from '@mui/icons-material';
+import { Info, Delete } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import BasicSwitch from 'components/Switch/BasicSwitch';
 import { getNumeracionOrdinalFromIndex } from "utils/textToShow.utils";
+import { createBackendError } from '../../redux/actions/ErrorHandlerActions';
 
 const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData }) => {
 
+  const dispatch = useDispatch();
   const buttonColorStyle = { backgroundColor: buttonColor, '&:hover': { backgroundColor: buttonColor } };
 
-  const currentAddingAlbum = useSelector(store => store.albums.addingAlbum);
-
   const addOneArtistSkeleton = () => {
-    // REVEER: TEMA ARTISTS IDENTIFIERS Y DAR MSJ DE ERROR (notification) POR MAS DE 20 ARTISTAS.
-    if (trackData.artists.length + trackData.allOtherArtists.length > 20) return;
+    if (trackData.artists.length + trackData.allOtherArtists.length > 20) {
+      dispatch(createBackendError("No puedes agregar más de 20 artistas."));
+      return;
+    };
     let otherArtist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
     setTrackData({ ...trackData, allOtherArtists: [...trackData.allOtherArtists, otherArtist] });
   }
@@ -40,12 +42,6 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
     if (event.target.checked) addOneArtistSkeleton();
     else deleteAllOtherArtists();
   }
-
-  // const deleteOtherArtistWithIndex = otherArtistIndex => {
-  //   const newOtherArtists = currentAddingAlbum.allOtherArtists.filter((_, index) => index !== otherArtistIndex);
-  //   console.log("NEW OTHER ARTIST: ", newOtherArtists);
-  //   dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: newOtherArtists }));
-  // }
 
   const getOtherArtistPositionFromIndex = otherArtistIndex => {
     if (otherArtistIndex >= 20) return "NO PUEDES AGREGAR MÁS DE 20 ARTISTAS";
@@ -74,7 +70,7 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
 
         < Grid container item xs={12} key={index + "trackOtherBigGrid"} >
 
-          <Grid item sx={gridSwitcherStyle} key={"track-other-switch-primary"}>
+          <Grid item sx={gridSwitcherStyle} key={index + "track-other-switch-primary"}>
             {index === 0
               ? <InfoSwitch
                 label={otherArtist.primary ? "Principal" : "Featuring"}
@@ -98,7 +94,7 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               value={otherArtist.name}
               required
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
+              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
             />
           </Grid>
 
@@ -106,10 +102,10 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
             <TextFieldWithInfo
               name="spotifyUriSecondArtist"
               sx={textFieldURIStyle}
-              label="Codigo Uri de Spotify"
+              label="Código Uri de Spotify"
               value={otherArtist.spotify_uri}
               onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el código URi de Spotify. " : ""}
+              helperText={index === 0 ? "Ingresa el código URi de Spotify. " : ""}
             />
           </Grid>
 
@@ -120,8 +116,14 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               label="Apple ID"
               value={otherArtist.apple_id}
               onChange={(event) => handlerAddAppleID(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el Apple ID. " : ""}
+              helperText={index === 0 ? "Ingresa el Apple ID. " : ""}
             />
+          </Grid>
+
+          <Grid item sx={gridDeleteStyle} key={index + "deleteIcon"}>
+            <IconButton color="inherit" size="large" onClick={(_) => handleDeleteOtherArtist(index)}>
+              <Delete fontSize="inherit" />
+            </IconButton>
           </Grid>
         </Grid>)
       )}
@@ -142,7 +144,7 @@ const textFiedNameStyle = { width: "93%" }
 const textFieldURIStyle = { width: "90%" }
 const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "40%" }
+const gridNameStyle = { width: "35%" }
 const gridUriStyle = { width: "22.5%", textAlign: "left" };
 const gridAppleStyle = { width: "22.5%", textAlign: "left" };
-
+const gridDeleteStyle = { width: "5%", marginTop: "1.4%", color: "gray" };

@@ -25,8 +25,8 @@ const initialState = {
     nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false, upc: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
     month: "", year: "", genre: "", subgenre: "", subgenreName: "", languageId: "ES", languageName: "Spanish", disc_number: "", allOtherArtists: [],
-    artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "", version: "", format: "ALBUM",
-    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "",
+    artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "", version: "", format: "Álbum",
+    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", oldRelease: false, originalYear: "", originalMonth: "", originalDayOfMonth: "",
   }
 }
 

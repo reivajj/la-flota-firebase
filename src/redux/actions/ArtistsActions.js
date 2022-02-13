@@ -23,6 +23,8 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
   artist.ownerId = userId;
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
+  artist.spotifyIdentifierIdFuga = artistFromThirdWebApi.data.response.spotifyIdentifierIdFuga;
+  artist.appleIdentifierIdFuga = artistFromThirdWebApi.data.response.appleIdentifierIdFuga;
 
   await FirestoreServices.createElementFS(artist, artist.id, userId, typeOfArtist, totalField, 1, dispatch);
 
@@ -47,8 +49,25 @@ export const updateArtistRedux = (newArtistsFields, artistFugaId, photoFile, use
   let onlyEditedFields = cleanNotEditedFields(newArtistsFields);
   let rawDataArtist = createArtistModel(onlyEditedFields, true);
 
-  let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, dispatch);
-  if (artistFromThirdWebApi === "ERROR") return "ERROR";
+  if (rawDataArtist.name || rawDataArtist.biography) {
+    let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, dispatch);
+    if (artistFromThirdWebApi === "ERROR") return "ERROR";
+  }
+
+  if (rawDataArtist.spotify_uri) {
+    let spotifyIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(
+      { identifierField: "spotify_uri", identifierValue: rawDataArtist.spotify_uri }, artistFugaId, dispatch);
+    if (spotifyIdentifierResponse === "ERROR") return "ERROR";
+    console.log("spotifyReponse: ", spotifyIdentifierResponse);
+    onlyEditedFields.spotifyIdentifierIdFuga = spotifyIdentifierResponse;
+  }
+
+  if (rawDataArtist.apple_id) {
+    let appleIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(
+      { identifierField: "apple_id", identifierValue: rawDataArtist.apple_id }, artistFugaId, dispatch);
+    if (appleIdentifierResponse === "ERROR") return "ERROR";
+    onlyEditedFields.appleIdentifierIdFuga = appleIdentifierResponse;
+  }
 
   onlyEditedFields.lastUpdateTS = new Date().getTime();
   await FirestoreServices.updateElementFS(onlyEditedFields, onlyEditedFields.id, "artists", dispatch);

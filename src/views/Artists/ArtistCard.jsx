@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { toWithOutError } from 'utils';
 import { useDispatch } from 'react-redux';
 import { deleteArtistRedux } from "redux/actions/ArtistsActions";
+import ArtistAddedIcon from '../Icons/ArtistAddedIcon';
 
 const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Album en el que esté el Artista."
 
@@ -54,7 +55,8 @@ const ArtistCard = ({ dataArtist, index }) => {
 
         <CardContent>
           <Grid item xs={12}>
-            {dataArtist.imagenUrl && (
+            {dataArtist.imagenUrl
+              ?
               <Grid >
                 <Image
                   style={imageStyle}
@@ -63,7 +65,9 @@ const ArtistCard = ({ dataArtist, index }) => {
                   src={dataArtist.imagenUrl}
                 />
               </Grid>
-            )}
+              : <Grid item xs={12}>
+                <ArtistAddedIcon sx={artistAddedIconStyle} asIconButton={false} />
+              </Grid>}
           </Grid>
         </CardContent>
 
@@ -142,3 +146,4 @@ const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em
 const cardSubtitleBlackStyles = { color: "rgba(0,0,0,0.5)", margin: "0", fontSize: "14px", marginTop: "1em", marginBottom: "0" };
 const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
 const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
+const artistAddedIconStyle = { width: "340px", paddingRight: "4%", height: "286px", marginTop: "-25px" };

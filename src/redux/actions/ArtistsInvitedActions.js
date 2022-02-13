@@ -2,7 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 import { createArtistRedux } from './ArtistsActions';
 import { toWithOutError, to } from 'utils';
 
-export const createOtherArtistsInFuga = (allOtherArtistsAlbum, ownerId) => async dispatch => {
+export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId) => async dispatch => {
   let allOtherArtistsNotEmptyAlbum = allOtherArtistsAlbum.filter(otherArtist => otherArtist.name !== "");
 
   const createOtherArtistOneByOne = allOtherArtistsNotEmptyAlbum.map(async dataArtist => {
@@ -13,10 +13,7 @@ export const createOtherArtistsInFuga = (allOtherArtistsAlbum, ownerId) => async
   });
 
   let [errorCreatingAllArtists] = await to(Promise.all(createOtherArtistOneByOne));
-  if (errorCreatingAllArtists) {
-    console.log("ERROR EN EL PROMISE ALL :", errorCreatingAllArtists);
-    return "ERROR";
-  }
+  if (errorCreatingAllArtists) return "ERROR";
 
   dispatch({
     type: ReducerTypes.INVITED_ARTISTS_ADD,

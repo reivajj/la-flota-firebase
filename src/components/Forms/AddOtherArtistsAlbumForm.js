@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Grid, Button } from '@mui/material';
+import { Grid, Button, IconButton } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { updateAddingAlbumRedux, updateNameOtherArtistsAlbumRedux, updateIdentifierOtherArtistsAlbumRedux } from 'redux/actions/AlbumsActions';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,12 +10,14 @@ import { updatePrimaryOtherArtistsAlbumRedux } from '../../redux/actions/AlbumsA
 import BasicSwitch from 'components/Switch/BasicSwitch';
 import ImageDialog from '../Dialogs/ImageDialog';
 import CheckboxWithInfo from "components/Checkbox/CheckboxWithInfo";
-import { infoSpotifyUri } from "utils/textToShow.utils";
+import { featuringArtistTooltip, getNumeracionOrdinalFromIndex, infoSpotifyUri } from "utils/textToShow.utils";
+import { Delete } from '@mui/icons-material';
 
 
 const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor }) => {
 
   const [openTutorialDialog, setOpenTutorialDialog] = useState(false);
+  const [openFeatTutorialDialog, setOpenFeatTutorialDialog] = useState(false);
 
   const buttonColorStyle = {
     backgroundColor: buttonColor,
@@ -47,18 +49,19 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
     else deleteAllOtherArtists();
   }
 
-  // const deleteOtherArtistWithIndex = otherArtistIndex => {
-  //   const newOtherArtists = currentAddingAlbum.allOtherArtists.filter((_, index) => index !== otherArtistIndex);
-  //   console.log("NEW OTHER ARTIST: ", newOtherArtists);
-  //   dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: newOtherArtists }));
-  // }
+  const handleDeleteOtherArtist = otherArtistIndex => {
+    const newOtherArtists = currentAddingAlbum.allOtherArtists.filter((_, index) => index !== otherArtistIndex);
+    dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: newOtherArtists }));
+  }
+
 
   const getOtherArtistPositionFromIndex = otherArtistIndex => {
-    if (otherArtistIndex > 4) return "";
-    return ["Segundo Artista Principal", "Tercer Artista Principal", "Cuarto Artista Principal", "Quinto Artista Principal"][otherArtistIndex];
+    if (otherArtistIndex >= 20) return "NO PUEDES AGREGAR MÁS DE 20 ARTISTAS";
+    return `Nombre ${getNumeracionOrdinalFromIndex[otherArtistIndex]} Artista`;
   }
 
   const handleTutorialDialog = () => setOpenTutorialDialog(!openTutorialDialog);
+  const handleFeatTutorialDialog = () => setOpenFeatTutorialDialog(!openFeatTutorialDialog);
 
   return (
     <>
@@ -70,27 +73,31 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
           color={checkBoxColor}
           checkBoxHelper={checkBoxHelper}
           onClickInfo={handleTutorialDialog}
-
         />
 
         <ImageDialog title="Ejemplo de un Album con dos artistas Principales:" contentTexts={[[""]]}
           handleClose={handleTutorialDialog} isOpen={openTutorialDialog} imageSource="/images/ejemploDosArtistasPrincipales.png" />
       </Grid>
 
+      <ImageDialog title="Ejemplo de un Album con un Featuring Artist:" contentTexts={[[""]]}
+        handleClose={handleFeatTutorialDialog} isOpen={openFeatTutorialDialog} imageSource="/images/ejemploDosArtistasPrincipales.png" />
+
       {currentAddingAlbum.allOtherArtists.map((otherArtist, index) => (
 
         < Grid container item xs={12} key={index + "bigGrid"} >
 
-          <Grid item sx={gridSwitcherStyle} key={"switch-primary"}>
+          <Grid item sx={gridSwitcherStyle} key={index + "switch-primary"}>
             {index === 0
               ? <InfoSwitch
+                key={index + "switch-info"}
                 label={otherArtist.primary ? "Principal" : "Featuring"}
                 onChange={(event) => handleChangeArtistPrimary(event.target.checked, index)}
                 checked={otherArtist.primary}
-                infoTooltip="Indica si el Artista será Principal o  Featuring. 
-              Presionar para más información."
-                infoAtLeft={true} />
+                infoTooltip={featuringArtistTooltip}
+                infoAtLeft={true}
+                onClickInfo={handleFeatTutorialDialog} />
               : <BasicSwitch
+                key={index + "switch-basic"}
                 label={otherArtist.primary ? "Principal" : "Featuring"}
                 onChange={(event) => handleChangeArtistPrimary(event.target.checked, index)}
                 checked={otherArtist.primary} />
@@ -99,20 +106,22 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
           <Grid item sx={gridNameStyle} key={index + "nameGrid"} textAlign="left">
             <TextFieldWithInfo
+              key={index + "nameTextfield"}
               name={getOtherArtistPositionFromIndex(index)}
               sx={textFiedNameStyle}
               label={getOtherArtistPositionFromIndex(index)}
               value={otherArtist.name}
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
-              helperText={index === 0 ? "Ingresá el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
+              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
             />
           </Grid>
 
           <Grid item sx={gridUriStyle} key={index + "spotifyUriGrid"}>
             <TextFieldWithInfo
+              key={index + "spotyAlbum"}
               name="spotifyUriSecondArtist"
               sx={textFieldURIStyle}
-              label="Codigo Uri de Spotify"
+              label="Código Uri de Spotify"
               value={otherArtist.spotify_uri}
               onChange={(event) => handleAddIdentifier(event.target.value, "spotify_uri", index)}
               helperText={index === 0 ? infoSpotifyUri : ""}
@@ -123,19 +132,26 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
           <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
             <TextFieldWithInfo
+              key={index + "appleAlbum"}
               name="appleIdOhterTackArtist"
               sx={textFieldAppleIDStyle}
               label="Apple ID"
               value={otherArtist.apple_id}
               onChange={(event) => handleAddIdentifier(event.target.value, "apple_id", index)}
-              helperText={index === 0 ? "Ingresá el Apple ID. " : ""}
+              helperText={index === 0 ? "Ingresa el Apple ID. " : ""}
             />
+          </Grid>
+
+          <Grid item sx={gridDeleteStyle} key={index + "deleteIcon"}>
+            <IconButton color="inherit" size="large" onClick={(_) => handleDeleteOtherArtist(index)}>
+              <Delete fontSize="inherit" />
+            </IconButton>
           </Grid>
         </Grid>)
       )}
 
       {currentAddingAlbum.allOtherArtists.length > 0 &&
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ paddingTop: "1%" }}>
           <Button variant="contained" sx={buttonColorStyle} onClick={addOneArtistSkeleton}>
             Agregar Artista
           </Button>
@@ -146,16 +162,11 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
 export default AddOtherArtistsForm;
 
-// const textFiedNameStyle = { width: "66.8%" }
-// const textFieldURIStyle = { width: "66.8%", marginLeft: "11%" }
-// const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-// const gridNameStyle = { width: "45%" }
-// const gridUriStyle = { width: "45%", textAlign: "left" };
-
 const textFiedNameStyle = { width: "93%" }
 const textFieldURIStyle = { width: "90%" }
 const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "40%" }
+const gridNameStyle = { width: "35%" }
 const gridUriStyle = { width: "22.5%", textAlign: "left" };
 const gridAppleStyle = { width: "22.5%", textAlign: "left" };
+const gridDeleteStyle = { width: "5%", marginTop: "1.2%", color: "gray", textAlign: "initial" };

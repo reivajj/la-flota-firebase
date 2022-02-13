@@ -62,9 +62,8 @@ const AdminNavbarLinks = () => {
   const handleSignOut = async () => {
     let [errorSignOut] = await to(dispatch(actions.signOutFromFirebase()));
     if (errorSignOut) console.log("Error al realizar signOut: ", errorSignOut);
-
-    setAnchorElProfile(null);
     navigate("/login");
+    setAnchorElProfile(null);
   };
 
   return (

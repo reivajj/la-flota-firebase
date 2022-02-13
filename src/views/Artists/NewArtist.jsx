@@ -38,7 +38,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const currentArtistData = useSelector(store => store.artists.addingArtist);
   const [currentArtistEditingData] = useSelector(store => store.artists.artists).filter(artist => artist.id === artistId);
 
-  let artistDataToShow = editing ? currentArtistEditingData : currentArtistData;
+  let artistDataToShow = editing ? currentArtistEditingData || currentArtistData : currentArtistData;
 
   const changeArtistId = () => dispatch(saveAddingArtistId(uuidv4()));
   const putArtistIdOnEditingArtist = () => dispatch(saveAddingArtistId(currentArtistEditingData.id));
@@ -90,13 +90,12 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   }
 
   const onClickAddImageArtist = async (event) => {
-    console.log("AAAAAAAIMAGE");
     changeArtistImagenUrlAndReference("");
     setMessage("");
     let img = new Image()
     img.src = window.URL.createObjectURL(event.target.files[0])
     img.onload = async () => {
-      if (img.width >= 200 && img.height >= 200) {
+      if (img.width >= 1400 && img.height >= 1400) {
         let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], artistDataToShow.id, 'artistsPhotos', 5242880, setMessage, setProgress));
         if (errorAddingFile) {
           setMessage("Ha ocurrido un error, por favor, intente nuevamente. ");
@@ -156,7 +155,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
             <Card>
 
               <CardHeader color="primary">
-                <Typography sx={cardTitleWhiteStyles}>Crear Artista</Typography>
+                <Typography sx={cardTitleWhiteStyles}>{editing ? "Editar Artista" : "Crear Artista"}</Typography>
               </CardHeader>
 
               <CardBody>

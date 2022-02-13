@@ -14,7 +14,7 @@ const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists, al
         <Grid container item xs={12}>
 
           <Grid item xs={3}>
-            <ArtistAddedIcon sx={artistAddedIconStyle} />
+            <ArtistAddedIcon sx={artistAddedIconStyle} asIconButton={false} />
           </Grid>
 
           <Grid container item xs={9} direction="column" justifyContent="center" alignItems="center">

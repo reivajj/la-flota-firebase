@@ -9,6 +9,7 @@ const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper, on
     <Grid container item xs={12}>
       <Grid item xs={7} textAlign="end" >
         <BasicCheckbox
+          key={label}
           label={label}
           onChecked={onChecked}
           checked={checked}
@@ -16,7 +17,7 @@ const CheckboxWithInfo = ({ checked, label, onChecked, color, checkBoxHelper, on
         />
       </Grid>
       <Grid item xs={1} textAlign="start">
-        <Tooltip title={checkBoxHelper} >
+        <Tooltip key={checkBoxHelper} title={checkBoxHelper} >
           <IconButton onClick={onClickInfo ? onClickInfo : null} >{<Info />}</IconButton>
         </Tooltip>
       </Grid>

@@ -6,7 +6,7 @@ import { loginErrorStore } from 'redux/actions/AuthActions';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
-const targetUrl = webUrl;
+const targetUrl = localUrl;
 const functions = getFunctions();
 
 // ======================================LABELS=============================================\\
@@ -41,7 +41,7 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
 
 export const createArtistFuga = async (formDataArtist, dispatch) => {
   let [errorUploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
-    axios.post(`${targetUrl}artists`, formDataArtist));
+    axios.post(`${targetUrl}artists/withIdentifiers`, formDataArtist));
 
   if (errorUploadingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUploadingArtistInThirdWebApi));
@@ -61,6 +61,18 @@ export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) =
   }
 
   return "SUCCESS";
+}
+
+export const updateArtistIdentifierFuga = async (formDataArtist, artistFugaId, dispatch) => {
+  let [errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
+    axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+
+  if (errorUpdatingArtistInThirdWebApi) {
+    dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
+    return "ERROR";
+  }
+
+  return resultIdentifier.data.response.id;
 }
 
 

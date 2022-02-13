@@ -51,6 +51,8 @@ export const TRACKS_SIGN_OUT = "tracks_sign_out";
 export const EDIT_TRACK = "edit_track";
 export const EDIT_TRACK_POST_UPLOAD_IN_DB = "edit_track_post_upload_in_db";
 export const SET_TRACK_UPLOAD_PROGRESS = "set_track_upload_progress";
+export const TRACK_UPLOADING_DELETE = "track_uploading_delete";
+export const TRACK_UPLOADING_EDIT = "track_uploading_edit";
 
 // ArtistsInvited Types
 export const INVITED_ARTISTS_ADD = "INVITED_ARTISTS_ADD";
@@ -65,4 +67,5 @@ export const COLLABORATORS_SIGN_OUT = "collaborators_sign_out";
 //ErrorHandler
 export const ERROR_FROM_BACKEND = "error_from_backend";
 export const ERROR_FROM_FIRESTORE = "error_from_firestore";
-export const ERROR_CLEAN_LAST = "error_clean_last"; 
+export const ERROR_CLEAN_LAST = "error_clean_last";
+export const ERROR_BASIC_MSG = "error_basic_msg";

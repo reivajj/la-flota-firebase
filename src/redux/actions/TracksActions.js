@@ -8,11 +8,25 @@ import { toWithOutError } from 'utils';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
+  trackData.id = trackData.id || uuidv4();
   return {
     type: ReducerTypes.ADD_UPLOADING_TRACKS,
-    payload: [trackData]
+    payload: trackData
   };
 }
+
+export const deleteTrackInTracksUploading = trackId => {
+  return {
+    type: ReducerTypes.TRACK_UPLOADING_DELETE,
+    payload: trackId
+  }
+}
+
+// export const editTrackInTracksUploading = trackInfo => {
+//   return {
+//     type: ReducerTypes
+//   }
+// }
 
 const setUploadProgress = (position, percentageProgress) => {
   return {
@@ -39,7 +53,7 @@ const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, d
   return dataTrack;
 }
 
-export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId) => async dispatch => {
+export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId) => async dispatch => {
 
   const uploadTracksOneByOne = tracksData.map(async dataTrack => {
 
@@ -49,7 +63,7 @@ export const uploadAllTracksToAlbum = (tracksData, albumId, albumFugaId, userId)
       dispatch(setUploadProgress(dataTrack.position, percentageProgress))
     }
 
-    dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId; dataTrack.id = uuidv4();
+    dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId;
     return createTrackInAlbumFugaAndFireStore(dataTrack, onUploadProgress, dispatch).catch(error => {
       console.log("Error en Firestore o BE al crear tracks en album:", error);
       return "ERROR";

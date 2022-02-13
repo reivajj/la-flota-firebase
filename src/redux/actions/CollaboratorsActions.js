@@ -69,7 +69,7 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
   return collaboratorsForEachTrack;
 }
 
-export const createCollaboratorsInFuga = (tracksCreated, ownerId) => async dispatch => {
+export const createCollaboratorsRedux = (tracksCreated, ownerId) => async dispatch => {
 
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
   let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch);

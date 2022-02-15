@@ -40,9 +40,7 @@ const ArtistCard = ({ dataArtist, index }) => {
 
   const handleEditArtista = () => navigate(`/admin/edit-artist/${dataArtist.id}`);
 
-  const handleGoToArtistAlbums = () => {
-    console.log("Albums");
-  }
+  const handleGoToArtistAlbums = () => navigate(`/admin/albums?view=allOfArtist&id=${dataArtist.id}`);
 
   const handleGoToArtistLabels = () => {
     console.log("LABELS");
@@ -71,17 +69,31 @@ const ArtistCard = ({ dataArtist, index }) => {
           </Grid>
         </CardContent>
 
-        <CardContent>
-          <Grid item xs={12} sx={{ textAlign: "center" }}>
-            <Typography noWrap sx={cardTitleBlackStyles}>{dataArtist.name}</Typography>
+        <CardContent style={{ padding: '6px' }}>
+          <Grid container sx={{ textAlign: "center" }} padding={2}>
+
+            <Grid item xs={12} textAlign="-moz-center">
+              <Typography noWrap sx={cardTitleBlackStyles}>{dataArtist.name}</Typography>
+            </Grid>
 
             <Grid item xs={12} textAlign="-moz-center">
               <Divider sx={dividerStyle} />
             </Grid>
 
-            <Grid sx={{ height: "2.5em" }}>
-              <Typography noWrap sx={cardSubtitleBlackStyles}>{dataArtist.biography}</Typography >
+            <Grid container item xs={12} textAlign="left" sx={{ paddingTop: "1em", paddingBottom: 0 }}>
+              <Grid item xs={12} >
+                <b style={cardDSPNameStyles}>Biografía:</b><b style={cardBioValueStyle}>{` ${dataArtist.biography}`}</b>
+              </Grid>
+
+              <Grid item xs={12} >
+                <b style={cardDSPNameStyles}>Apple ID:</b><b style={cardCodeTextStyle} >{` ${dataArtist.apple_id ? dataArtist.apple_id : "será asignado por Apple"}`}</b>
+              </Grid>
+
+              <Grid item xs={12} >
+                <b style={cardDSPNameStyles}>Spotify URI:</b><b style={cardCodeTextStyle} >{` ${dataArtist.spotify_uri ? dataArtist.spotify_uri : "será asignado por Spotify"}`}</b>
+              </Grid>
             </Grid>
+
 
           </Grid>
         </CardContent>
@@ -91,9 +103,9 @@ const ArtistCard = ({ dataArtist, index }) => {
           <Grid container spacing={1} justifyContent="center">
 
             <Grid container item spacing={2} xs={12}>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Button
-                  fullWidth
+                  sx={{ width: "90%" }}
                   variant="contained"
                   color="secondary"
                   onClick={handleGoToArtistAlbums}
@@ -102,16 +114,6 @@ const ArtistCard = ({ dataArtist, index }) => {
                 </Button>
               </Grid>
 
-              <Grid item xs={6}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="secondary"
-                  onClick={handleGoToArtistLabels}
-                >
-                  Sellos
-                </Button>
-              </Grid>
             </Grid>
 
             <Grid container item direction="row" justifyContent="space-between" alignItems="flex-end" xs={12}>
@@ -142,8 +144,10 @@ const ArtistCard = ({ dataArtist, index }) => {
 export default ArtistCard;
 
 const imageStyle = { borderRadius: "30px", marginTop: "20px", width: "15em", height: "15em" };
-const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em", height: "32em" };
-const cardSubtitleBlackStyles = { color: "rgba(0,0,0,0.5)", margin: "0", fontSize: "14px", marginTop: "1em", marginBottom: "0" };
+const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em", height: "35em" };
 const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
 const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
 const artistAddedIconStyle = { width: "340px", paddingRight: "4%", height: "286px", marginTop: "-25px" };
+const cardDSPNameStyles = { color: "rgba(0,0,0,0.9)", margin: "0", fontWeight: 600, fontSize: "14px", marginTop: "1em", marginBottom: "0" };
+const cardCodeTextStyle = { color: "rgba(0,0,0,0.5)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "14px", marginTop: "1em", marginBottom: "0" };
+const cardBioValueStyle = { color: "rgba(0,0,0,0.5)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "14px", marginTop: "1em", marginBottom: "0" };

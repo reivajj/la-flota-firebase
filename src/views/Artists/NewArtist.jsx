@@ -4,7 +4,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import { TextField, Grid, Typography, Button } from "@mui/material";
+import { TextField, Grid, Typography } from "@mui/material";
 
 import SimpleReactValidator from "simple-react-validator";
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,13 +18,14 @@ import { to, toWithOutError } from '../../utils';
 import SaveIcon from '@mui/icons-material/Save';
 import { v4 as uuidv4 } from 'uuid';
 import ProgressButton from 'components/CustomButtons/ProgressButton';
-import { deleteFile, manageAddImageToStorage } from "services/StorageServices";
+import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useForceUpdate } from 'utils';
 import ImageInput from 'components/Input/ImageInput';
 import { AddMoreArtistsInAlbumDialog } from 'components/Dialogs/AddMoreArtistsInAlbumDialog';
 import { infoSpotifyUri } from "utils/textToShow.utils";
 import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
+import SuccessDialog from "components/Dialogs/SuccessDialog";
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
@@ -52,11 +53,12 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("No es obligatoria la imagen");
-  const [imageReference, setImageReference] = useState('');
+  // const [imageReference, setImageReference] = useState('');
 
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
+  const [creatingArtistState, setCreatingArtistState] = useState("none");
 
   const [biographyEdited, setBiographyEdited] = useState(false);
   const [nameEdited, setNameEdited] = useState(false);
@@ -76,11 +78,13 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     setOpenLoader(true);
     let result = await toWithOutError(dispatch(
       editing
-        ? updateArtistRedux(currentArtistData, currentArtistEditingData.fugaId, photoFile, currentUserId)
+        ? updateArtistRedux(currentArtistEditingData, currentArtistData, currentArtistEditingData.fugaId, photoFile, currentUserId,
+          { apple_id: appleIdEdited, spotify_uri: spotifyUriEdited, name: nameEdited, biography: biographyEdited })
         : createArtistRedux(currentArtistData, currentUserId, "artists", "totalArtists")));
     if (result === "SUCCESS") {
       setButtonState("success");
-      (view !== "dialog") ? navigate('/admin/artists') : handleClose();
+      setOpenLoader(false);
+      (view !== "dialog") ? setCreatingArtistState("success") : handleClose();
     }
     else {
       setButtonState("error");
@@ -152,6 +156,8 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
         : <Grid container justifyContent="center">
           <Grid item xs={12} sm={12} md={6}>
 
+            <SuccessDialog isOpen={creatingArtistState === "success"} title={`Artista ${editing ? "editado" : "creado"}!`} contentTexts={[[`El artista fue ${editing ? "editado" : "generado"} con éxito.`]]}
+              handleClose={() => navigate('/admin/artists')} />
             <Card>
 
               <CardHeader color="primary">

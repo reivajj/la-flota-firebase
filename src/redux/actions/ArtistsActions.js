@@ -38,15 +38,15 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
   return "SUCCESS";
 }
 
-const cleanNotEditedFields = allFields => {
+const cleanNotEditedFields = (allFields, fieldsEdited) => {
   Object.keys(allFields).forEach(prop => {
-    if (allFields[prop] === "") delete allFields[prop];
+    if (!fieldsEdited[prop]) delete allFields[prop];
   })
   return allFields;
 }
 
-export const updateArtistRedux = (newArtistsFields, artistFugaId, photoFile, userId) => async dispatch => {
-  let onlyEditedFields = cleanNotEditedFields(newArtistsFields);
+export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId, photoFile, userId, fieldsEdited) => async dispatch => {
+  let onlyEditedFields = cleanNotEditedFields(newArtistsFields, fieldsEdited);
   let rawDataArtist = createArtistModel(onlyEditedFields, true);
 
   if (rawDataArtist.name || rawDataArtist.biography) {
@@ -54,21 +54,21 @@ export const updateArtistRedux = (newArtistsFields, artistFugaId, photoFile, use
     if (artistFromThirdWebApi === "ERROR") return "ERROR";
   }
 
-  if (rawDataArtist.spotify_uri) {
-    let spotifyIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(
+  if (rawDataArtist.spotify_uri !== undefined) {
+    let spotifyIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(oldArtistData.spotifyIdentifierIdFuga,
       { identifierField: "spotify_uri", identifierValue: rawDataArtist.spotify_uri }, artistFugaId, dispatch);
     if (spotifyIdentifierResponse === "ERROR") return "ERROR";
-    console.log("spotifyReponse: ", spotifyIdentifierResponse);
     onlyEditedFields.spotifyIdentifierIdFuga = spotifyIdentifierResponse;
   }
 
-  if (rawDataArtist.apple_id) {
-    let appleIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(
+  if (rawDataArtist.apple_id !== undefined) {
+    let appleIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(oldArtistData.appleIdentifierIdFuga,
       { identifierField: "apple_id", identifierValue: rawDataArtist.apple_id }, artistFugaId, dispatch);
     if (appleIdentifierResponse === "ERROR") return "ERROR";
     onlyEditedFields.appleIdentifierIdFuga = appleIdentifierResponse;
   }
 
+  onlyEditedFields.id = oldArtistData.id;
   onlyEditedFields.lastUpdateTS = new Date().getTime();
   await FirestoreServices.updateElementFS(onlyEditedFields, onlyEditedFields.id, "artists", dispatch);
 

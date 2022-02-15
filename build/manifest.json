@@ -1,9 +1,9 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "La Flota",
+  "name": "La Flota | Distribución Digital de Música | Artistas Sellos Productores",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "only_circle_laflota_blue.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }

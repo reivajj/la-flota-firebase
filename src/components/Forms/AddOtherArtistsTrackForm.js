@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { Grid, Tooltip, Button, IconButton } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';

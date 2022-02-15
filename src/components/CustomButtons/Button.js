@@ -1,19 +1,19 @@
 import React from "react";
 // nodejs library that concatenates classes
-import classNames from "classnames";
+// import classNames from "classnames";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
 
 // material-ui components
 import Button from '@mui/material/Button';
 
-import styles from "assets/jss/material-dashboard-react/components/buttonStyle.js";
-import { makeStyles } from '@mui/styles';
+// import styles from "assets/jss/material-dashboard-react/components/buttonStyle.js";
+// import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles(styles);
+// const useStyles = makeStyles(styles);
 
 export default function RegularButton(props) {
-  const classes = useStyles();
+  // const classes = useStyles();
   const {
     color,
     round,
@@ -28,18 +28,18 @@ export default function RegularButton(props) {
     muiClasses,
     ...rest
   } = props;
-  const btnClasses = classNames({
-    [classes.button]: true,
-    [classes[size]]: size,
-    [classes[color]]: color,
-    [classes.round]: round,
-    [classes.disabled]: disabled,
-    [classes.simple]: simple,
-    [classes.block]: block,
-    [classes.link]: link,
-    [classes.justIcon]: justIcon,
-    [className]: className
-  });
+  // const btnClasses = classNames({
+  //   [classes.button]: true,
+  //   [classes[size]]: size,
+  //   [classes[color]]: color,
+  //   [classes.round]: round,
+  //   [classes.disabled]: disabled,
+  //   [classes.simple]: simple,
+  //   [classes.block]: block,
+  //   [classes.link]: link,
+  //   [classes.justIcon]: justIcon,
+  //   [className]: className
+  // });
   return (
     <Button {...rest} >
       {children}

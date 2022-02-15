@@ -5,7 +5,14 @@ import { Delete } from '@mui/icons-material';
 import ArtistAddedIcon from '../Icons/ArtistAddedIcon';
 import LabelledAndColoredSwitch from '../../components/Switch/LabelledAndColoredSwitch';
 
-const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists, allOtherArtists }) => {
+const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists, allOtherArtists, from }) => {
+
+  const checkIfCanDeleteArtist = () => {
+    if (from === "album-info") return false;
+    let allArtistsInTrack = [...artists, ...allOtherArtists];
+    allArtistsInTrack = allArtistsInTrack.filter((_, i) => index !== i);
+    return allArtistsInTrack.filter(otherA => otherA.primary).length >= 1;
+  }
 
   return (
     <Grid item xs={3} justifyContent="center">
@@ -28,10 +35,10 @@ const ArtistInAddTrack = ({ index, handleDelete, handleSliderChange, artists, al
               <Grid item xs={8} sx={switchGridStyle}>
                 <LabelledAndColoredSwitch size="small" checked={artists.length === 1 || artists[index].primary} color={"#508062"}
                   onChange={(event) => handleSliderChange(index, event.target.checked)} labelPlacement={"end"}
-                  label={(artists.length === 1 || artists[index].primary) ? "Principal" : "Featuring"} />
+                  label={(artists.length === 1 || artists[index].primary) ? "Principal" : "Featuring"} disabled={from === "album-info"} />
               </Grid>
 
-              {artists.length + allOtherArtists.filter(otherA => otherA.primary).length > 1 &&
+              {checkIfCanDeleteArtist() &&
                 <Grid item xs={4} sx={deleteGridStyle}>
                   <IconButton sx={deleteIconStyle} size="small" onClick={() => handleDelete(index)}>
                     <Delete fontSize="inherit" />

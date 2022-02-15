@@ -15,7 +15,9 @@ function to(promise) {
     .catch(err => [err]);
 }
 
-exports.onCallGenerateThumbnail = functions.https.onCall(async (data) => {
+let functionsWithMemory = functions.runWith({ timeoutSeconds: 300, memory: "1GB" });
+
+exports.onCallGenerateThumbnail = functionsWithMemory.https.onCall(async (data) => {
   const { fileBucket, filePath, contentType, fileSize } = data;
   log("El objeto que recibo", { fileBucket, filePath, contentType, fileSize });
 

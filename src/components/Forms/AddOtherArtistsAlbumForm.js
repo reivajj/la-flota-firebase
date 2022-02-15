@@ -31,19 +31,17 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
   const addOneArtistSkeleton = () => {
     if (currentAddingAlbum.allOtherArtists.length >= 4) return;
-    let artist = { name: "", spotify_uri: "", id: uuidv4(), primary: false };
+    let artist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] }));
-    // setTrackData({ ...trackData, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] });
   }
 
   const deleteAllOtherArtists = () => {
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [] }));
-    // setTrackData({ ...trackData, allOtherArtists: [] });
   }
 
   const handleChangeArtistPrimary = (isPrimary, otherArtistIndex) => dispatch(updatePrimaryOtherArtistsAlbumRedux(isPrimary, otherArtistIndex));
   const handlerAddNameToOtherArtists = (nameValue, otherArtistIndex) => dispatch(updateNameOtherArtistsAlbumRedux(nameValue, otherArtistIndex));
-  const handleAddIdentifier = (identifier, identifierField, otherArtistIndex) => dispatch(updateIdentifierOtherArtistsAlbumRedux(identifier, identifierField, otherArtistIndex))
+  const handleAddIdentifier = (identifierValue, identifierField, otherArtistIndex) => dispatch(updateIdentifierOtherArtistsAlbumRedux(identifierValue, identifierField, otherArtistIndex))
   const handleOnChangeCheckBox = (event) => {
     if (event.target.checked) addOneArtistSkeleton();
     else deleteAllOtherArtists();

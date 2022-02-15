@@ -4,38 +4,20 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 // core components
 import AdminNavbarLinks from "./AdminNavbarLinks.js";
-import Button from "components/CustomButtons/Button.js";
-
-import { useLocation } from "react-router-dom";
 
 import {
   container,
-  defaultFont,
+  // defaultFont,
   grayColor
 } from "assets/jss/material-dashboard-react.js";
 
 export default function Header(props) {
-  const url = useLocation();
-
-  const makeBrand = () => {
-    var name;
-    props.routes.map(prop => {
-      if (url.pathname === prop.layout + prop.path) {
-        name = prop.name;
-      }
-      return null;
-    });
-    return name;
-  }
 
   return (
     <AppBar sx={appBarStyle}>
       <Toolbar sx={containerStyle}>
         <div style={flexStyle}>
-          {/* Here we create navbar brand, based on route name */}
-          <Button href="#" sx={titleStyle}>
-            {makeBrand()}
-          </Button>
+          {/* Aca podemos poner un BIENVENIDOS o algo asi... */}
         </div>
         {<AdminNavbarLinks />}
       </Toolbar>
@@ -74,13 +56,13 @@ const containerStyle = {
 const flexStyle = {
   flex: 1
 }
-const titleStyle = {
-  ...defaultFont,
-  letterSpacing: "unset",
-  lineHeight: "30px",
-  fontSize: "18px",
-  borderRadius: "3px",
-  textTransform: "none",
-  color: "inherit",
-  margin: "0",
-}
+// const titleStyle = {
+//   ...defaultFont,
+//   letterSpacing: "unset",
+//   lineHeight: "30px",
+//   fontSize: "18px",
+//   borderRadius: "3px",
+//   textTransform: "none",
+//   color: "inherit",
+//   margin: "0",
+// }

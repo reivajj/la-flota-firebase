@@ -17,6 +17,7 @@ export const USER_DATA_EDIT_PERFIL = "user_data_edit_perfil";
 export const USER_DATA_SIGN_IN = 'user_data_sign_in';
 export const USER_DATA_SIGN_OUT = 'user_data_sign_out';
 export const USER_DATA_ADD_IMAGE = 'user_data_add_image';
+export const USER_DATA_ADD_SUBGENERO = "user_data_add_subgenero";
 
 // Artists Types
 export const ADD_ARTISTS = "add_artists";
@@ -43,6 +44,7 @@ export const ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE = "albums_update_add
 export const ALBUMS_UPDATE_OTHER_ARTIST_NAME = "albums_update_other_artist_name";
 export const ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER = "albums_update_other_artist_identifier";
 export const ALBUMS_UPDATE_OTHER_ARTIST_PRIMARY = "albums_update_other_artist_primary";
+export const ALBUMS_DELETE_BY_ID = "albums_delete_by_id";
 
 //Tracks Types
 export const ADD_TRACKS = "add_tracks";

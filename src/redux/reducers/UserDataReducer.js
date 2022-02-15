@@ -1,26 +1,28 @@
-import {
-  USER_DATA_SIGN_IN, USER_DATA_SIGN_OUT, USER_DATA_ADD_IMAGE, USER_DATA_EDIT_PERFIL
-} from "redux/actions/Types";
+import * as ReducerTypes from 'redux/actions/Types';
 
-
-const initialStats = {
-  totalAlbums: 0, totalArtists: 0, totalLabels: 0, totalTracks: 0,
-  withdrawals: {
-    usd: { totalAmount: 0, totalWithdrawals: 0 },
-    pesos: { totalAmount: 0, totalWithdrawals: 0 },
-    cupones: { totalAmount: 0, totalWithdrawals: 0 }
-  }
+const initialStats = { totalAlbums: 0, totalArtists: 0, totalLabels: 0, totalTracks: 0 };
+const initialWithdrawals = {
+  usd: { totalAmount: 0, totalWithdrawals: 0 },
+  pesos: { totalAmount: 0, totalWithdrawals: 0 },
+  cupones: { totalAmount: 0, totalWithdrawals: 0 }
 }
 
 const initialState = {
   rol: '', email: '', userName: '', id: '', ciudad: '', telefono: '', direccion: '', nombre: '',
-  apellido: '', dni: '', imagen: '', stats: initialStats, usuarioActivo: false
+  apellido: '', dni: '', imagen: '', stats: initialStats, usuarioActivo: false, generos: [],
+  subgenerosPropios: [], plan: "charly-garcia", withdrawals: initialWithdrawals, actividadReciente: [],
+  timestampWhenCreatedUser: '', lastTimeSignedInString: '', lastTimeSignedIn: '',
+}
+
+const addNewSubgenero = (newSubgenero, oldSubgeneros) => {
+  if (!oldSubgeneros.find(oldS => newSubgenero.name === oldS.name)) return [...oldSubgeneros, newSubgenero];
+  else return oldSubgeneros;
 }
 
 const UserDataReducer = (state = initialState, action) => {
   let userData = action.payload;
   switch (action.type) {
-    case USER_DATA_SIGN_IN:
+    case ReducerTypes.USER_DATA_SIGN_IN:
       return {
         rol: userData.rol,
         email: userData.email,
@@ -33,19 +35,29 @@ const UserDataReducer = (state = initialState, action) => {
         dni: userData.dni,
         imagenUrl: userData.imagen,
         usuarioActivo: userData.usuarioActivo,
-        stats: userData.stats,
+        stats: userData.stats || initialStats,
+        withdrawals: userData.withdrawals || initialWithdrawals,
         lastTimeSignedIn: userData.lastTimeSignedIn,
         lastTimeSignedInString: userData.lastTimeSignedInString,
-        withdrawals: userData.withdrawals,
         timestampWhenCreatedUser: userData.timestampWhenCreatedUser,
-        plan: userData.plan,
+        plan: userData.plan || initialState.plan,
+        subgenerosPropios: userData.subgenerosPropios || initialState.subgenerosPropios,
+        generos: userData.generos || initialState.generos,
+        actividadReciente: userData.actividadReciente || initialState.actividadReciente,
       } || initialState;
-    case USER_DATA_SIGN_OUT:
+
+    case ReducerTypes.USER_DATA_SIGN_OUT:
       return initialState;
-    case USER_DATA_EDIT_PERFIL:
+
+    case ReducerTypes.USER_DATA_EDIT_PERFIL:
       return { ...state, ...action.payload };
-    case USER_DATA_ADD_IMAGE:
+
+    case ReducerTypes.USER_DATA_ADD_IMAGE:
       return { ...state, imagen: action.payload };
+
+    case ReducerTypes.USER_DATA_ADD_SUBGENERO:
+      return { ...state, subgenerosPropios: addNewSubgenero(action.payload, state.subgenerosPropios) }
+
     default:
       return state;
   }

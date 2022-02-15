@@ -5,15 +5,21 @@ import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 import AlbumCard from "views/Albums/AlbumCard";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import useQuery from '../../customHooks/useQuery';
+import { getFilteredAlbumsByUrl } from '../../utils/albums.utils';
 
 const MyAlbums = () => {
 
   const navigate = useNavigate();
+  const params = useQuery();
+
   const albumsFromStore = useSelector(store => store.albums.albums);
 
+  const filteredAlbumsIfNeeded = getFilteredAlbumsByUrl(params, albumsFromStore);
+
   const myAlbumsProfiles = () => {
-    return albumsFromStore.length > 0
-      ? albumsFromStore.map((label, index) =>
+    return filteredAlbumsIfNeeded.length > 0
+      ? filteredAlbumsIfNeeded.map((label, index) =>
         <Grid item xs={3} key={index} sx={{ margintTop: "2%" }}>
           <AlbumCard key={index} dataAlbum={label} index={index} />
         </Grid>

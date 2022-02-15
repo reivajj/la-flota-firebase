@@ -6,7 +6,7 @@ import { loginErrorStore } from 'redux/actions/AuthActions';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
-const targetUrl = localUrl;
+export const targetUrl = webUrl;
 const functions = getFunctions();
 
 // ======================================LABELS=============================================\\
@@ -63,8 +63,20 @@ export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) =
   return "SUCCESS";
 }
 
-export const updateArtistIdentifierFuga = async (formDataArtist, artistFugaId, dispatch) => {
-  let [errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
+export const updateArtistIdentifierFuga = async (identifierId, formDataArtist, artistFugaId, dispatch) => {
+  let errorUpdatingArtistInThirdWebApi = ""; let resultIdentifier = "";
+  let errorDeletingIdentifier = "";
+  if (formDataArtist.identifierValue === "") {
+    [errorDeletingIdentifier] = await to(axios.delete(`${targetUrl}artists/${artistFugaId}/identifier/${identifierId}`));
+    if (errorDeletingIdentifier) {
+      dispatch(createBackendError(errorDeletingIdentifier));
+      return "ERROR";
+    }
+    [errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
+      axios.post(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+  }
+
+  else[errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
     axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
@@ -72,16 +84,16 @@ export const updateArtistIdentifierFuga = async (formDataArtist, artistFugaId, d
     return "ERROR";
   }
 
+  console.log("result identifier: ", resultIdentifier.data);
   return resultIdentifier.data.response.id;
 }
 
 
 export const deleteArtistFuga = async (artistFugaId, dispatch) => {
-  let [errorDeletingArtistInThirdWebApi] = await to(
-    axios.delete(`${targetUrl}artists/${artistFugaId}`));
+  let [errorDeletingArtistInFuga] = await to(axios.delete(`${targetUrl}artists/${artistFugaId}`));
 
-  if (errorDeletingArtistInThirdWebApi) {
-    dispatch(createBackendError(errorDeletingArtistInThirdWebApi));
+  if (errorDeletingArtistInFuga) {
+    dispatch(createBackendError(errorDeletingArtistInFuga));
     return "ERROR";
   }
   return "SUCCESS";
@@ -95,7 +107,49 @@ export const createAlbumFuga = async (formDataAlbum, dispatch) => {
     dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
     return "ERROR";
   }
+
   return albumFromThirdWebApi;
+}
+
+export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
+  let [errorDeletingAlbumInFuga] = await to(axios.delete(`${targetUrl}albums/${albumFugaId}?delete_assets=true`));
+
+  if (errorDeletingAlbumInFuga) {
+    const errorCodeIfExist = errorDeletingAlbumInFuga.response.data.data.code;
+    if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
+    dispatch(createBackendError(errorDeletingAlbumInFuga));
+    return "ERROR";
+  }
+  return "SUCCESS";
+}
+
+export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) => {
+  console.log("TRACKS : ", tracksData);
+  // let clonedTracksData = cloneDeepLimited(tracksData);
+
+  for (const trackData of tracksData) {
+    const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${albumId}/tracks/${trackData.fugaId}`));
+    if (errorAttachingTrack) {
+      dispatch(createBackendError(errorAttachingTrack));
+      return "ERROR";
+    }
+    console.log("RESULT:", result);
+  }
+  return "SUCCESS";
+}
+
+export const rearrengePositionsFuga = async (tracksData, albumId, dispatch) => {
+  let traksIdsAndPositions = [];
+  console.log("TRACKS EN REARRENGE: ", tracksData);
+  tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
+
+  let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
+    { rearrengeInstructions: traksIdsAndPositions }));
+  if (errorRearrengingPositions) {
+    dispatch(createBackendError(errorRearrengingPositions));
+    return "ERROR";
+  }
+  return result;
 }
 
 // ======================================TRACKS=============================================\\
@@ -117,7 +171,7 @@ export const createPersonsFuga = async (formDataPeople, dispatch) => {
     dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
     return "ERROR";
   }
-  console.log("La respuesta de crear el track en Fuga: ", personsFromThirdWebApi);
+  console.log("La respuesta de crear el person en Fuga: ", personsFromThirdWebApi);
   let personsWithId = personsFromThirdWebApi.data.response;
   return personsWithId;
 }
@@ -163,4 +217,15 @@ export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => 
     return { existEmail: true, passwordCheck: passwordOk.data, userInWp };
   }
   return { existEmail: false };
+}
+
+//======================================================VARIAS========================================================================\\
+
+export const createSubgenreFuga = async (subgenreName, dispatch) => {
+  const [errorCreatingSubgenre, resultWIthFugaId] = await to(axios.post(`${targetUrl}miscellaneous/subgenres`, { name: subgenreName }));
+  if (errorCreatingSubgenre) {
+    dispatch(createBackendError(errorCreatingSubgenre));
+    return "ERROR";
+  }
+  return resultWIthFugaId.data.response;
 }

@@ -42,7 +42,7 @@ const NewLabel = () => {
   const createLabel = async () => {
     setOpenLoader(true);
     let result = await toWithOutError(dispatch(createLabelRedux({ name, details, }, currentUserId)));
-    if (result === "SUCCESS") navigate('/admin/labels');
+    if (result.fugaId) navigate('/admin/labels');
     else {
       setButtonState("error");
       setButtonText("Error");

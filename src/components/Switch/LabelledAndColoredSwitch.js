@@ -5,7 +5,7 @@ import FormControl from '@mui/material/FormControl';
 
 import { alpha, styled } from '@mui/material/styles';
 
-const LabelledAndColoredSwitch = ({ size, label, color, labelPlacement, checked, onChange }) => {
+const LabelledAndColoredSwitch = ({ size, label, color, labelPlacement, checked, onChange, disabled }) => {
 
   const ColorSwitch = styled(Switch)(({ theme }) => ({
     '& .MuiSwitch-switchBase.Mui-checked': {
@@ -18,7 +18,8 @@ const LabelledAndColoredSwitch = ({ size, label, color, labelPlacement, checked,
   return (
     <FormControl component="fieldset">
       <FormControlLabel
-        control={<ColorSwitch size={size} sx={{ color: color }} checked={Boolean(checked)} onChange={onChange} inputProps={{ 'aria-label': 'controlled' }} />}
+        control={<ColorSwitch size={size} sx={{ color: color }} disabled={disabled ? true : false}
+          checked={Boolean(checked)} onChange={onChange} inputProps={{ 'aria-label': 'controlled' }} />}
         label={label}
         labelPlacement={labelPlacement}
       />

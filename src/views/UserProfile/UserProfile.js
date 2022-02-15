@@ -83,7 +83,7 @@ const UserProfile = () => {
     if (checkFields()) {
       setOpenLoader(true);
       let [error, resultEdit] = await to(dispatch(editPerfil({ ...formData, generosMusicales })));
-      console.log("RESULT:", resultEdit);
+      console.log("RESULT:", resultEdit, error);
       setEditState(resultEdit);
       setOpenLoader(false);
     }

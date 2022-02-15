@@ -19,6 +19,7 @@ export const createAlbumRedux = (album, userId) => async dispatch => {
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
   album.fugaId = albumFromThirdWebApi.data.response.albumId;
+  if (!album.upc) album.upc = albumFromThirdWebApi.data.response.upc;
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
   delete album.cover;
@@ -33,16 +34,17 @@ export const createAlbumRedux = (album, userId) => async dispatch => {
   return album;
 }
 
-export const deleteAlbumRedux = (albumId, albumFugaId, userId) => async dispatch => {
-  // let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
-  // if (deleteResponse === "ERROR") return "ERROR";
+export const deleteAlbumRedux = dataAlbum => async dispatch => {
+  let deleteResponse = await BackendCommunication.deleteAlbumFuga(dataAlbum.fugaId, dispatch);
+  if (deleteResponse === "ERROR") return "ERROR";
 
-  // await FirestoreServices.deleteElementFS(artistId, userId, "artists", "totalArtists", -1, dispatch);
+  await FirestoreServices.deleteElementFS(dataAlbum.id, dataAlbum.ownerId, "albums", "totalAlbums", -1, dispatch);
+  await FirestoreServices.deleteAllTracksFromAlbumIdFS(dataAlbum.id, dataAlbum.ownerId, dispatch);
 
-  // dispatch({
-  //   type: ReducerTypes.ARTIST_DELETE_WITH_ID,
-  //   payload: artistId
-  // });
+  dispatch({
+    type: ReducerTypes.ALBUMS_DELETE_BY_ID,
+    payload: dataAlbum.id
+  });
 
   return "SUCCESS";
 }
@@ -75,10 +77,10 @@ export const updatePrimaryOtherArtistsAlbumRedux = (isPrimary, otherArtistIndex)
   }
 }
 
-export const updateIdentifierOtherArtistsAlbumRedux = (identifier, identifierField, otherArtistIndex) => {
+export const updateIdentifierOtherArtistsAlbumRedux = (identifierValue, identifierField, otherArtistIndex) => {
   return {
     type: ReducerTypes.ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER,
-    payload: { identifier, identifierField, otherArtistIndex }
+    payload: { identifierValue, identifierField, otherArtistIndex }
   }
 }
 

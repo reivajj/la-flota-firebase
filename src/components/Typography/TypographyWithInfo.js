@@ -11,7 +11,7 @@ const TypographyWithInfo = ({ infoTooltip, infoDialog, title, sx }) => {
     <>
       <Grid container item xs={3} justifyContent="center" paddingTop="1%">
 
-        <Grid item xs={9} textAlign="end">
+        <Grid item xs={9} >
           <Typography variant="h5" sx={sx}>{title}</Typography>
         </Grid>
 

@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 
-import { Grid, Typography, Card, CardContent, CardActions, Button } from '@mui/material';
+import { Grid, Typography, Card, CardContent, CardActions, Button, IconButton } from '@mui/material';
 import DeleteDialog from 'components/Dialogs/DeleteDialog';
 import { Delete } from '@mui/icons-material';
 import { Divider } from '@mui/material';
 import { toWithOutError } from "utils";
 import { useDispatch } from 'react-redux';
 import { deleteLabelRedux } from "redux/actions/LabelsActions";
+import { useNavigate } from 'react-router-dom';
 
 const Label = ({ dataLabel }) => {
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openLoader, setOpenLoader] = useState(false);
@@ -35,6 +37,7 @@ const Label = ({ dataLabel }) => {
     }
   }
 
+  const handleGoToLabelAlbums = () => navigate(`/admin/albums?view=allOfLabel&label_name=${dataLabel.name}`);
   return (
     <Grid container>
 
@@ -58,15 +61,30 @@ const Label = ({ dataLabel }) => {
           </CardContent>
 
           <CardActions sx={{ justifyContent: "center" }}>
-            <Grid item xs={8}>
-              <Button
-                endIcon={<Delete />}
-                onClick={handleOpenDeleteDialog}
-                fullWidth
-                style={{ backgroundColor: "#c50e29", color: "white" }}>
-                Eliminar
-              </Button>
+
+            <Grid container spacing={1} justifyContent="center">
+              <Grid container item spacing={2} xs={12}>
+                <Grid item xs={12}>
+                  <Button
+                    sx={{ width: "90%" }}
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleGoToLabelAlbums}
+                  >
+                    Albums
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <Grid container item direction="row" justifyContent="center" xs={12}>
+                <Grid item xs={1} paddingTop="0.4em">
+                  <IconButton color="inherit" size="small" onClick={handleOpenDeleteDialog}>
+                    <Delete fontSize="inherit" />
+                  </IconButton>
+                </Grid>
+              </Grid>
             </Grid>
+
           </CardActions>
 
         </Card>
@@ -86,7 +104,7 @@ const cardElementStyle = {
   borderRadius: "30px",
   marginTop: "20px",
   width: "22em",
-  height: "12em"
+  height: "14em"
 }
 const cardSubtitleBlackStyles = {
   color: "rgba(0,0,0,0.5)",

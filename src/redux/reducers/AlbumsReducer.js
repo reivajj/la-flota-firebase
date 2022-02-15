@@ -10,7 +10,9 @@ const editOtherArtistName = ({ nameValue, otherArtistIndex }, allOtherArtistOld)
 }
 
 const editOtherArtistIdentifier = ({ identifierValue, identifierField, otherArtistIndex }, allOtherArtistOld) => {
+  console.log("action paylaod que recibo: ", { identifierValue, identifierField, otherArtistIndex });
   allOtherArtistOld[otherArtistIndex][`${identifierField}`] = identifierValue;
+  console.log("ALL OTHER ARTISTS: ", allOtherArtistOld);
   return allOtherArtistOld;
 }
 
@@ -24,7 +26,7 @@ const initialState = {
   addingAlbum: {
     nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false, upc: "",
     p_year: 2021, p_line: "", c_year: 2021, c_line: "", dayOfMonth: "", cover: "",
-    month: "", year: "", genre: "", subgenre: "", subgenreName: "", languageId: "ES", languageName: "Spanish", disc_number: "", allOtherArtists: [],
+    month: "", year: "", genre: "", genreName: "", subgenre: "", subgenreName: "", languageId: "ES", languageName: "Spanish", disc_number: "", allOtherArtists: [],
     artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "", version: "", format: "Álbum",
     preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", oldRelease: false, originalYear: "", originalMonth: "", originalDayOfMonth: "",
   }
@@ -40,6 +42,9 @@ const AlbumsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM:
       return { ...state, addingAlbum: action.payload }
+    
+    case ReducerTypes.ALBUMS_DELETE_BY_ID: 
+      return { ...state, albums: state.albums.filter(album => album.id !== action.payload) }
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE:
       return { ...state, addingAlbum: { ...state.addingAlbum, imagenUrl: action.payload.imagenUrl, cover: action.payload.cover } }

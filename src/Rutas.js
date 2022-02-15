@@ -18,7 +18,7 @@ import NewLabel from 'views/Labels/NewLabel';
 import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
 import UserProfile from 'views/UserProfile/UserProfile';
-import { AddTrackTest } from 'views/ViewTest/AddTrackTest';
+import AlbumTotalInfo from './views/Albums/AlbumTotalInfo';
 
 const Rutas = () => {
   return (
@@ -29,7 +29,7 @@ const Rutas = () => {
         <Route path="/" element={<AuthLayout />}>
           <Route path="" element={<SignInSide />} />
           <Route path="login" element={<SignInSide />} />
-          <Route path="sign-up" element={<SignUp />} />
+          {/* <Route path="sign-up" element={<SignUp />} /> */}
         </Route>
 
         <Route path="/admin/" element={<AdminLayout />}>
@@ -49,6 +49,7 @@ const Rutas = () => {
           <Route path="new-label" element={<NewLabel />} />
 
           <Route path="albums" element={<MyAlbums />} />
+          <Route path="albums/:albumId" element={<AlbumTotalInfo />} />
           <Route path="new-album" element={<NewAlbum editing={false} />} />
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />

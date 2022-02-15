@@ -5,6 +5,7 @@ import { addCollaborators, collaboratorsSignOut } from './CollaboratorsActions';
 import { albumsAddStore } from './AlbumsActions';
 import { labelsAddStore } from './LabelsActions';
 import { artistsAddStore } from './ArtistsActions';
+import * as BackendCommunication from 'services/BackendCommunication.js';
 
 export const userDataAddInfoStore = userInfo => {
   return {
@@ -67,3 +68,20 @@ export const editPerfil = newProfile => async dispatch => {
     return "SUCCESS";
   }
 };
+
+export const addSubgenreToUserStore = newSubgenreNameAndId => {
+  return {
+    type: ReducerTypes.USER_DATA_ADD_SUBGENERO,
+    payload: newSubgenreNameAndId
+  }
+}
+
+export const createSubgenreRedux = (newSubgenreName, userId) => async dispatch => {
+  let subgenreFromFuga = await BackendCommunication.createSubgenreFuga(newSubgenreName, dispatch);
+  if (subgenreFromFuga === "ERROR") return "ERROR";
+
+  await FirestoreServices.createSubgenreInUserDocFS(subgenreFromFuga, userId);
+
+  dispatch(addSubgenreToUserStore(subgenreFromFuga));
+  return subgenreFromFuga;
+}

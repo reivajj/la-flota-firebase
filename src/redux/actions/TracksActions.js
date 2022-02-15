@@ -3,8 +3,8 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { v4 as uuidv4 } from 'uuid';
 import { createTrackModel } from 'services/CreateModels';
-import { to } from '../../utils';
 import { toWithOutError } from 'utils';
+import { getAmountOfIsrcCodesToUseFS } from '../../services/FirestoreServices';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
@@ -22,12 +22,6 @@ export const deleteTrackInTracksUploading = trackId => {
   }
 }
 
-// export const editTrackInTracksUploading = trackInfo => {
-//   return {
-//     type: ReducerTypes
-//   }
-// }
-
 const setUploadProgress = (position, percentageProgress) => {
   return {
     type: ReducerTypes.SET_TRACK_UPLOAD_PROGRESS,
@@ -35,8 +29,8 @@ const setUploadProgress = (position, percentageProgress) => {
   }
 }
 
-const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, dispatch) => {
-  let formDataTrack = createTrackModel(dataTrack);
+const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated) => async dispatch => {
+  let formDataTrack = createTrackModel(dataTrack, artistInvited, artistRecentlyCreated);
 
   let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dispatch);
   if (trackFromThirdWebApi === "ERROR") return "ERROR";
@@ -48,12 +42,21 @@ const createTrackInAlbumFugaAndFireStore = async (dataTrack, onUploadProgress, d
   dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;
   delete dataTrack.track;
 
-  await FirestoreServices.createTrack(dataTrack, dispatch).catch(error => { console.log("Error en Firestore: ", error) });
+  await FirestoreServices.createElementFS(dataTrack, dataTrack.id, userId, "tracks", "totalTracks", 1, dispatch);
 
   return dataTrack;
 }
 
-export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId) => async dispatch => {
+export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId, artistInvited, artistRecentlyCreated) => async dispatch => {
+
+  let amountOfIsrcsCodesMissing = 0;
+  tracksData.forEach(track => { if (track.isrc === "") amountOfIsrcsCodesMissing++; });
+  let isrcsCodes = await toWithOutError(getAmountOfIsrcCodesToUseFS(amountOfIsrcsCodesMissing, dispatch));
+  console.log("ISRCS : ", isrcsCodes);
+  tracksData.map((track, index) => {
+    if (track.isrc === "") track.isrc = isrcsCodes[index];
+    return track;
+  });
 
   const uploadTracksOneByOne = tracksData.map(async dataTrack => {
 
@@ -64,20 +67,20 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
     }
 
     dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId;
-    return createTrackInAlbumFugaAndFireStore(dataTrack, onUploadProgress, dispatch).catch(error => {
-      console.log("Error en Firestore o BE al crear tracks en album:", error);
-      return "ERROR";
-    });
+    let result = await toWithOutError(dispatch(createTrackInAlbumRedux(dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated)))
+    if (result === "ERROR") return "ERROR";
+
+    return result;
   });
 
   let responseCreatingAllTracksToAlbum = await toWithOutError(Promise.all(uploadTracksOneByOne));
-  if (responseCreatingAllTracksToAlbum === "ERROR" || responseCreatingAllTracksToAlbum.includes("ERROR")) {
-    console.log("ERROR EN EL PROMISE ALL :", responseCreatingAllTracksToAlbum);
-    return "ERROR";
-  }
+  if (responseCreatingAllTracksToAlbum === "ERROR" || responseCreatingAllTracksToAlbum.includes("ERROR")) return "ERROR";
 
-  console.log("Success creando los tracks en el album: ", responseCreatingAllTracksToAlbum);
-  console.log("Los tracks despues de agregar todo: ", tracksData);
+  let attachingTracksToAlbumResponse = await BackendCommunication.attachingTracksToAlbumFuga(tracksData, tracksData[0].albumFugaId, dispatch);
+  if (attachingTracksToAlbumResponse === "ERROR") return "ERROR";
+
+  let rearrengePositionsResponse = await BackendCommunication.rearrengePositionsFuga(tracksData, tracksData[0].albumFugaId, dispatch);
+  if (rearrengePositionsResponse === "ERROR") return "ERROR";
 
   dispatch({
     type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,

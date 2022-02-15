@@ -1,7 +1,6 @@
 import { combineArraysWithNoDuplicates, cloneDeepLimited } from '../utils';
 
 export const getAllOtherArtistsFromAlbumAndTrack = (artistFromLaFlota, allOtherArtistsAlbum, allArtistsTrack) => {
-  console.log("ALL artists tracks: ", allArtistsTrack)
   let allOtherArtistsFromAlbum = allOtherArtistsAlbum.filter(a => a.name !== "");
   let allArtistsFromTrack = allArtistsTrack.filter(tA => tA.name !== artistFromLaFlota.name);
   let combinedArtists = combineArraysWithNoDuplicates(allOtherArtistsFromAlbum, allArtistsFromTrack);
@@ -22,4 +21,9 @@ export const artistsWithUniqueName = allOtherArtists => {
     }
   })
   return finalArtists;
+}
+
+export const getFilteredArtistByUrl = (params, artists) => {
+  if (params.view === "artist") return artists.filter(artist => artist.id === params.id);
+  return artists;
 }

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { TextField, Tooltip, InputAdornment, IconButton, MenuItem } from '@mui/material';
+import { TextField, Tooltip, InputAdornment, IconButton, MenuItem, Grid } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { errorFormat } from 'utils';
 
@@ -49,11 +49,14 @@ const TextFieldWithInfo = (props) => {
           </MenuItem>
         )) : ""}
       </TextField >
-      {validatorProps ? validatorProps.validator.current.message(name, value, validatorProps.restrictions, {
-        className: 'text-danger',
-        messages: { default: validatorProps.message },
-        element: (message) => errorFormat(message)
-      }) : ""}
+      <Grid sx={validatorProps && validatorProps.sx ? validatorProps.sx : {}}>
+        {validatorProps ? validatorProps.validator.current.message(name, value, validatorProps.restrictions, {
+          className: 'text-danger',
+          messages: { default: validatorProps.message },
+          element: (message) => errorFormat(message)
+        }) : ""}
+      </Grid>
+
     </>
   )
 }

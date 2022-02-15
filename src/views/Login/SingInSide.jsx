@@ -1,21 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button, CssBaseline, TextField, Typography,
   FormControlLabel, Checkbox, Link, Paper, Box, Grid
 } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { useNavigate } from 'react-router-dom';
-import { Link as RouterLink } from "react-router-dom";
+// import { Link as RouterLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import * as actions from 'redux/actions/AuthActions.js';
 import Copyright from 'components/Copyright/Copyright.js';
 import { createTheme } from '@mui/material/styles';
-import { signInWithGoogle } from 'services/AuthServices';
-import { SIGNUP_ERROR } from '../../redux/actions/Types';
+import { mainBlue } from '../../variables/colors';
+// import { signInWithGoogle } from 'services/AuthServices';
+
 import { Image } from 'mui-image'
 import { to } from 'utils';
 // import GoogleColorIcon from '../Icons/GoogleColorIcon';
 import TextFieldPassword from '../../components/TextField/TextFieldPassword';
+import ProgressButton from 'components/CustomButtons/ProgressButton';
 
 const SignInSide = () => {
 
@@ -24,20 +26,21 @@ const SignInSide = () => {
   const password = useSelector(store => store.auth.password);
   const errorMsgSignInStore = useSelector(store => store.auth.errorMsg);
 
+  const [openLoader, setOpenLoader] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-
 
   useEffect(() => {
     user && navigate("/admin/dashboard");
   }, [user]);
 
   const login = async () => {
+    setOpenLoader(true);
     errorMsgSignInStore && dispatch(actions.loginErrorStore({ error: "", errorMsg: "" }));
     let [errorSignIn] = await to(dispatch(actions.signInDoubleSystem({ email, password, fromSignUp: false })));
-    //  REVEER: Dar una pantalla de error correspondiente
     if (errorSignIn) return "ERROR";
+    setOpenLoader(false);
   };
 
   const changeEmail = (text) => {
@@ -110,15 +113,18 @@ const SignInSide = () => {
               label="Remember me"
             />
 
-            <Button
+            <ProgressButton
               fullWidth
               variant="contained"
+              loading={openLoader}
               color="primary"
-              sx={submitStyle}
-              onClick={login}
-            >
-              Iniciar Sesión
-            </Button>
+              onClickHandler={login}
+              buttonFullWidth={true}
+              noFab={true}
+              buttonSx={submitStyle}
+              textButton="Iniciar Sesión"
+              buttonProgressSx={buttonProgressSx}
+            />
 
             <Grid container padding={1}>
               <Grid item xs>
@@ -145,7 +151,7 @@ const SignInSide = () => {
           </form>
         </div>
       </Grid>
-    </Grid>
+    </Grid >
   );
 }
 
@@ -195,4 +201,12 @@ const formStyle = {
 
 const submitStyle = {
   margin: theme.spacing(3, 0, 2),
+}
+
+const buttonProgressSx = {
+  // color: green[500],
+  position: 'absolute',
+  marginTop: '1.5em',
+  marginLeft: '-24em',
+  zIndex: 1,
 }

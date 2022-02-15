@@ -13,14 +13,14 @@ const getStyleFromStateButton = (buttonState, noFab) => {
   return styles.buttonNone;
 }
 
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab }) => {
+const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab, buttonFullWidth, buttonSx, buttonProgressSx }) => {
 
   const getEndButtonIcon = () => {
     if (buttonState === "delete" && noFab) return <Delete />;
     if (buttonState === "error" && noFab) return <Replay />;
     return "";
   }
-
+  
   const endButtonIcon = getEndButtonIcon();
 
   return (
@@ -43,15 +43,16 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
       <Grid item sx={noFab ? styles.wrapperNoFab : styles.wrapperFab}>
         <Button
           variant="contained"
+          fullWidth={buttonFullWidth}
           color={color}
-          sx={getStyleFromStateButton(buttonState, noFab)}
+          sx={buttonSx ? buttonSx : getStyleFromStateButton(buttonState, noFab)}
           disabled={loading}
           onClick={onClickHandler}
           endIcon={endButtonIcon}
         >
           {textButton}
         </Button>
-        {noFab && loading && <CircularProgress size={35} sx={styles.buttonProgress} />}
+        {noFab && loading && <CircularProgress size={35} sx={buttonProgressSx || styles.buttonProgress} />}
       </Grid>
     </Grid>
   );

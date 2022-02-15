@@ -6,15 +6,21 @@ import { Grid, Button, Typography } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { getFilteredArtistByUrl } from '../../utils/artists.utils';
+import useQuery from '../../customHooks/useQuery';
 
 const MyArtists = () => {
 
   const navigate = useNavigate();
+  const params = useQuery();
+
   const artistsFromStore = useSelector(store => store.artists.artists);
 
+  const filteredArtistsIfNeeded = getFilteredArtistByUrl(params, artistsFromStore);
+
   const misArtistasProfiles = () => {
-    return artistsFromStore.length > 0
-      ? artistsFromStore.map((artista, index) =>
+    return filteredArtistsIfNeeded.length > 0
+      ? filteredArtistsIfNeeded.map((artista, index) =>
         <Grid item xs={3} key={index}>
           <ArtistCard key={index} dataArtist={artista} index={index} />
         </Grid>

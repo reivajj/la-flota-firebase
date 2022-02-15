@@ -71,10 +71,10 @@ const sidebarStyle = () => ({
   },
   logoLink: {
     ...defaultFont,
-    textTransform: "uppercase",
-    padding: "5px 0",
+    paddingLeft: "9%",
+    paddingTop: "2%",
     display: "block",
-    fontSize: "18px",
+    fontSize: "23px",
     textAlign: "left",
     fontWeight: "400",
     lineHeight: "30px",
@@ -87,12 +87,12 @@ const sidebarStyle = () => ({
   logoImage: {
     width: "30px",
     display: "inline-block",
-    maxHeight: "30px",
+    maxHeight: "45px",
     marginLeft: "10px",
     marginRight: "15px"
   },
   img: {
-    width: "35px",
+    width: "25px",
     top: "22px",
     position: "absolute",
     verticalAlign: "middle",

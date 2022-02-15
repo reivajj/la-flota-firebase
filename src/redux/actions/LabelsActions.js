@@ -28,7 +28,7 @@ export const createLabelRedux = (label, userId) => async dispatch => {
     payload: [label]
   });
 
-  return "SUCCESS";
+  return label;
 }
 
 export const deleteLabelRedux = (labelFugaId, labelId, userId) => async dispatch => {

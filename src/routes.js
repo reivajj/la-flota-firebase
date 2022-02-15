@@ -1,4 +1,4 @@
-import { Dashboard, Person, LibraryBooks, Notifications } from "@mui/icons-material";
+import { Dashboard, Person, Notifications } from "@mui/icons-material";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/Dashboard.js";
 // import UserProfile from "views/UserProfile/UserProfile.js";
@@ -8,7 +8,6 @@ import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
 import UserProfile from "views/UserProfile/UserProfile";
-import { AddTrackTest } from "views/ViewTest/AddTrackTest";
 
 const dashboardRoutes = [
   {

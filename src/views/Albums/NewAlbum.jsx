@@ -14,14 +14,14 @@ import { v4 as uuidv4 } from 'uuid';
 import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
-import { trackActions, NewTrackDialog } from "views/Tracks/NewTrackDialog";
-import { deleteTrackInTracksUploading, editTrackInTracksUploading, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
+import { NewTrackDialog, editAction, deleteAction } from "views/Tracks/NewTrackDialog";
+import { deleteTrackInTracksUploading, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
 import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
-import { albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip } from '../../utils/textToShow.utils';
+import { albumCoverHelperText, getInvalidDateTitle, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip, getInvalidDateContentText } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
@@ -36,10 +36,13 @@ import { languagesFuga } from '../../variables/varias';
 import TextFieldWithInfoImage from '../../components/TextField/TextFieldWithInfoImage';
 import NewArtist from 'views/Artists/NewArtist';
 import { getAllOtherArtistsFromAlbumAndTrack, artistsWithUniqueName } from '../../utils/artists.utils';
-import { editAction } from "views/Tracks/NewTrackDialog";
-import { deleteAction } from '../Tracks/NewTrackDialog';
-import useTimeout from '../../customHooks/useTimeout';
 import SuccessDialog from '../../components/Dialogs/SuccessDialog';
+import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
+import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
+import { createSubgenreRedux } from "redux/actions/UserDataActions";
+import { checkOldReleaseDate, checkPreOrderDate } from "utils/albums.utils";
+import InfoDialog from '../../components/Dialogs/InfoDialog';
+import { createLabelRedux } from "redux/actions/LabelsActions";
 
 const NewAlbum = ({ editing }) => {
 
@@ -54,7 +57,7 @@ const NewAlbum = ({ editing }) => {
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
-
+  const artistInvited = useSelector(store => store.artistsInvited);
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
 
@@ -104,7 +107,12 @@ const NewAlbum = ({ editing }) => {
   const [message, setMessage] = useState("");
   const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks) || [[]]);
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
+  const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
+  const [openAddLabel, setOpenAddLabel] = useState(false);
 
+  const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
+  const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false)
+  const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "" });
   const [openLoader, setOpenLoader] = useState(false);
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
@@ -116,12 +124,21 @@ const NewAlbum = ({ editing }) => {
     subgenreName: currentAlbumData.subgenreName, genre: currentAlbumData.genre,
     position: tracksDataTable.length + 1, title: "", track: "", artists: [],
     price: "", lyrics: "", isrc: "", track_language_name: currentAlbumData.languageName,
-    track_language_id: currentAlbumData.languageId, progress: 0, id: "",
+    track_language_id: currentAlbumData.languageId, progress: 0, id: "", preview: currentAlbumData.preview,
     collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LYRICIST"] }],
+    preOrder: currentAlbumData.preOrder,
   });
 
   // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
+    if (currentAlbumData.oldRelease ? !checkOldReleaseDate(currentAlbumData) : false) {
+      setOpenInvalidDateDialog({ open: true, beginner: "old-release" });
+      return;
+    }
+    if (currentAlbumData.preOrder ? !checkPreOrderDate(currentAlbumData) : false) {
+      setOpenInvalidDateDialog({ open: true, beginner: "pre-order" });
+      return;
+    }
     if (validator.current.allValid() && currentAlbumData.cover) {
       createAlbum();
     } else {
@@ -132,42 +149,38 @@ const NewAlbum = ({ editing }) => {
 
   const createAlbum = async () => {
     setOpenLoader(true);
+    const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
 
-    // const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
-    // console.log("All artists: ", allOtherArtistsNotRepeatedFromTracksAndAlbum);
+    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum, currentUserId, artistInvited)))
+    if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      return;
+    }
+    setCreatingAlbumState("artists-created");
 
-    // const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum, currentUserId)))
-    // if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    //   return;
-    // }
-    // setCreatingAlbumState("artists-created");
+    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
+    if (albumDataFromFuga === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      return;
+    }
+    setCreatingAlbumState("album-created");
 
-    // let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
-    // if (albumDataFromFuga === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    //   return;
-    // }
-    // setCreatingAlbumState("album-created");
+    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
+    if (responseTracksFromFuga === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      return;
+    }
+    setCreatingAlbumState("tracks-created");
 
-    // let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId)));
-    // if (responseTracksFromFuga === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    //   return;
-    // }
-    // setCreatingAlbumState("tracks-created");
-
-    // const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId)))
-    // if (tracksCollaboratorsResponse === "ERROR") {
-    //   setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-    // }
-    // else {
-    //   setButtonState("success");
-    //   setCreatingAlbumState("success");
-    // }
-    setCreatingAlbumState("success");
+    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId)))
+    if (tracksCollaboratorsResponse === "ERROR") {
+      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    }
+    else {
+      setButtonState("success");
+      setCreatingAlbumState("success");
+    }
     setOpenLoader(false);
-    // navigate(-1);
   }
 
   const onClickAddImage = async (event) => {
@@ -193,7 +206,8 @@ const NewAlbum = ({ editing }) => {
     let artistFromLaFlota = [{ name: currentAlbumData.nombreArtist, fugaId: currentAlbumData.artistFugaId, primary: true, id: currentAlbumData.artistId }];
     setTrackData({
       ...trackData, position: tracksDataTable.length + 1, artists: [...artistFromLaFlota,
-      ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], artistsWithUniqueName(currentAlbumData.allOtherArtists), artistsWithUniqueName([...myTracks.map(track => track.allOtherArtists).flat()]))]
+      ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], artistsWithUniqueName(currentAlbumData.allOtherArtists), artistsWithUniqueName([...myTracks.map(track => track.allOtherArtists).flat()]))],
+      preview: currentAlbumData.preview, preOrder: currentAlbumData.preOrder,
     })
     setOpenNewTrackDialog(true);
   }
@@ -212,6 +226,7 @@ const NewAlbum = ({ editing }) => {
   const getLabelIdFromName = labelName => myLabels.filter(label => label.name === labelName)[0].fugaId;
 
   const handlerLabelChoose = event => {
+    if (event.target.value === "Crea un nuevo sello") return;
     const labelFugaId = getLabelIdFromName(event.target.value);
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, label_name: event.target.value, labelFugaId }));
   }
@@ -227,14 +242,46 @@ const NewAlbum = ({ editing }) => {
   const handlerGenreChoose = event => {
     let genreId = allFugaGenres.find(g => g.name === event.target.value).id;
     setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
-    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: event.target.value }));
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, genre: genreId, genreName: event.target.value }));
   }
 
-  // const handlerSubgenreChoose = event => {
-  //   let subgenreId = allFugaGenres.find(g => g.name === event.target.value).id;
-  //   setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
-  //   dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
-  // }
+  const handlerSubgenreChoose = event => {
+    if (event.target.value === "Crea tu propio subgénero") return;
+    let subgenreId = currentUserData.subgenerosPropios.find(g => g.name === event.target.value).id;
+    setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
+  }
+
+  const handleCreateSubgenre = async subgenreName => {
+    setOpenLoaderSubgenreCreate(true);
+    const createSubgenreResponse = await toWithOutError(dispatch(createSubgenreRedux(subgenreName, currentUserId)))
+
+    if (createSubgenreResponse === "ERROR") {
+      setButtonState("error");
+      setOpenLoaderSubgenreCreate(false);
+      return "ERROR";
+    }
+
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: createSubgenreResponse.id, subgenreName }));
+    setTrackData({ ...trackData, subgenreName, subgenre: createSubgenreResponse.id });
+    setOpenLoaderSubgenreCreate(false);
+    setOpenAddSubgenre(false);
+  }
+
+  const handleCreateLabel = async labelName => {
+    setOpenLoaderLabelCreate(true);
+    const createLabelResponse = await toWithOutError(dispatch(createLabelRedux({ name: labelName, details: "" }, currentUserId)))
+
+    if (createLabelResponse === "ERROR") {
+      setButtonState("error");
+      setOpenLoaderLabelCreate(false);
+      return "ERROR";
+    }
+
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, label_name: labelName, labelFugaId: createLabelResponse.fugaId }));
+    setOpenLoaderLabelCreate(false);
+    setOpenAddLabel(false);
+  }
 
   const handlerUPC = event => {
     if (event.target.value.length <= 14) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
@@ -243,12 +290,25 @@ const NewAlbum = ({ editing }) => {
 
   const yearsArray = Array.from({ length: 30 }, (_, i) => 2021 - i);
 
+  const needArtistLabelCover = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover;
+
   return (
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
         <SuccessDialog isOpen={creatingAlbumState === "success"} title="Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
-          handleClose={() => navigate(-1)}/>
+          handleClose={() => navigate(-1)} />
+
+        <InfoDialog isOpen={openInvalidDateDialog.open} handleClose={() => setOpenInvalidDateDialog({ open: false, beginner: "" })}
+          title={getInvalidDateTitle(openInvalidDateDialog.beginner)} contentTexts={getInvalidDateContentText} />
+
+        <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
+          title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
+          buttonState={buttonState} />
+
+        <EditOrAddFieldsDialog isOpen={openAddLabel} handleCloseDialog={() => setOpenAddLabel(false)} handleConfirm={handleCreateLabel}
+          title="Crea un Sello" subtitle="Puedes agregar un nuevo sello." labelTextField="Nuevo sello." loading={openLoaderLabelCreate}
+          buttonState={buttonState} />
 
         <Grid item xs={12} sx={{ width: "60%" }}>
           <CardHeader color="primary">
@@ -296,30 +356,18 @@ const NewAlbum = ({ editing }) => {
 
           </Grid>
 
-          <AddOtherArtistsAlbumForm
+          {needArtistLabelCover && <AddOtherArtistsAlbumForm
             checkBoxLabel="¿Lanzamiento Colaborativo?"
             checkBoxHelper={lanzamientoColaborativoTooltip}
             checkBoxColor="#9c27b0"
             buttonColor="#9c27b0"
-          />
+          />}
 
           <Grid container item xs={12}>
-            <Grid item xs={6}>
-              <TextFieldWithInfo
-                name="title"
-                sx={textFieldStyle}
-                required
-                label="Título del Lanzamiento"
-                value={currentAlbumData.title}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "title")}
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
-              />
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextFieldWithInfo
+            <Grid item xs={needArtistLabelCover ? 6 : 12}>
+              <TextFieldWithAddElement
                 name="label_name"
-                sx={textFieldStyle}
+                sx={needArtistLabelCover ? textFieldStyle : textFieldLaFlotaArtistStyle}
                 required
                 select
                 label="Sello Discográfico"
@@ -330,11 +378,25 @@ const NewAlbum = ({ editing }) => {
                 selectKeyField="name"
                 selectValueField="name"
                 validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: validator }}
+                onClickAddElement={() => setOpenAddLabel(true)}
+                addPlaceholder="Crea un nuevo sello"
               />
             </Grid>
+
+            {needArtistLabelCover && <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="title"
+                sx={textFieldStyle}
+                required
+                label="Título del Lanzamiento"
+                value={currentAlbumData.title}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "title")}
+                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
+              />
+            </Grid>}
           </Grid>
 
-          <Grid container item xs={12}>
+          {needArtistLabelCover && <Grid container item xs={12}>
             <Grid item xs={6}>
               <TextFieldWithInfoImage
                 name="version"
@@ -360,69 +422,88 @@ const NewAlbum = ({ editing }) => {
                 selectItems={["Single", "EP", "Álbum"]}
               />
             </Grid>
-          </Grid>
+          </Grid>}
 
         </Grid>
 
-        <Grid container item xs={12}>
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="c_year"
-              sx={textFieldStyle}
-              required
-              select
-              label="(C) Año de Copyright"
-              value={currentAlbumData.c_year}
-              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_year")}
-              helperText="Año en que el Álbum/Single fue publicado por primera vez."
-              selectItems={yearsArray}
-              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              sx={textFieldStyle}
-              name="p_year"
-              required
-              select
-              label="(P) Año de Publicación"
-              value={currentAlbumData.p_year}
-              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
-              helperText="Año en que esta grabación fue publicada."
-              selectItems={yearsArray}
-              validatorProps={{ restrictions: 'required|numeric', message: "Debes seleccionar un año de publicación del Lanzamiento.", validator: validator }}
-            />
-          </Grid>
-        </Grid>
+        {needArtistLabelCover && <Grid container item xs={12}>
+          <Grid container item xs={6}>
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="c_year"
+                sx={textFieldStyleYears}
+                required
+                select
+                label="(C) Año de Copyright"
+                value={currentAlbumData.c_year}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_year")}
+                helperText="Año en que esta grabación fue creada."
+                selectItems={yearsArray}
+                validatorProps={{
+                  restrictions: 'required|numeric', message: "Debes seleccionar un año de Copyright del Lanzamiento.", validator,
+                  sx: { width: "60%" }
+                }}
+              />
+            </Grid>
 
-        <Grid container item xs={12}>
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="c_line"
-              sx={textFieldStyle}
-              required
-              label="Copyright"
-              value={currentAlbumData.c_line}
-              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_line")}
-              helperText="El dueño de los Derechos de Autor.
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="c_line"
+                sx={textFieldStyleText}
+                required
+                label="Copyright"
+                value={currentAlbumData.c_line}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_line")}
+                helperText="El dueño de los Derechos de Autor.
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
-              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.", validator: validator }}
-            />
+                validatorProps={{
+                  restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
+                  validator, sx: { width: "60%" }
+                }}
+              />
+            </Grid>
           </Grid>
 
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="p_line"
-              sx={textFieldStyle}
-              required
-              label="Publisher"
-              value={currentAlbumData.p_line}
-              onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
-              helperText="El dueño de los Derechos de Publicación de esta grabación.
+          <Grid container item xs={6}>
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                sx={textFieldStyleYears}
+                name="p_year"
+                required
+                select
+                label="(P) Año de Publishing"
+                value={currentAlbumData.p_year}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
+                helperText="Año en que esta grabación fue publicada."
+                selectItems={yearsArray}
+                validatorProps={{
+                  restrictions: 'required|numeric', message: "Debes seleccionar un año de Publishing del Lanzamiento.",
+                  validator, sx: { width: "60%" }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="p_line"
+                sx={textFieldStyleText}
+                required
+                label="Publisher"
+                value={currentAlbumData.p_line}
+                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
+                helperText="El dueño de los Derechos de Publicación de esta grabación.
             → Ej. 1: Fito Paez | Ej. 2: Sony Music"
-              validatorProps={{ restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.", validator: validator }}
-            />
+                validatorProps={{
+                  restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.",
+                  validator, sx: { width: "60%" }
+                }}
+              />
+            </Grid>
           </Grid>
+
+        </Grid>}
+
+        {needArtistLabelCover && <Grid container item xs={12}>
 
           <Grid item xs={6}>
             <TextFieldWithInfo
@@ -432,12 +513,62 @@ const NewAlbum = ({ editing }) => {
               value={currentAlbumData.upc}
               helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
               onChange={handlerUPC}
-              validatorProps={{ restrictions: 'max:13|numeric', message: "Formato inválido: El UPC es un código de máximo 13 números", validator: validator }}
+              validatorProps={{
+                restrictions: 'max:13|numeric', message: "Formato inválido: El UPC es un código de máximo 13 números",
+                validator: validator
+              }}
             />
           </Grid>
-        </Grid>
 
-        <Grid container item xs={12} paddingTop={3} justifyContent="center">
+          <Grid item xs={6}>
+            <TextFieldWithInfo
+              name="language"
+              sx={textFieldStyle}
+              required
+              select
+              label="Idioma Principal del Lanzamiento"
+              value={currentAlbumData.languageName}
+              onChange={handlerLanguageChoose}
+              selectItems={languagesFuga}
+              selectKeyField="id"
+              selectValueField="name"
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextFieldWithInfo
+              name="generosMusicales"
+              sx={textFieldStyle}
+              required
+              select
+              label="Género Musical Principal"
+              value={currentAlbumData.genreName}
+              onChange={handlerGenreChoose}
+              selectItems={allFugaGenres}
+              selectKeyField="id"
+              selectValueField="name"
+              validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Album.", validator }}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextFieldWithAddElement
+              name="subgenerosMusicales"
+              sx={textFieldStyle}
+              select
+              label="Género Musical Secundario"
+              value={currentAlbumData.subgenreName}
+              onChange={handlerSubgenreChoose}
+              selectItems={currentUserData.subgenerosPropios || []}
+              selectKeyField="id"
+              selectValueField="name"
+              onClickAddElement={() => setOpenAddSubgenre(true)}
+              addPlaceholder="Crea tu propio subgénero"
+            />
+          </Grid>
+        </Grid>}
+
+        {needArtistLabelCover && <Grid container item xs={12} paddingTop={3} justifyContent="center">
 
           <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
 
@@ -481,62 +612,9 @@ const NewAlbum = ({ editing }) => {
             />
           }
 
-          <Grid container item spacing={2} xs={12} justifyContent="center" paddingTop={3}>
-            <Grid item xs={12}>
-              <Typography variant="h5">Idioma y Género</Typography>
-            </Grid>
+        </Grid>}
 
-            <Grid item xs={6}>
-              <TextFieldWithInfo
-                name="language"
-                fullWidth
-                required
-                select
-                label="Idioma Principal del Lanzamiento"
-                value={currentAlbumData.languageName}
-                onChange={handlerLanguageChoose}
-                selectItems={languagesFuga}
-                selectKeyField="id"
-                selectValueField="name"
-              />
-            </Grid>
-          </Grid>
-
-          <Grid container item spacing={2} xs={12} justifyContent="center" paddingTop={3}>
-            <Grid item xs={3}>
-              <TextFieldWithInfo
-                name="generosMusicales"
-                fullWidth
-                required
-                select
-                label="Género Musical Principal"
-                value={currentAlbumData.genre}
-                onChange={handlerGenreChoose}
-                selectItems={allFugaGenres}
-                selectKeyField="id"
-                selectValueField="name"
-                validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Album.", validator }}
-              />
-            </Grid>
-
-            {/* <Grid item xs={3}>
-              <TextFieldWithInfo
-                name="subgenerosMusicales"
-                fullWidth
-                select
-                label="Género Musical Secudario"
-                value={currentAlbumData.subgenreName}
-                onChange={handlerSubgenreChoose}
-                selectItems={allFugaGenres}
-                selectKeyField="id"
-                selectValueField="name"
-              />
-            </Grid> */}
-
-          </Grid>
-        </Grid>
-
-        {(currentAlbumData.nombreArtist || openLoader) &&
+        {(needArtistLabelCover || openLoader) &&
           <Grid container item xs={12} paddingTop={4} justifyContent="center">
             <Grid item xs={8} >
               <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
@@ -554,8 +632,8 @@ const NewAlbum = ({ editing }) => {
               textButton={buttonText}
               loading={openLoader}
               buttonState={buttonState}
-              // onClickHandler={allFieldsValidCreateAlbum}
-              onClickHandler={createAlbum}
+              onClickHandler={allFieldsValidCreateAlbum}
+              // onClickHandler={testingNewRelease}
               noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
               noFab={false} />
           </CardFooter>
@@ -569,6 +647,8 @@ const NewAlbum = ({ editing }) => {
 export default NewAlbum;
 
 const textFieldStyle = { width: "60%" };
+const textFieldStyleYears = { width: "58%", marginLeft: "38%" }
+const textFieldStyleText = { width: "58%", marginRight: "38%" }
 const textFieldLaFlotaArtistStyle = { width: "40%" };
 
 const buttonSuccessStyle = {

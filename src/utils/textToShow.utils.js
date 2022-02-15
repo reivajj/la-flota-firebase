@@ -1,10 +1,19 @@
-
+import Danger from 'components/Typography/Danger.js';
 
 export const publicationDateWarning = [
   "Elegí la fecha en la que querés que este lanzamiento sea publicado en las DSPs.Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente.Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1 - 2 días en aprobarse y procesarse, a la vez las DSPs tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.",
   < br />, "Por lo que: Si es muy importante que tu álbum se publique en una fecha exacta del futuro(por ej, para una campaña promocional), recomendamos trabajar y seleccionar una fecha con al menos 14 días de anticipación, en la cual podemos asegurarte que estará disponible en la mayoría de las DSPs principales a la vez.",
   < br />, "Si es tu primer lanzamiento(y aún no tenés perfil en las DSPs) recomendamos que elijas una fecha de acá a 5 - 7 días en el futuro para que tu perfil se cree correctamente.",
 ];
+
+export const getInvalidDateTitle = reason => {
+  if (reason === "old-release") return "Fecha de publicación original inválida:";
+  if (reason === "pre-order") return "Fecha de pre-compra inválida:";
+  return "La fecha de la pre-compra inválida:";
+}
+
+export const getInvalidDateContentText = [<Danger>La fecha debe ser menor a la actual fecha de lanzamiento.</Danger>,
+<Danger>Por favor, vuelve a seleccionar la fecha indicadada.</Danger>]
 
 export const featuringArtistTooltip = [
   "Indica si el Artista será Principal o Featuring.",

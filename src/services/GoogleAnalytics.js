@@ -1,6 +1,5 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import { getAnalytics, logEvent } from "firebase/analytics"
-import { to } from 'utils';
 
 const analytics = getAnalytics(firebaseApp);
 

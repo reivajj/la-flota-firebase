@@ -2,10 +2,15 @@ import * as ReducerTypes from 'redux/actions/Types';
 import { createArtistRedux } from './ArtistsActions';
 import { toWithOutError, to } from 'utils';
 
-export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId) => async dispatch => {
+export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId, artistsInvited) => async dispatch => {
   let allOtherArtistsNotEmptyAlbum = allOtherArtistsAlbum.filter(otherArtist => otherArtist.name !== "");
+  
+  let allOtherArtistNotCreatedPreviously = allOtherArtistsNotEmptyAlbum.filter(otherArtist => {
+    let artistExist = artistsInvited.find(oldInvitedArtist => oldInvitedArtist.name === otherArtist.name);
+    return !(artistExist && artistExist.spotify_uri === otherArtist.spotify_uri && artistExist.apple_id === otherArtist.apple_id)
+  })
 
-  const createOtherArtistOneByOne = allOtherArtistsNotEmptyAlbum.map(async dataArtist => {
+  const createOtherArtistOneByOne = allOtherArtistNotCreatedPreviously.map(async dataArtist => {
     dataArtist.ownerId = ownerId;
     let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataArtist, ownerId, "artistsInvited", "totalArtistsInvited")));
     if (artistCreatedResult === "ERROR") return "ERROR";
@@ -17,10 +22,10 @@ export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId) => async 
 
   dispatch({
     type: ReducerTypes.INVITED_ARTISTS_ADD,
-    payload: allOtherArtistsNotEmptyAlbum
+    payload: allOtherArtistNotCreatedPreviously
   });
 
-  return "SUCCESS";
+  return allOtherArtistNotCreatedPreviously;
 }
 
 export const addArtistsInvited = artistsInvited => {

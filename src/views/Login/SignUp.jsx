@@ -1,16 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  Avatar,
-  Button,
-  CssBaseline,
-  TextField,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-  Link,
-  Box,
-  Grid,
-  Container,
+  Avatar, Button, CssBaseline, TextField, Typography, FormControlLabel, Checkbox,
+  Link, Box, Grid, Container,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import makeStyles from '@mui/styles/makeStyles';
@@ -53,12 +44,12 @@ const SignUp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [openDialog, setOpenDialog] = useState(false);
-  const [errorSignIn, setErrorSignIn] = useState(false);
+  // const [openDialog, setOpenDialog] = useState(false);
+  // const [errorSignIn, setErrorSignIn] = useState(false);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
 
-  const [errorSignUpFirebase, setErrorSignUpFirebase] = useState(false);
+  // const [errorSignUpFirebase, setErrorSignUpFirebase] = useState(false);
   const [userData, setUserData] = useState(false);
 
   const allFieldsValidSignUp = () => {
@@ -73,7 +64,7 @@ const SignUp = () => {
   const signUp = async () => {
     let [errorSignUp] = await to(dispatch(actions.signUp({ email, password, nombre, apellido })));
     if (errorSignUp) {
-      setErrorSignUpFirebase(true);
+      // setErrorSignUpFirebase(true);
       return;
     }
     setUserData({ email, password, nombre, apellido });
@@ -103,9 +94,9 @@ const SignUp = () => {
     setApellido(text);
   }
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') signUp();
-  }
+  // const handleKeyPress = (event) => {
+  //   if (event.key === 'Enter') signUp();
+  // }
 
   return (
     <Container component="main" maxWidth="xs">

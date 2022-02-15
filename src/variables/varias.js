@@ -11,6 +11,21 @@ export const provincias = [
   { value: "CABA", provincia: "Ciudad Autonoma de Buenos Aires" }
 ];
 
+export const ourAlbumStateWithEquivalence = {
+  PENDING: "Pendiente de revisión",
+  PUBLISHED: "Aprobado, pronto para delivery",
+  DELIVERED: "Ya se encuentra en las DSPs",
+  TAKEN_DOWN: "Dado de baja en las DSPs",
+  DELETED: "Eliminado de las DSPs"
+}
+
+export const colorFromFugaState = {
+  PENDING: "rgb(231, 190, 66)",
+  PUBLISHED: "rgb(64, 68, 46)",
+  DELIVERED: "rgb(93, 109, 15)",
+  TAKEN_DOWN: "rgb(170, 3, 3)",
+  DELETED: "rgb(111, 2, 2)",
+}
 
 export const ciudades = [
   { value: "Viedma", localidad: "Viedma" },

@@ -1,6 +1,9 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
-import { getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection, getDocs, where, increment, deleteDoc } from "firebase/firestore";
-import { to, toWithOutError } from 'utils';
+import {
+  getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection,
+  getDocs, where, increment, deleteDoc, limit, writeBatch
+} from "firebase/firestore";
+import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { createUserDocItem } from 'factory/users.factory';
 import { loginErrorStore } from 'redux/actions/AuthActions';
@@ -62,25 +65,13 @@ export const createElementFS = async (element, elementId, userId, collection, fi
 
   let [errorCreatingElement] = await to(setDoc(elementDbRef, element))
   if (errorCreatingElement) {
-    dispatch(loginErrorStore({ errorCreatingElement, errorMsg: `Error creating new element in ${collection} collection` }));
+    dispatch(createFireStoreError({ errorCreatingElement, errorMsg: `Error creating new element in ${collection} collection` }));
     return "ERROR";
   }
 
-  const elementStatsDbRef = doc(db, collection, "stats");
-  let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amountToIncrement) }));
-  if (errorUpdatingStatsInCollection) {
-    dispatch(loginErrorStore({ error: errorUpdatingStatsInCollection, errorMsg: `Error updating stats in ${collection}` }));
-    return "ERROR";
-  }
+  await updateStatsOfCollection(collection, amountToIncrement, dispatch)
+  await updateStatsOfUserDoc(userId, fieldToIncrementInUserStats, amountToIncrement, dispatch);
 
-  if (fieldToIncrementInUserStats !== "") {
-    const usersDbRef = doc(db, "users", userId);
-    let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToIncrementInUserStats}`]: increment(amountToIncrement) }));
-    if (errorUpdatingStatsInUser) {
-      dispatch(loginErrorStore({ error: errorUpdatingStatsInUser, errorMsg: `Error updating total in users collection` }));
-      return "ERROR";
-    };
-  }
   return "SUCCESS";
 }
 
@@ -94,22 +85,60 @@ export const deleteElementFS = async (elementId, userId, collection, fieldToDecr
     throw new Error({ msg: `Error deleting new element in ${collection} collection`, error: errorDeletingElementInCollection });
   }
 
-  const elementStatsDbRef = doc(db, collection, "stats");
-  let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amountToDecrement) }));
+  await updateStatsOfCollection(collection, amountToDecrement, dispatch)
+  await updateStatsOfUserDoc(userId, fieldToDecrementInUserStats, amountToDecrement, dispatch);
+  await updateStatsOfUserDoc(userId, `${fieldToDecrementInUserStats}Deleted`, (-1) * amountToDecrement, dispatch);
+
+}
+
+export const deleteAllTracksFromAlbumIdFS = async (albumId, userId, dispatch) => {
+  const batch = writeBatch(db);
+  const allTracksFromAlbumIdRef = query(collection(db, "tracks"), where("albumId", "==", albumId));
+
+  let [errorGettingAllTracks, tracksSnapshot] = await to(getDocs(allTracksFromAlbumIdRef));
+  if (errorGettingAllTracks) {
+    dispatch(createFireStoreError("Error obteniendo los tracks del Album a eliminar.", errorGettingAllTracks));
+    return "ERROR";
+  }
+
+  if (tracksSnapshot.empty) return "NO HAY TRACKS A ELIMINAR";
+
+  let cantTracksToDelete = 0;
+  tracksSnapshot.forEach(trackDoc => {
+    cantTracksToDelete++;
+    batch.delete(trackDoc.ref)
+  });
+
+  let [errorDeletingAllTracks] = await to(batch.commit());
+  if (errorDeletingAllTracks) {
+    dispatch(createFireStoreError("Error eliminando los tracks del Album. ", errorDeletingAllTracks));
+    return "ERROR";
+  }
+
+  await updateStatsOfCollection("tracks", (-1) * cantTracksToDelete, dispatch);
+  await updateStatsOfUserDoc(userId, "totalTracks", (-1) * cantTracksToDelete, dispatch);
+  await updateStatsOfUserDoc(userId, "totalTracksDeleted", cantTracksToDelete, dispatch);
+
+  return "SUCCESS";
+}
+
+export const updateStatsOfCollection = async (targetCollection, amount, dispatch) => {
+  const elementStatsDbRef = doc(db, targetCollection, "stats");
+  let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amount) }));
   if (errorUpdatingStatsInCollection) {
-    console.log(`Error updating stats in ${collection} : `, errorUpdatingStatsInCollection);
-    throw new Error({ msg: `Error updating stats in ${collection} : `, error: errorUpdatingStatsInCollection });
+    dispatch(createFireStoreError(`Error actualizando stats en ${targetCollection}`, errorUpdatingStatsInCollection));
+    return "ERROR";
   }
+}
 
-  if (fieldToDecrementInUserStats !== "") {
-    const usersDbRef = doc(db, "users", userId);
-    let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${fieldToDecrementInUserStats}`]: increment(amountToDecrement) }));
-    if (errorUpdatingStatsInUser) {
-      console.log(`Error updating stats in userDoc for ${collection}: `, errorUpdatingStatsInUser);
-      throw new Error({ msg: `Error updating stats in userDoc for ${collection}: `, error: errorUpdatingStatsInUser });
-    };
-  }
-
+export const updateStatsOfUserDoc = async (targetUserId, targetStat, amount, dispatch) => {
+  if (targetStat === "") return;
+  const usersDbRef = doc(db, "users", targetUserId);
+  let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${targetStat}`]: increment(amount) }));
+  if (errorUpdatingStatsInUser) {
+    dispatch(createFireStoreError(`Error actualizando las estadísticas en el usuario.`, errorUpdatingStatsInUser));
+    return "ERROR";
+  };
 }
 
 // Elements es: ARTIST, TRACK, ALBUMS.
@@ -123,23 +152,6 @@ export const updateElementFS = async (newElementFields, elementId, collection, d
   }
 }
 
-// Todavia lo estoy usando. Reemplazarlo.
-export const createTrack = async track => {
-  const tracksDbRef = doc(db, "tracks", track.id);
-  let [errorCreatingTrackInTrackssCollection] = await to(setDoc(tracksDbRef, track));
-  if (errorCreatingTrackInTrackssCollection) {
-    console.log("Error al crear al Sello en la DB, coleccion de albums: ", errorCreatingTrackInTrackssCollection);
-    throw new Error({ msg: "Error al crear al Sello en la DB, coleccion de albums: ", error: errorCreatingTrackInTrackssCollection });
-  };
-
-  const usersDbRef = doc(db, "users", track.ownerId);
-  let [errorCreatingTrackInUser] = await to(updateDoc(usersDbRef, { tracks: arrayUnion(track) }));
-  if (errorCreatingTrackInUser) {
-    console.log("Error al agregar al Track en la DB, coleccion del users: ", errorCreatingTrackInUser);
-    throw new Error({ msg: "Error al agregar al Track en la DB, coleccion del users: ", error: errorCreatingTrackInUser });
-  };
-}
-
 export const userByEmailInFS = async (email, dispatch) => {
   const userByEmailDbRef = doc(db, "usersByEmail", email);
   let [errorGettingUserByEmail, userByEmailSnap] = await to(getDoc(userByEmailDbRef));
@@ -150,11 +162,49 @@ export const userByEmailInFS = async (email, dispatch) => {
 export const createUserDocs = async (newUserData, dispatch) => {
   const { id, email, userInWp } = newUserData;
   let userDataComplete = createUserDocItem(newUserData, userInWp);
-  console.log("antes de crear el doc:", { id, email, userInWp });
 
   let [errorCreatingDocInUsers] = await to(createElementFS(userDataComplete, id, id, "users", "", 1, dispatch));
   if (errorCreatingDocInUsers) return "ERROR";
   let [resultCreatingDocInUserEmails] = await to(createElementFS(userDataComplete, email, "", "usersByEmail", "", 1, dispatch));
   if (resultCreatingDocInUserEmails === "ERROR") return "ERROR";
   return userDataComplete;
+}
+
+export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
+  const batch = writeBatch(db);
+
+  const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), limit(amountOfIsrcs));
+  let [errorGettingIsrcs, isrcsSnapshot] = await to(getDocs(isrcsDbRef));
+  if (errorGettingIsrcs) {
+    dispatch(createFireStoreError("Error obteniendo los ISRC.", errorGettingIsrcs));
+    return "ERROR";
+  }
+
+  if (isrcsSnapshot.empty) {
+    dispatch(createFireStoreError("No hay ISRCS disponibles. Contactar a soporte."));
+    return "ISRCS NO DISPONIBLES";
+  }
+
+  let isrcs = [];
+  isrcsSnapshot.forEach(isrcDoc => {
+    isrcs.push(isrcDoc.data().isrc);
+    batch.update(isrcDoc.ref, { used: true })
+  });
+
+  let [errorUpdatingIsrcsStates] = await to(batch.commit());
+  if (errorUpdatingIsrcsStates) {
+    dispatch(createFireStoreError("Error actualizando los isrcs ya usados. ", errorUpdatingIsrcsStates));
+    return "ERROR";
+  }
+
+  return isrcs;
+}
+
+export const createSubgenreInUserDocFS = async (subgenre, userId, dispatch) => {
+  let userInDBRef = doc(db, "users", userId);
+  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { subgenerosPropios: arrayUnion(subgenre) }));
+  if (errorUpdatingUserSignIn) {
+    dispatch(createFireStoreError("Error al actualizar al usuario. Intente nuevamente.", errorUpdatingUserSignIn));
+    return "ERROR";
+  };
 }

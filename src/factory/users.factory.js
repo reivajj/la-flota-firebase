@@ -8,6 +8,8 @@ export const createUserDocItem = (userData, userInWp) => {
     userStatus: userInWp.userStatus,
     nombre: userData.nombre,
     apellido: userData.apellido,
+    subgenerosPropios: [],
+    generos: [],
     id: userData.id,
     usuarioActivo: true,
     ciudad: "",
@@ -22,7 +24,14 @@ export const createUserDocItem = (userData, userInWp) => {
       totalAlbums: 0,
       totalArtists: 0,
       totalLabels: 0,
-      totalTracks: 0
+      totalTracks: 0,
+      totalAlbumsDeleted: 0,
+      totalAlbumsTakenDown: 0,
+      totalArtistsDeleted: 0,
+      totalLabelsDeleted: 0,
+      totalTracksDeleted: 0,
+      totalArtistsInvited: 0,
+      totalCollaborators: 0
     },
     withdrawals: {
       cupones: {

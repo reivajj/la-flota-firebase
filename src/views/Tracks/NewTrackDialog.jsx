@@ -1,6 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
-// import InputLabel from "@mui/material/InputLabel";
-// core components
+import React, { useRef, useState } from "react";
 import SimpleReactValidator from "simple-react-validator";
 
 import Success from "components/Typography/Success";
@@ -23,7 +21,7 @@ import AddCollaboratorsForm from '../../components/Forms/AddCollaboratorsForm';
 import AddOtherArtistsTrackForm from '../../components/Forms/AddOtherArtistsTrackForm';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { languagesFuga } from '../../variables/varias';
-import { allFugaGenres, allFugaSubgenres } from 'variables/genres';
+import { allFugaGenres } from 'variables/genres';
 
 const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
@@ -56,9 +54,6 @@ export const NewTrackDialog = (props) => {
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
-  console.log("TAbLE TRACJS LENJG: ", tracksDataTable.length + 1);
-  console.log("TRAK DATA: ", trackData.position);
-
   const currentUserId = useSelector(store => store.userData.id);
 
   const [trackMissing, setTrackMissing] = useState(false);
@@ -70,12 +65,11 @@ export const NewTrackDialog = (props) => {
       genre: trackData.genre || "", genreName: trackData.genreName || "", subgenre: trackData.subgenre || "",
       price: "", lyrics: "", isrc: "", track_language_id: trackData.track_language_id,
       progress: 0, artists: [...trackData.artists, ...trackData.allOtherArtists], collaborators: trackData.collaborators,
-      track_language_name: trackData.track_language_name, allOtherArtists: [], id: ""
+      track_language_name: trackData.track_language_name, allOtherArtists: [], id: "",
     });
   };
 
   const handleCreateTrack = async () => {
-    console.log("Tracks table len mas uno: ", tracksDataTable.length + 1)
     trackData.position = tracksDataTable.length + 1;
     dispatch(createTrackLocalRedux(trackData, currentUserId));
     setTracksDataTable([...tracksDataTable, [
@@ -93,13 +87,13 @@ export const NewTrackDialog = (props) => {
   }
 
   const allFieldsValidCreateTrack = () => {
-    // if (validator.current.allValid() && trackData.track) {
+    if (validator.current.allValid() && trackData.track) {
     handleCreateTrack();
-    // } else {
-    //   validator.current.showMessages();
-    //   if (!trackData.track) setTrackMissing(true);
-    //   forceUpdate();
-    // }
+    } else {
+      validator.current.showMessages();
+      if (!trackData.track) setTrackMissing(true);
+      forceUpdate();
+    }
   }
 
   const deleteArtistFromArtists = index => trackData.artists.filter((_, i) => i !== index);

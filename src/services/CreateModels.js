@@ -15,10 +15,9 @@ export const createArtistModel = (dataArtist, editing) => {
 const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const createAlbumModel = dataAlbum => {
-  console.log("Album", dataAlbum)
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
-  let originalReleaseDate = `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}`;
+  let originalReleaseDate = dataAlbum.oldRelease ? `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}` : saleAndReleaseDate;
   let preOrderDate = `${dataAlbum.preOrderYear}-${dataAlbum.preOrderMonth}-${dataAlbum.preOrderDayOfMonth}`;
 
   let artistsArray = [{ primary: true, id: dataAlbum.artistFugaId }];
@@ -48,29 +47,46 @@ export const createAlbumModel = dataAlbum => {
   return formDataAlbum;
 };
 
-export const createTrackModel = dataTrack => {
+export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated) => {
 
-  let artistsArray = [];
-  dataTrack.artists.forEach(artist => artistsArray.push({ primary: artist.primary, id: artist.fugaId }));
+  let artistsArray = [...dataTrack.artists, ...dataTrack.allOtherArtists];
+  let artistsArrayToUpload = [];
+  let elementFoundedInInvited = ""; let elementFoundedInRecently = "";
+  artistsArray.forEach(artist => {
+    if (artist.fugaId) artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId });
+    else {
+      elementFoundedInInvited = artistInvited.find(artistInvited => artistInvited.name === artist.name);
+      elementFoundedInRecently = artistRecentlyCreated.find(artistRecently => artistRecently.name === artist.name);
+      if (elementFoundedInInvited) {
+        console.log("Element founded in vited: ", elementFoundedInInvited);
+        artist.fugaId = elementFoundedInInvited.fugaId;
+      }
+      if (elementFoundedInRecently) {
+        console.log("Element founded in recently: ", elementFoundedInRecently);
+        artist.fugaId = elementFoundedInRecently.fugaId;
+      }
+      
+      artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId })
+    };
+  });
 
-  let preOrderDate = "";
   let formDataTrack = new FormData();
 
   formDataTrack.append("name", dataTrack.title);
   formDataTrack.append("genre", dataTrack.genre);
-  formDataTrack.append("artists", JSON.stringify(artistsArray));
+  formDataTrack.append("artists", JSON.stringify(artistsArrayToUpload));
   formDataTrack.append("track", dataTrack.track);
   formDataTrack.append("sequence", dataTrack.position);
   formDataTrack.append("language", dataTrack.track_language_id);
   formDataTrack.append("audio_locale", dataTrack.track_language_id);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
-  if (preOrderDate) {
-    formDataTrack.append("preorder_date", preOrderDate);
+  if (dataTrack.preOrder) {
     formDataTrack.append("allow_preorder", true);
     formDataTrack.append("available_separately", true);
+    formDataTrack.append("allow_preorder_preview", dataTrack.preview);
+    formDataTrack.append("preorder_only", true);
   }
-  if (preOrderDate && dataTrack.preview) formDataTrack.append("allow_preorder_preview", dataTrack.preview);
   formDataTrack.append("albumId", dataTrack.albumFugaId);
 
   return formDataTrack;

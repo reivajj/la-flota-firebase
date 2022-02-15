@@ -5,16 +5,25 @@ import { Grid, Button, Typography } from '@mui/material';
 import { useNavigate } from "react-router";
 import { useSelector } from 'react-redux';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import useQuery from '../../customHooks/useQuery';
 
 const MyLabels = () => {
 
   const navigate = useNavigate();
+  const params = useQuery();
+
+  const getFilteredLabelsByName = (params, labels) => {
+    if (params.view === "label") return labels.filter(label => label.name === params.label_name);
+    return labels;
+  }
+
   const labelsFromStore = useSelector(store => store.labels.labels);
+  const labelsFilteredIfNeeded = getFilteredLabelsByName(params, labelsFromStore);
 
   const myLabelsProfiles = () => {
-    return labelsFromStore.length > 0
-      ? labelsFromStore.map((label, index) =>
-        <Grid item xs={6} key={index}>
+    return labelsFilteredIfNeeded.length > 0
+      ? labelsFilteredIfNeeded.map((label, index) =>
+        <Grid item xs={3} key={index}>
           <Label key={index} dataLabel={label} index={index} />
         </Grid>
       )
@@ -26,23 +35,21 @@ const MyLabels = () => {
   const addLabel = () => navigate("/admin/new-label");
 
   return (
-    <div>
-      <Grid container spacing={2} textAlign="center">
-        <Grid item xs={12}>
+    <Grid container spacing={2} textAlign="center">
+      <Grid item xs={12}>
         <Typography sx={labelsTitleStyles}>Sellos</Typography>
-          <Button variant="contained" color="secondary" onClick={addLabel} endIcon={<AddCircleOutlineIcon />}>
-            Agregar Sello
-          </Button>
-        </Grid>
-        {
-          myLabels
-        }
-        <Grid item xs={12}>
-          {myLabels.length === 0 &&
-            <h4 style={noLabelsTitleBlackStyles}>No tienes Sellos</h4>}
-        </Grid>
+        <Button variant="contained" color="secondary" onClick={addLabel} endIcon={<AddCircleOutlineIcon />}>
+          Agregar Sello
+        </Button>
       </Grid>
-    </div >
+      {
+        myLabels
+      }
+      <Grid item xs={12}>
+        {myLabels.length === 0 &&
+          <h4 style={noLabelsTitleBlackStyles}>No tienes Sellos</h4>}
+      </Grid>
+    </Grid>
   );
 }
 

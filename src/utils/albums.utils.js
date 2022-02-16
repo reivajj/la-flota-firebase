@@ -1,11 +1,17 @@
 
-import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
+// import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
 import { colorFromFugaState, ourAlbumStateWithEquivalence } from '../variables/varias';
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
   if (params.view === "allOfLabel") return albums.filter(album => album.label_name === params.label_name);
   return albums;
+}
+
+export const getTitleLanzamientos = (params, labels, artists) => {
+  if (!Object.keys(params).length) return "Lanzamientos";
+  let elemShowingAlbums = [...artists, ...labels].find(elem => elem.id === params.id || elem.name === params.label_name);
+  return ` Lanzamientos de ${elemShowingAlbums ? elemShowingAlbums.name : ""}` ;
 }
 
 export const getAlbumById = (albums, albumId) => {
@@ -80,4 +86,10 @@ export const getOurStateFromFugaState = fugaState => {
 
 export const getStateColor = fugaState => {
   return colorFromFugaState[fugaState];
+}
+
+export const validateUPC = upcCode => {
+  if (upcCode === "") return true;
+  if (Number(upcCode) && upcCode.length === 13) return true;
+  else return false;
 }

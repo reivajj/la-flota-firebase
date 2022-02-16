@@ -80,6 +80,7 @@ export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated
   formDataTrack.append("language", dataTrack.track_language_id);
   formDataTrack.append("audio_locale", dataTrack.track_language_id);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
+  if (dataTrack.subgenre) formDataTrack.append("subgenre", dataTrack.subgenre);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
   if (dataTrack.preOrder) {
     formDataTrack.append("allow_preorder", true);

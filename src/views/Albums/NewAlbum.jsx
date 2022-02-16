@@ -21,7 +21,7 @@ import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
-import { albumCoverHelperText, getInvalidDateTitle, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip, getInvalidDateContentText } from '../../utils/textToShow.utils';
+import { albumCoverHelperText, getInvalidDateTitle, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip, getInvalidDateContentText, helperTextBeginNewRelease } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
@@ -40,9 +40,10 @@ import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { createSubgenreRedux } from "redux/actions/UserDataActions";
-import { checkOldReleaseDate, checkPreOrderDate } from "utils/albums.utils";
+import { checkOldReleaseDate, checkPreOrderDate, validateUPC } from "utils/albums.utils";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { createLabelRedux } from "redux/actions/LabelsActions";
+import { getActualYear } from 'utils/timeRelated.utils';
 
 const NewAlbum = ({ editing }) => {
 
@@ -104,14 +105,14 @@ const NewAlbum = ({ editing }) => {
   const [openAddArtistDialog, setOpenAddArtistDialog] = useState(false);
 
   const [progress, setProgress] = useState(0);
-  const [message, setMessage] = useState("");
+  const [messageForCover, setMessageForCover] = useState("");
   const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks) || [[]]);
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
   const [openAddLabel, setOpenAddLabel] = useState(false);
 
   const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
-  const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false)
+  const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "" });
   const [openLoader, setOpenLoader] = useState(false);
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
@@ -129,6 +130,12 @@ const NewAlbum = ({ editing }) => {
     preOrder: currentAlbumData.preOrder,
   });
 
+  const coverLabelArtistAllValids = () => {
+    if (!currentAlbumData.cover) setMessageForCover("Debes seleccionar el Arte de Tapa");
+    if (!currentAlbumData.nombreArtist) validator.current.showMessageFor('nombreArtist');
+    if (!currentAlbumData.label_name) validator.current.showMessageFor('label_name');
+    if (needArtistLabelCover) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
+  }
   // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
     if (currentAlbumData.oldRelease ? !checkOldReleaseDate(currentAlbumData) : false) {
@@ -140,7 +147,8 @@ const NewAlbum = ({ editing }) => {
       return;
     }
     if (validator.current.allValid() && currentAlbumData.cover) {
-      createAlbum();
+      console.log("ALL VALID: ");
+      // createAlbum();
     } else {
       validator.current.showMessages();
       forceUpdate();
@@ -185,20 +193,21 @@ const NewAlbum = ({ editing }) => {
 
   const onClickAddImage = async (event) => {
     updateAddingAlbumImageUrlAndCoverRedux({ imagenUrl: "", cover: "" });
-    setMessage("");
+    setMessageForCover("");
     let img = new Image()
     img.src = window.URL.createObjectURL(event.target.files[0])
     img.onload = async () => {
       if (img.width >= 1400 && img.height >= 1400) {
-        setMessage("");
-        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessage, setProgress));
+        setMessageForCover("");
+        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
         if (errorAddingFile) {
-          setMessage("Ha ocurrido un error, por favor, intente nuevamente. ");
+          setMessageForCover("Ha ocurrido un error, por favor, intente nuevamente. ");
           return;
         }
         dispatch(updateAddingAlbumImageUrlAndCoverRedux({ imagenUrl: urlAndFile.url, cover: urlAndFile.file }));
+        setMessageForCover("");
       }
-      else setMessage("La imagen debe tener una resolucion mínima de 1400x1400 y un tamaño máximo de 20mb");
+      else setMessageForCover("La imagen debe tener una resolucion mínima de 1400x1400 píxeles y un tamaño máximo de 20mb");
     }
   }
 
@@ -207,7 +216,7 @@ const NewAlbum = ({ editing }) => {
     setTrackData({
       ...trackData, position: tracksDataTable.length + 1, artists: [...artistFromLaFlota,
       ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], artistsWithUniqueName(currentAlbumData.allOtherArtists), artistsWithUniqueName([...myTracks.map(track => track.allOtherArtists).flat()]))],
-      preview: currentAlbumData.preview, preOrder: currentAlbumData.preOrder,
+      preview: currentAlbumData.preview, preOrder: currentAlbumData.preOrder, isrc: ""
     })
     setOpenNewTrackDialog(true);
   }
@@ -284,13 +293,14 @@ const NewAlbum = ({ editing }) => {
   }
 
   const handlerUPC = event => {
-    if (event.target.value.length <= 14) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
+    if (event.target.value.length <= 13) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, upc: event.target.value }));
     validator.current.showMessageFor('upc');
   }
 
-  const yearsArray = Array.from({ length: 30 }, (_, i) => 2021 - i);
+  const yearsArray = Array.from({ length: 30 }, (_, i) => getActualYear() - i);
 
   const needArtistLabelCover = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover;
+  const needArtistLabelCoverAndContinue = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover && currentAlbumData.basicFieldsComplete;
 
   return (
     <Grid container textAlign="center">
@@ -318,8 +328,9 @@ const NewAlbum = ({ editing }) => {
 
         <Grid container item xs={12} paddingTop={4} >
 
-          <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage} textButton="Arte de Tapa"
-            progress={progress} message={message} helperText={albumCoverHelperText}
+          <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage}
+            textButton={currentAlbumData.imagenUrl === "" ? "Arte de Tapa" : "Cambiar"} progress={progress} message={messageForCover}
+            helperText={albumCoverHelperText}
           />
 
           <NewArtist editing={false} view="dialog" isOpen={openAddArtistDialog} handleClose={() => setOpenAddArtistDialog(false)} />
@@ -343,7 +354,7 @@ const NewAlbum = ({ editing }) => {
                 autoFocus
                 required
                 select
-                label="Artista Principal perteneciente a La Flota"
+                label="Artista Principal"
                 value={currentAlbumData.nombreArtist}
                 onChange={handlerArtistChoose}
                 helperText="Selecciona al Artista Principal, si es que ya lo tienes en el sistema. Si no, primero debés crear un Artista."
@@ -356,7 +367,7 @@ const NewAlbum = ({ editing }) => {
 
           </Grid>
 
-          {needArtistLabelCover && <AddOtherArtistsAlbumForm
+          {needArtistLabelCoverAndContinue && <AddOtherArtistsAlbumForm
             checkBoxLabel="¿Lanzamiento Colaborativo?"
             checkBoxHelper={lanzamientoColaborativoTooltip}
             checkBoxColor="#9c27b0"
@@ -364,10 +375,10 @@ const NewAlbum = ({ editing }) => {
           />}
 
           <Grid container item xs={12}>
-            <Grid item xs={needArtistLabelCover ? 6 : 12}>
+            <Grid item xs={needArtistLabelCoverAndContinue ? 6 : 12}>
               <TextFieldWithAddElement
                 name="label_name"
-                sx={needArtistLabelCover ? textFieldStyle : textFieldLaFlotaArtistStyle}
+                sx={needArtistLabelCoverAndContinue ? textFieldStyle : textFieldLaFlotaArtistStyle}
                 required
                 select
                 label="Sello Discográfico"
@@ -383,7 +394,7 @@ const NewAlbum = ({ editing }) => {
               />
             </Grid>
 
-            {needArtistLabelCover && <Grid item xs={6}>
+            {needArtistLabelCoverAndContinue && <Grid item xs={6}>
               <TextFieldWithInfo
                 name="title"
                 sx={textFieldStyle}
@@ -396,7 +407,7 @@ const NewAlbum = ({ editing }) => {
             </Grid>}
           </Grid>
 
-          {needArtistLabelCover && <Grid container item xs={12}>
+          {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
             <Grid item xs={6}>
               <TextFieldWithInfoImage
                 name="version"
@@ -426,7 +437,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>
 
-        {needArtistLabelCover && <Grid container item xs={12}>
+        {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
           <Grid container item xs={6}>
             <Grid item xs={6}>
               <TextFieldWithInfo
@@ -503,7 +514,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>}
 
-        {needArtistLabelCover && <Grid container item xs={12}>
+        {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
 
           <Grid item xs={6}>
             <TextFieldWithInfo
@@ -514,7 +525,7 @@ const NewAlbum = ({ editing }) => {
               helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
               onChange={handlerUPC}
               validatorProps={{
-                restrictions: 'max:13|numeric', message: "Formato inválido: El UPC es un código de máximo 13 números",
+                restrictions: 'min:13|max:13|numeric', message: "Formato inválido: El UPC es un código de 13 números",
                 validator: validator
               }}
             />
@@ -568,7 +579,7 @@ const NewAlbum = ({ editing }) => {
           </Grid>
         </Grid>}
 
-        {needArtistLabelCover && <Grid container item xs={12} paddingTop={3} justifyContent="center">
+        {needArtistLabelCoverAndContinue && <Grid container item xs={12} paddingTop={3} justifyContent="center">
 
           <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
 
@@ -614,7 +625,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>}
 
-        {(needArtistLabelCover || openLoader) &&
+        {(needArtistLabelCoverAndContinue || openLoader) &&
           <Grid container item xs={12} paddingTop={4} justifyContent="center">
             <Grid item xs={8} >
               <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
@@ -628,7 +639,8 @@ const NewAlbum = ({ editing }) => {
 
         <Grid item xs={12} paddingTop={4}>
           <CardFooter style={{ display: 'inline-flex' }}>
-            <ProgressButton
+            {needArtistLabelCoverAndContinue && currentAlbumData.basicFieldsComplete
+             ? <ProgressButton
               textButton={buttonText}
               loading={openLoader}
               buttonState={buttonState}
@@ -636,6 +648,10 @@ const NewAlbum = ({ editing }) => {
               // onClickHandler={testingNewRelease}
               noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
               noFab={false} />
+            : <Button onClick={coverLabelArtistAllValids}>
+              Continuar
+            </Button>
+            }
           </CardFooter>
         </Grid>
       </Card >

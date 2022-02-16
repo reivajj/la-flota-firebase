@@ -20,3 +20,13 @@ export const getTracksFieldsFromFugaTrack = track => {
     isrc: track.isrc, progress: 0, artists: track.artists, allOtherArtists: [], collaborators: [],
   }
 }
+
+export const isValidFormatISRC = isrcCode => {
+  console.log("ISRC CODE : ", isrcCode);
+  if (!isrcCode) return true;
+  if (isrcCode.length !== 15) return false;
+  let isrcParts = isrcCode.split('-');
+  if (isrcParts.length !== 4) return false;
+
+  return isrcCode.match(/^[A-Z]{2}-?\w{3}-?\d{2}-?\d{5}$/);
+}

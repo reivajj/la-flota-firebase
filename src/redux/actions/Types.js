@@ -40,6 +40,7 @@ export const LABEL_DELETE_WITH_ID = "label_delete_with_id";
 export const ADD_ALBUMS = "add_albums";
 export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ALBUMS_UPDATE_ADDING_ALBUM = "albums_update_adding_album";
+export const ALBUMS_CLEAN_ADDING_ALBUM = "albums_clean_adding_album";
 export const ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE = "albums_update_adding_album_imagen_url_and_file";
 export const ALBUMS_UPDATE_OTHER_ARTIST_NAME = "albums_update_other_artist_name";
 export const ALBUMS_UPDATE_OTHER_ARTIST_IDENTIFIER = "albums_update_other_artist_identifier";

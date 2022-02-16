@@ -49,6 +49,12 @@ export const deleteAlbumRedux = dataAlbum => async dispatch => {
   return "SUCCESS";
 }
 
+export const albumCleanUpdatingAlbum = () => {
+  return {
+    type: ReducerTypes.ALBUMS_CLEAN_ADDING_ALBUM,
+  }
+}
+
 export const updateAddingAlbumRedux = newAddingAlbum => {
   return {
     type: ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM,

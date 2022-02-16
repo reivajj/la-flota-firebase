@@ -14,7 +14,7 @@ import ButtonWithInputFile from 'components/CustomButtons/ButtonWithInputFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import InfoSwitch from "components/Switch/InfoSwitch";
-import { useForceUpdate } from "utils";
+import { toWithOutError, useForceUpdate } from "utils";
 import ArtistInAddTrack from '../Artists/ArtistInAddTrack';
 import { cloneDeepLimited } from '../../utils';
 import AddCollaboratorsForm from '../../components/Forms/AddCollaboratorsForm';
@@ -22,6 +22,10 @@ import AddOtherArtistsTrackForm from '../../components/Forms/AddOtherArtistsTrac
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { languagesFuga } from '../../variables/varias';
 import { allFugaGenres } from 'variables/genres';
+import { createSubgenreRedux } from '../../redux/actions/UserDataActions';
+import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
+import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
+import { isValidFormatISRC } from "utils/tracks.utils";
 
 const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
@@ -54,9 +58,14 @@ export const NewTrackDialog = (props) => {
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
+  const currentUserData = useSelector(store => store.userData);
   const currentUserId = useSelector(store => store.userData.id);
 
   const [trackMissing, setTrackMissing] = useState(false);
+  const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
+  const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
+  const [buttonState, setButtonState] = useState("none");
+  const [isrcInvalid, setIsrcInvalid] = useState(false);
 
   const handleCancelDialog = () => {
     setOpenNewTrackDialog(false);
@@ -87,8 +96,13 @@ export const NewTrackDialog = (props) => {
   }
 
   const allFieldsValidCreateTrack = () => {
+    if (!isValidFormatISRC(trackData.isrc)) {
+      setIsrcInvalid(true);
+      return;
+    }
+    else setIsrcInvalid(false);
     if (validator.current.allValid() && trackData.track) {
-    handleCreateTrack();
+      handleCreateTrack();
     } else {
       validator.current.showMessages();
       if (!trackData.track) setTrackMissing(true);
@@ -111,9 +125,27 @@ export const NewTrackDialog = (props) => {
     setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
   }
 
-  // const handlerSubgenreChoose = event => {
-  //   setTrackData({ ...trackData, subgenre: event.target.value });
-  // }
+  const handlerSubgenreChoose = event => {
+    if (event.target.value === "Crea tu propio subgénero") return;
+    let subgenreId = currentUserData.subgenerosPropios.find(g => g.name === event.target.value).id;
+    setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
+  }
+
+  const handleCreateSubgenre = async subgenreName => {
+    setOpenLoaderSubgenreCreate(true);
+    const createSubgenreResponse = await toWithOutError(dispatch(createSubgenreRedux(subgenreName, currentUserId)))
+
+    if (createSubgenreResponse === "ERROR") {
+      setButtonState("error");
+      setOpenLoaderSubgenreCreate(false);
+      return "ERROR";
+    }
+
+    setTrackData({ ...trackData, subgenreName, subgenre: createSubgenreResponse.id });
+    setOpenLoaderSubgenreCreate(false);
+    setOpenAddSubgenre(false);
+  }
+
 
   const handleChangePrimaryOtherArtist = (index, newPrimaryValue) => {
     const newArtists = cloneDeepLimited(trackData.artists);
@@ -126,6 +158,14 @@ export const NewTrackDialog = (props) => {
     setTrackData({ ...trackData, track_language_id, track_language_name: event.target.value });
   }
 
+  const handleChangeISRC = event => {
+    if (event.target.value.length <= 15) setTrackData({ ...trackData, isrc: event.target.value.toUpperCase() });
+    else return;
+
+    if (!isValidFormatISRC(event.target.value.toUpperCase())) setIsrcInvalid(true);
+    else setIsrcInvalid(false);
+  }
+
   return (
     <Dialog
       open={openDialog}
@@ -134,6 +174,11 @@ export const NewTrackDialog = (props) => {
       maxWidth="lg"
       fullWidth
     >
+
+      <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
+        title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
+        buttonState={buttonState} />
+
       <DialogTitle id="form-dialog-title" sx={{ fontSize: "2em" }}>Crear Nueva Canción</DialogTitle>
       <DialogContent>
 
@@ -223,13 +268,13 @@ export const NewTrackDialog = (props) => {
               fullWidth
               label="ISRC (Formato: CC-XXX-00-12345)"
               value={trackData.isrc}
-              onChange={(event) => setTrackData({ ...trackData, isrc: event.target.value })}
+              onChange={handleChangeISRC}
               helperText="Completa sólo si ya tenés un Código ISRC. Formato: CC-XXX-00-12345"
-              validatorProps={{ restrictions: 'max:20', message: "El formato del ISRC es inválido.", validator }}
             />
+            {isrcInvalid && <Danger>El formato del ISRC es inválido. (Formato: CC-XXX-00-12345)</Danger>}
           </Grid>
 
-          <Grid item xs={3}>
+          <Grid item xs={4}>
             <TextFieldWithInfo
               name="generosMusicales"
               fullWidth
@@ -245,18 +290,21 @@ export const NewTrackDialog = (props) => {
             />
           </Grid>
 
-          {/* <Grid item xs={3}>
-            <TextFieldWithInfo
-              name="subgenerosMusicales - track"
+          <Grid item xs={4}>
+            <TextFieldWithAddElement
+              name="subgenerosMusicales"
               fullWidth
-              required
               select
               label="Género Musical Secundario"
-              value={trackData.subgenre}
-              onChange={handlerGenreChoose}
-              selectItems={allFugaSubgenres}
+              value={trackData.subgenreName}
+              onChange={handlerSubgenreChoose}
+              selectItems={currentUserData.subgenerosPropios || []}
+              selectKeyField="id"
+              selectValueField="name"
+              onClickAddElement={() => setOpenAddSubgenre(true)}
+              addPlaceholder="Crea tu propio subgénero"
             />
-          </Grid> */}
+          </Grid>
 
           <Grid item xs={12}>
             <ButtonWithInputFile

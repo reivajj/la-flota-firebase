@@ -1,5 +1,5 @@
 import React, { useState, createRef } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate, useLocation } from "react-router-dom";
 // creates a beautiful scrollbar
 // import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
@@ -18,10 +18,15 @@ import logo from "assets/img/only_circle_laflota_blue.png";
 // import logo from "assets/img/login-avatar1.jpg";
 
 import Notifications from "views/Notifications/Notifications";
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles(styles);
 
 const AdminLayout = ({ ...rest }) => {
+  
+  const location = useLocation();
+  const currentUser = useSelector(store => store.userData);
+
   // styles
   const { children } = { ...rest };
   const classes = useStyles();
@@ -35,6 +40,8 @@ const AdminLayout = ({ ...rest }) => {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  if (!currentUser.id) return <Navigate to="/login" state={{ from: location }} />;
 
   return (
     <div style={mainStyle}>

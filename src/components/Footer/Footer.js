@@ -24,11 +24,11 @@ export default function Footer(props) {
               <IconButton href="https://www.facebook.com/laflota.distribuciondigital" target="_blank">
                 <Facebook />
               </IconButton>
-              <IconButton href="https://www.instagram.com/laflota.distribuciondigital/" target="_blank">
-                <Instagram />
-              </IconButton>
               <IconButton href="https://twitter.com/LaflotaD" target="_blank">
                 <Twitter />
+              </IconButton>
+              <IconButton href="https://www.instagram.com/laflota.distribuciondigital/" target="_blank">
+                <Instagram />
               </IconButton>
             </ListItem>
           </List>

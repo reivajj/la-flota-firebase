@@ -2,20 +2,26 @@ import React from "react";
 // core components
 import { Grid, Button, Typography } from '@mui/material';
 import { useNavigate } from "react-router";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import AlbumCard from "views/Albums/AlbumCard";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import useQuery from '../../customHooks/useQuery';
-import { getFilteredAlbumsByUrl } from '../../utils/albums.utils';
+import { getFilteredAlbumsByUrl, getTitleLanzamientos } from '../../utils/albums.utils';
+import { albumCleanUpdatingAlbum } from "redux/actions/AlbumsActions";
 
 const MyAlbums = () => {
 
   const navigate = useNavigate();
   const params = useQuery();
+  const dispatch = useDispatch()
 
   const albumsFromStore = useSelector(store => store.albums.albums);
+  const artists = useSelector(store => store.artists.artists);
+  const labels = useSelector(store => store.labels.labels);
 
   const filteredAlbumsIfNeeded = getFilteredAlbumsByUrl(params, albumsFromStore);
+  const titleLanzamientos = getTitleLanzamientos(params, labels, artists);
+  const noTienesLanzamientos = `No tienes ${titleLanzamientos}`;
 
   const myAlbumsProfiles = () => {
     return filteredAlbumsIfNeeded.length > 0
@@ -29,12 +35,15 @@ const MyAlbums = () => {
 
   let myAlbums = myAlbumsProfiles();
 
-  const navigateToNewAlbum = () => navigate("/admin/new-album");
+  const navigateToNewAlbum = () => {
+    dispatch(albumCleanUpdatingAlbum());
+    navigate("/admin/new-album");
+  }
 
   return (
     <Grid container spacing={2} textAlign="center">
       <Grid item xs={12}>
-        <Typography sx={albumsTitleStyles}>Lanzamientos</Typography>
+        <Typography sx={albumsTitleStyles}>{titleLanzamientos}</Typography>
         <Button variant="contained" color="secondary" onClick={navigateToNewAlbum} endIcon={<AddCircleOutlineIcon />}>
           Nuevo Lanzamiento
         </Button>
@@ -44,7 +53,7 @@ const MyAlbums = () => {
       }
       <Grid item xs={12}>
         {myAlbums.length === 0 &&
-          <h4 style={noAlbumsTitleBlackStyles}>No tienes Lanzamientos</h4>}
+          <h4 style={noAlbumsTitleBlackStyles}>{noTienesLanzamientos}</h4>}
       </Grid>
     </Grid>
   );

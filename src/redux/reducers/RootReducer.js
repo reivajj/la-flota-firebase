@@ -1,5 +1,7 @@
 import { combineReducers } from "redux";
 
+import { firebaseReducer } from "react-redux-firebase";
+
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
@@ -24,6 +26,7 @@ const persistConfig = {
 // lo agrego a la whitelist... ['auth', 'otro_reducer']
 
 const rootReducer = combineReducers({
+  firebase: firebaseReducer,
   auth: AuthReducer,
   userData: UserDataReducer,
   signUpInfo: SignUpReducer,

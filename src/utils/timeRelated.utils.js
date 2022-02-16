@@ -3,3 +3,7 @@ export const getLocalDateString = stringDateUS => {
   stringDateLocal = stringDateLocal.split("-");
   return `${stringDateLocal[2]}/${stringDateLocal[1]}/${stringDateLocal[0]}`
 }
+
+export const getActualYear = () => {
+  return new Date().getYear() + 1900;
+}

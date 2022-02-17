@@ -13,7 +13,7 @@ import routes from "routes.js";
 
 import styles from "assets/jss/material-dashboard-react/layouts/adminStyle.js";
 
-import bgImage from "assets/img/sidebar-2.jpg";
+import bgImage from "assets/img/sidebarLF.jpg";
 import logo from "assets/img/only_circle_laflota_blue.png";
 // import logo from "assets/img/login-avatar1.jpg";
 
@@ -25,7 +25,7 @@ const useStyles = makeStyles(styles);
 const AdminLayout = ({ ...rest }) => {
   
   const location = useLocation();
-  const currentUser = useSelector(store => store.userData);
+  const auth = useSelector(store => store.auth);
 
   // styles
   const { children } = { ...rest };
@@ -41,7 +41,7 @@ const AdminLayout = ({ ...rest }) => {
     setMobileOpen(!mobileOpen);
   };
 
-  if (!currentUser.id) return <Navigate to="/login" state={{ from: location }} />;
+  if (!auth || !auth.user || !auth.user.id) return <Navigate to="/login" state={{ from: location }} />;
 
   return (
     <div style={mainStyle}>

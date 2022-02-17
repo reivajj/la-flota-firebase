@@ -26,7 +26,7 @@ const ArtistCard = ({ dataArtist, index }) => {
 
   const handleDelete = async () => {
     setOpenLoader(true);
-    let result = await toWithOutError(dispatch(deleteArtistRedux(dataArtist.id, dataArtist.fugaId, dataArtist.ownerId)));
+    let result = await toWithOutError(dispatch(deleteArtistRedux(dataArtist, dataArtist.id, dataArtist.fugaId, dataArtist.ownerId)));
     if (result === "ERROR") {
       setButtonState("error");
       setButtonText("Error");

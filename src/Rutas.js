@@ -1,7 +1,7 @@
 import React from "react";
-import { Routes, BrowserRouter, Route, useLocation, Navigate, Outlet } from "react-router-dom";
+import { Routes, BrowserRouter, Route } from "react-router-dom";
 import AdminLayout from 'layouts/Admin.js';
-import DashboardPage from 'views/Dashboard/Dashboard.js';
+import DashboardPage from 'views/Dashboard/DashboardBasicUser';
 // import UserProfile from 'views/UserProfile/UserProfile.js';
 import TableList from 'views/TableList/TableList.js';
 import Typography from 'views/Typography/Typography.js';
@@ -10,7 +10,7 @@ import Notifications from "views/Notifications/Notifications.js";
 import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
 import SignInSide from 'views/Login/SingInSide';
-import SignUp from 'views/Login/SignUp';
+// import SignUp from 'views/Login/SignUp';
 import MyArtists from 'views/Artists/MyArtists';
 import NewArtist from 'views/Artists/NewArtist';
 import MyLabels from 'views/Labels/MyLabels';
@@ -19,36 +19,13 @@ import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
 import UserProfile from 'views/UserProfile/UserProfile';
 import AlbumTotalInfo from './views/Albums/AlbumTotalInfo';
-import { useSelector } from 'react-redux';
 
 const Rutas = () => {
-
-  const currentUser = useSelector(store => store.userData);
-  const loggedIn = currentUser.id !== "";
-
-  function RequireAuth() {
-    let auth = currentUser.id;
-    let location = useLocation();
-
-    if (!auth.user) {
-      // Redirect them to the /login page, but save the current location they were
-      // trying to go to when they were redirected. This allows us to send them
-      // along to that page after they login, which is a nicer user experience
-      // than dropping them off on the home page.
-      return <Navigate to="/login" state={{ from: location }} />;
-    }
-
-    return <Outlet />;
-  }
 
   return (
     <BrowserRouter>
 
       <Routes>
-
-        {/* <Route exact path="/">
-          {loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
-        </Route> */}
 
         <Route path="/" element={<AuthLayout />}>
           <Route path="" element={<SignInSide />} />

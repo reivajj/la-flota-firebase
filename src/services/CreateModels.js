@@ -14,7 +14,7 @@ export const createArtistModel = (dataArtist, editing) => {
 
 const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
-export const createAlbumModel = dataAlbum => {
+export const createAlbumModel = (dataAlbum, explicit) => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
   let originalReleaseDate = dataAlbum.oldRelease ? `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}` : saleAndReleaseDate;
@@ -36,6 +36,7 @@ export const createAlbumModel = dataAlbum => {
   formDataAlbum.append("artists", JSON.stringify(artistsArray));
   formDataAlbum.append("consumer_release_date", saleAndReleaseDate);
   formDataAlbum.append("original_release_date", originalReleaseDate);
+  formDataAlbum.append("parental_advisory", Boolean(explicit));
   if (dataAlbum.preOrderYear > 0) formDataAlbum.append("preorder_date", preOrderDate);
   if (dataAlbum.upc) formDataAlbum.append("upc", dataAlbum.upc);
   if (dataAlbum.subgenre) formDataAlbum.append("subgenre", dataAlbum.subgenre);
@@ -79,6 +80,7 @@ export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated
   formDataTrack.append("sequence", dataTrack.position);
   formDataTrack.append("language", dataTrack.track_language_id);
   formDataTrack.append("audio_locale", dataTrack.track_language_id);
+  formDataTrack.append("parental_advisory", dataTrack.explicit);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
   if (dataTrack.subgenre) formDataTrack.append("subgenre", dataTrack.subgenre);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);

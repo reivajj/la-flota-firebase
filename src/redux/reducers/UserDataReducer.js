@@ -11,7 +11,7 @@ const initialState = {
   rol: '', email: '', userName: '', id: '', ciudad: '', telefono: '', direccion: '', nombre: '',
   apellido: '', dni: '', imagen: '', stats: initialStats, usuarioActivo: false, generos: [],
   subgenerosPropios: [], plan: "charly-garcia", withdrawals: initialWithdrawals, actividadReciente: [],
-  timestampWhenCreatedUser: '', lastTimeSignedInString: '', lastTimeSignedIn: '',
+  timestampWhenCreatedUser: '', lastTimeSignedInString: '', lastTimeSignedIn: '', isNewInFBSystem: false,
 }
 
 const addNewSubgenero = (newSubgenero, oldSubgeneros) => {
@@ -25,6 +25,7 @@ const UserDataReducer = (state = initialState, action) => {
     case ReducerTypes.USER_DATA_SIGN_IN:
       return {
         rol: userData.rol,
+        isNewInFBSystem: userData.isNewInFBSystem,
         email: userData.email,
         id: userData.id,
         ciudad: userData.ciudad,

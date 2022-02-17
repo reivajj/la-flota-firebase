@@ -30,3 +30,7 @@ export const isValidFormatISRC = isrcCode => {
 
   return isrcCode.match(/^[A-Z]{2}-?\w{3}-?\d{2}-?\d{5}$/);
 }
+
+export const checkIfAnyTrackIsExplicit = tracks => {
+  return tracks.some(track => track.explicit);
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 // core components
 // import Button from "components/CustomButtons/Button.js";
 import ArtistCard from 'views/Artists/ArtistCard';
@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { getFilteredArtistByUrl } from '../../utils/artists.utils';
 import useQuery from '../../customHooks/useQuery';
+import InfoDialog from 'components/Dialogs/InfoDialog';
+import { maxArtistsText } from "utils/textToShow.utils";
 
 const MyArtists = () => {
 
@@ -15,6 +17,10 @@ const MyArtists = () => {
   const params = useQuery();
 
   const artistsFromStore = useSelector(store => store.artists.artists);
+  const currentUser = useSelector(store => store.userData);
+  const plan = currentUser.plan;
+
+  const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(false);
 
   const filteredArtistsIfNeeded = getFilteredArtistByUrl(params, artistsFromStore);
 
@@ -30,10 +36,17 @@ const MyArtists = () => {
 
   let misArtistas = misArtistasProfiles();
 
-  const agregarArtista = () => navigate("/admin/new-artist");
+  const agregarArtista = () => {
+    if (plan === "charly-garcia" && artistsFromStore.length > 1) setOpenMaxArtistsDialog(true);
+    else navigate("/admin/new-artist");
+  }
 
   return (
     <Grid container spacing={2} sx={{ textAlign: "center" }}>
+
+      <InfoDialog isOpen={openMaxArtistsDialog} handleClose={() => setOpenMaxArtistsDialog(false)}
+        title={"No puedes agregar más Artistas"} contentTexts={maxArtistsText} />
+
       <Grid item xs={12}>
         <Typography sx={artistsTitleStyles}>Artistas</Typography>
         <Button variant="contained" color="secondary" onClick={agregarArtista} endIcon={<PersonAddIcon />}>

@@ -81,7 +81,7 @@ const AdminNavbarLinks = () => {
           onClick={handleClickNotification}
           sx={buttonLinkStyle}
         >
-          <Badge badgeContent={4} color="error">
+          <Badge badgeContent={0} color="error">
             <Notifications className={classes.icons} />
           </Badge>
         </Button>
@@ -101,31 +101,7 @@ const AdminNavbarLinks = () => {
               onClick={handleCloseNotifications}
               sx={dropdownItemStyle}
             >
-              Mike John responded to your email
-            </MenuItem>
-            <MenuItem
-              onClick={handleCloseNotifications}
-              sx={dropdownItemStyle}
-            >
-              You have 5 new tasks
-            </MenuItem>
-            <MenuItem
-              onClick={handleCloseNotifications}
-              sx={dropdownItemStyle}
-            >
-              You{"'"}re now friend with Andrew
-            </MenuItem>
-            <MenuItem
-              onClick={handleCloseNotifications}
-              sx={dropdownItemStyle}
-            >
-              Another Notification
-            </MenuItem>
-            <MenuItem
-              onClick={handleCloseNotifications}
-              sx={dropdownItemStyle}
-            >
-              Another One
+              Pronto verás aca las notificaciones
             </MenuItem>
           </MenuList>
         </Menu>
@@ -154,20 +130,14 @@ const AdminNavbarLinks = () => {
               onClick={handleGoToProfilePage}
               sx={dropdownItemStyle}
             >
-              Profile
-            </MenuItem>
-            <MenuItem
-              onClick={handleCloseProfileMenu}
-              sx={dropdownItemStyle}
-            >
-              Settings
+              Perfil
             </MenuItem>
             <Divider light />
             <MenuItem
               onClick={handleSignOut}
               sx={dropdownItemStyle}
             >
-              Logout
+              Cerrar Sesión
             </MenuItem>
           </MenuList>
         </Menu>

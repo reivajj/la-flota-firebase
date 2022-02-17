@@ -6,6 +6,7 @@ import { albumsAddStore } from './AlbumsActions';
 import { labelsAddStore } from './LabelsActions';
 import { artistsAddStore } from './ArtistsActions';
 import * as BackendCommunication from 'services/BackendCommunication.js';
+import { activitiesAddStore, activitiesSignOut } from './ActivitiesActions';
 
 export const userDataAddInfoStore = userInfo => {
   return {
@@ -15,13 +16,14 @@ export const userDataAddInfoStore = userInfo => {
 }
 
 // ACTION CREATORS
-export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists, collaborators) => async dispatch => {
+export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists, collaborators, activities) => async dispatch => {
   dispatch(userDataAddInfoStore(userInfo));
   dispatch(artistsAddStore(artists));
   dispatch(albumsAddStore(albums));
   dispatch(labelsAddStore(labels));
   dispatch(addArtistsInvited(invitedArtists));
   dispatch(addCollaborators(collaborators));
+  dispatch(activitiesAddStore(activities));
   return;
 };
 
@@ -48,6 +50,7 @@ export const userDataSignOut = () => async dispatch => {
 
   dispatch(invitedArtistSignOut());
   dispatch(collaboratorsSignOut());
+  dispatch(activitiesSignOut());
 };
 
 export const userDataAddImage = (urlImage) => {
@@ -57,7 +60,7 @@ export const userDataAddImage = (urlImage) => {
   };
 };
 
-export const editPerfil = newProfile => async dispatch => {
+export const userDataUpdateRedux = newProfile => async dispatch => {
   // Si da error simplemente genero la notificacion.
   let resultEdit = await FirestoreServices.editUserDataWithOutCredentials(newProfile, dispatch);
   if (resultEdit === "EDITED") {
@@ -67,6 +70,7 @@ export const editPerfil = newProfile => async dispatch => {
     })
     return "SUCCESS";
   }
+  else return "ERROR";
 };
 
 export const addSubgenreToUserStore = newSubgenreNameAndId => {

@@ -2,6 +2,9 @@ import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createArtistModel } from '../../services/CreateModels';
+import { to, toWithOutError } from 'utils';
+import { v4 as uuidv4 } from 'uuid';
+import { cloneDeepLimited } from '../../utils';
 
 export const artistsAddStore = artists => {
   return {
@@ -28,6 +31,7 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
 
   await FirestoreServices.createElementFS(artist, artist.id, userId, typeOfArtist, totalField, 1, dispatch);
 
+  // Si vengo de artistsInvited no debo agregarlos al Store de Artists.
   if (typeOfArtist !== "artists") return "SUCCESS";
 
   dispatch({
@@ -36,6 +40,33 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
   });
 
   return "SUCCESS";
+}
+
+export const artistsCreateFromDGArtistsRedux = (ownerId, ownerMail) => async dispatch => {
+
+  let dgArtists = await BackendCommunication.getDgArtistsFuga(ownerMail, dispatch);
+  if (dgArtists === "NO_ARTISTS") return "NO_ARTISTS";
+  if (dgArtists === "NO_USER") return "NO_USER";
+  if (dgArtists.length === 0) return "NO_ARTISTS";
+
+
+  const createDGArtistOneByOne = dgArtists.map(async dataDgArtist => {
+    let cloneDataDgArtists = cloneDeepLimited(dataDgArtist);
+    dataDgArtist.ownerId = ownerId;
+    dataDgArtist.dashGoId = cloneDataDgArtists.id;
+    dataDgArtist.id = uuidv4();
+    dataDgArtist.biography = cloneDataDgArtists.bio || "";
+    delete dataDgArtist.bio;
+
+    console.log("AGREGANDO DG ARTIST: ", dataDgArtist);
+
+    let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataDgArtist, ownerId, "artists", "totalArtists")));
+    if (artistCreatedResult === "ERROR") return "ERROR";
+    return "SUCCESS";
+  });
+
+  let [errorCreatingAllArtists] = await to(Promise.all(createDGArtistOneByOne));
+  if (errorCreatingAllArtists) return "ERROR";
 }
 
 const cleanNotEditedFields = (allFields, fieldsEdited) => {
@@ -70,7 +101,7 @@ export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId,
 
   onlyEditedFields.id = oldArtistData.id;
   onlyEditedFields.lastUpdateTS = new Date().getTime();
-  await FirestoreServices.updateElementFS(onlyEditedFields, onlyEditedFields.id, "artists", dispatch);
+  await FirestoreServices.updateElementFS(oldArtistData, onlyEditedFields, onlyEditedFields.id, "artists", dispatch);
 
   dispatch({
     type: ReducerTypes.EDIT_ARTIST_WITH_ID,
@@ -80,11 +111,11 @@ export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId,
   return "SUCCESS";
 }
 
-export const deleteArtistRedux = (artistId, artistFugaId, userId) => async dispatch => {
+export const deleteArtistRedux = (dataArtist, artistId, artistFugaId, userId) => async dispatch => {
   let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
   if (deleteResponse === "ERROR") return "ERROR";
 
-  await FirestoreServices.deleteElementFS(artistId, userId, "artists", "totalArtists", -1, dispatch);
+  await FirestoreServices.deleteElementFS(dataArtist, artistId, userId, "artists", "totalArtists", -1, dispatch);
 
   dispatch({
     type: ReducerTypes.ARTIST_DELETE_WITH_ID,

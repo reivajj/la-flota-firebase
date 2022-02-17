@@ -1,6 +1,7 @@
 export const createUserDocItem = (userData, userInWp) => {
   return {
     email: userData.email,
+    isNewInFBSystem: true,
     userLogin: userInWp.userLogin,
     userRegisteredInWp: userInWp.userRegistrered,
     deletedInWp: userInWp.deleted,

@@ -25,7 +25,7 @@ const Label = ({ dataLabel }) => {
 
   const handleDelete = async () => {
     setOpenLoader(true);
-    let result = await toWithOutError(dispatch(deleteLabelRedux(dataLabel.fugaId, dataLabel.id, dataLabel.ownerId)));
+    let result = await toWithOutError(dispatch(deleteLabelRedux(dataLabel, dataLabel.fugaId, dataLabel.id, dataLabel.ownerId)));
     if (result === "ERROR") {
       setButtonState("error");
       setButtonText("Error");

@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from "react-redux";
 import * as actions from 'redux/actions/AuthActions.js';
 import Copyright from 'components/Copyright/Copyright.js';
 import { createTheme } from '@mui/material/styles';
-import { mainBlue } from '../../variables/colors';
 // import { signInWithGoogle } from 'services/AuthServices';
 
 import { Image } from 'mui-image'
@@ -44,7 +43,7 @@ const SignInSide = () => {
   };
 
   const changeEmail = (text) => {
-    dispatch(actions.emailChanged(text));
+    dispatch(actions.emailChanged(text.toLowerCase()));
   };
 
   const changePassword = (text) => {

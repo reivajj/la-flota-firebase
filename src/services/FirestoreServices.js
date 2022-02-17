@@ -6,11 +6,14 @@ import {
 import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { createUserDocItem } from 'factory/users.factory';
-import { loginErrorStore } from 'redux/actions/AuthActions';
+import { v4 as uuidv4 } from 'uuid';
 
 const db = getFirestore(firebaseApp);
 
+const collectionsWithActivities = ["artists", "albums", "labels"];
+
 export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
+  if (!newUserData.id) return "ERROR";
   const userDbRef = doc(db, "users", newUserData.id);
   let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }));
   if (errorUpdatingUserInDB) {
@@ -37,7 +40,7 @@ export const updateUserDoc = async (userId, userDoc, dispatch) => {
 
   let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
   if (errorUpdatingUserSignIn) {
-    dispatch(loginErrorStore({ error: errorUpdatingUserSignIn, errorMsg: "Error al actualizar al usuario. Intente nuevamente." }));
+    dispatch(createFireStoreError("Error al actualizar al usuario. Intente nuevamente.", errorUpdatingUserSignIn));
     return "ERROR";
   };
   return userDocData;
@@ -46,7 +49,10 @@ export const updateUserDoc = async (userId, userDoc, dispatch) => {
 export const getElements = async (userId, typeOfElement, dispatch) => {
   const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
   let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
-  if (errorGettingElementsFromUser) console.log(`Error getting user ${typeOfElement}: `, errorGettingElementsFromUser);
+  if (errorGettingElementsFromUser) {
+    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
+    return "ERROR";
+  }
 
   let elementsFromUser = [];
   elementsFromUserSnapshot.forEach(albumDoc => {
@@ -60,23 +66,51 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
 // Siempre que creo un Artista, tambien actualizare el documento del Usuario que creo el Artista.
 // Elements es: LABEL, ARTIST, TRACK, ALBUMS. ARTISTS_INVITED, COLLABORATORS
 export const createElementFS = async (element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement, dispatch) => {
-  console.log({ element, elementId, userId, collection, fieldToIncrementInUserStats, amountToIncrement })
+  if (!elementId) return "ERROR";
+
   const elementDbRef = doc(db, collection, elementId);
 
   let [errorCreatingElement] = await to(setDoc(elementDbRef, element))
   if (errorCreatingElement) {
-    dispatch(createFireStoreError({ errorCreatingElement, errorMsg: `Error creating new element in ${collection} collection` }));
+    dispatch(createFireStoreError(`Error creando nuevo elemento en la colección ${collection}.`, errorCreatingElement));
     return "ERROR";
   }
 
-  await updateStatsOfCollection(collection, amountToIncrement, dispatch)
+  await updateStatsOfCollection(collection, amountToIncrement, dispatch);
   await updateStatsOfUserDoc(userId, fieldToIncrementInUserStats, amountToIncrement, dispatch);
+
+  await addActivityFS(collection, userId, element, "create", dispatch);
+
+  return "SUCCESS";
+}
+
+const getBasicInfoElement = (element, collection) => {
+  if (collection === "albums") return element.title;
+  if (collection === "labels" || collection === "artists") return element.name;
+  return "";
+}
+
+const addActivityFS = async (collection, ownerId, element, typeOfAction, dispatch) => {
+  if (!collectionsWithActivities.includes(collection)) return;
+  let activity = {
+    action: typeOfAction, target: collection, targetId: element.id,
+    ownerId, targetName: getBasicInfoElement(element, collection)
+  };
+
+  const newActivityDbRef = doc(db, "usersActivity", uuidv4());
+  let [errorCreatingActivity] = await to(setDoc(newActivityDbRef, activity))
+  if (errorCreatingActivity) {
+    dispatch(createFireStoreError(`Error creando nueva actividad`, errorCreatingActivity));
+    return "ERROR";
+  }
+
+  await updateStatsOfCollection("usersActivity", 1, dispatch);
 
   return "SUCCESS";
 }
 
 // Elements es: LABEL, ARTIST, TRACK, ALBUMS.
-export const deleteElementFS = async (elementId, userId, collection, fieldToDecrementInUserStats, amountToDecrement, dispatch) => {
+export const deleteElementFS = async (element, elementId, userId, collection, fieldToDecrementInUserStats, amountToDecrement, dispatch) => {
   const elementDbRef = doc(db, collection, elementId);
 
   let [errorDeletingElementInCollection] = await to(deleteDoc(elementDbRef));
@@ -89,6 +123,7 @@ export const deleteElementFS = async (elementId, userId, collection, fieldToDecr
   await updateStatsOfUserDoc(userId, fieldToDecrementInUserStats, amountToDecrement, dispatch);
   await updateStatsOfUserDoc(userId, `${fieldToDecrementInUserStats}Deleted`, (-1) * amountToDecrement, dispatch);
 
+  await addActivityFS(collection, userId, element, "delete", dispatch);
 }
 
 export const deleteAllTracksFromAlbumIdFS = async (albumId, userId, dispatch) => {
@@ -142,7 +177,7 @@ export const updateStatsOfUserDoc = async (targetUserId, targetStat, amount, dis
 }
 
 // Elements es: ARTIST, TRACK, ALBUMS.
-export const updateElementFS = async (newElementFields, elementId, collection, dispatch) => {
+export const updateElementFS = async (oldArtistData, newElementFields, elementId, collection, dispatch) => {
   const elementDbRef = doc(db, collection, elementId);
 
   let [errorUpdatingElementInCollection] = await to(updateDoc(elementDbRef, { ...newElementFields }));
@@ -150,13 +185,39 @@ export const updateElementFS = async (newElementFields, elementId, collection, d
     console.log(`Error updating element in ${collection} collection`, errorUpdatingElementInCollection);
     throw new Error({ msg: `Error updating new element in ${collection} collection`, error: errorUpdatingElementInCollection });
   }
+
+  await addActivityFS(collection, oldArtistData.ownerId, { ...oldArtistData, ...newElementFields }, "update", dispatch);
 }
 
+export const getElementsBORRAR = async (userId, typeOfElement, dispatch) => {
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
+  let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
+  if (errorGettingElementsFromUser) {
+    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
+    return "ERROR";
+  }
+
+  let elementsFromUser = [];
+  elementsFromUserSnapshot.forEach(albumDoc => {
+    elementsFromUser.push(albumDoc.data());
+  });
+
+  return elementsFromUser;
+}
+
+
 export const userByEmailInFS = async (email, dispatch) => {
-  const userByEmailDbRef = doc(db, "usersByEmail", email);
-  let [errorGettingUserByEmail, userByEmailSnap] = await to(getDoc(userByEmailDbRef));
+  const userByEmailDbRef = query(collection(db, "usersByEmail"), where("email", "==", email));
+  let [errorGettingUserByEmail, userByEmailSnap] = await to(getDocs(userByEmailDbRef));
   if (errorGettingUserByEmail) return false;
-  return userByEmailSnap.exists();
+  if (userByEmailSnap.empty) return false;
+
+  let exists = false;
+  userByEmailSnap.forEach(userDoc => {
+    exists = userDoc.exists();
+  })
+
+  return exists;
 }
 
 export const createUserDocs = async (newUserData, dispatch) => {

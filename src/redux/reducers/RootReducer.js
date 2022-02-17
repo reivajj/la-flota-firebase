@@ -1,7 +1,5 @@
 import { combineReducers } from "redux";
 
-import { firebaseReducer } from "react-redux-firebase";
-
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
@@ -15,18 +13,18 @@ import TracksReducer from "redux/reducers/TracksReducer";
 import ErrorHandlerReducer from "redux/reducers/ErrorHandlerReducer";
 import ArtistsInvitedReducer from "redux/reducers/ArtistsInvitedReducer";
 import CollaboratorsReducer from "redux/reducers/CollaboratorsReducer";
+import ActivitiesReducer from "redux/reducers/AcitivitiesReducer";
 
 const persistConfig = {
   key: 'root',
   storage: storage,
-  whitelist: ['userData', 'signUpInfo', 'artists', 'labels', 'albums', 'artistsInvited', 'collaborators']
+  whitelist: ['userData', 'signUpInfo', 'artists', 'labels', 'albums', 'artistsInvited', 'collaborators', 'activities', 'auth']
 }
 
 // Si quiero agregar mas a la white list, osea, los reducers que quiero persistir en el storage, 
 // lo agrego a la whitelist... ['auth', 'otro_reducer']
 
 const rootReducer = combineReducers({
-  firebase: firebaseReducer,
   auth: AuthReducer,
   userData: UserDataReducer,
   signUpInfo: SignUpReducer,
@@ -36,6 +34,7 @@ const rootReducer = combineReducers({
   tracks: TracksReducer,
   artistsInvited: ArtistsInvitedReducer,
   collaborators: CollaboratorsReducer,
+  activities: ActivitiesReducer,
   errorHandler: ErrorHandlerReducer
 });
 

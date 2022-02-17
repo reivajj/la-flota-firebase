@@ -38,6 +38,8 @@ export default InfoDialog;
 
 InfoDialog.defaultProps = {
   isOpen: false,
+  title: "",
+  contentText: ""
 }
 
 InfoDialog.propTypes = {

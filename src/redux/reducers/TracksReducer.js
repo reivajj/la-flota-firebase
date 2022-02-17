@@ -42,7 +42,10 @@ const TracksReducer = (state = initialState, action) => {
       return { ...state, uploadingTracks: recalculatePositions(state.uploadingTracks.filter(uT => uT.id !== action.payload)) }
 
     case ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB:
-      return { ...state, tracks: [...state.tracks, ...action.payload], uploadingTracks: [] }
+      return { ...state, tracks: [...state.tracks, ...action.payload] }
+
+    case ReducerTypes.TRACKS_UPLOADING_CLEAN:
+      return { ...state, uploadingTracks: [] };  
 
     case ReducerTypes.SET_TRACK_UPLOAD_PROGRESS:
       return {

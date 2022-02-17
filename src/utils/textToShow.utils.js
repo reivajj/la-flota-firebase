@@ -1,4 +1,6 @@
 import Danger from 'components/Typography/Danger.js';
+import Warning from 'components/Typography/Warning';
+import { Link } from '@mui/material';
 
 export const publicationDateWarning = [
   "Elegí la fecha en la que querés que este lanzamiento sea publicado en las DSPs.Si elegís la fecha de hoy, o mañana, no significa que tu lanzamiento va a estar disponible inmediatamente.Se procesará con la fecha que seleccionaste pero según la demanda, los lanzamientos pueden demorar hasta 1 - 2 días en aprobarse y procesarse, a la vez las DSPs tienen tiempos variables, y por último puede haber errores o que necesitemos corregir aspectos de tu lanzamiento.",
@@ -6,18 +8,25 @@ export const publicationDateWarning = [
   < br />, "Si es tu primer lanzamiento(y aún no tenés perfil en las DSPs) recomendamos que elijas una fecha de acá a 5 - 7 días en el futuro para que tu perfil se cree correctamente.",
 ];
 
-export const getInvalidDateTitle = reason => {
-  if (reason === "old-release") return "Fecha de publicación original inválida:";
-  if (reason === "pre-order") return "Fecha de pre-compra inválida:";
-  return "La fecha de la pre-compra inválida:";
-}
+export const titleInvalidOldReleaseDate = "Fecha de publicación original inválida:";
+export const titleInvalidPreCompraDate = "Fecha de pre-compra inválida:";
 
-export const getInvalidDateContentText = [<Danger>La fecha debe ser menor a la actual fecha de lanzamiento.</Danger>,
+export const invalidDateContentText = [<Danger>La fecha debe ser menor a la actual fecha de lanzamiento.</Danger>,
 <Danger>Por favor, vuelve a seleccionar la fecha indicadada.</Danger>]
+
+export const noTracksWarningTitle = "No puedes crear un lanzamiento sin canciones:";
+export const noTracksWarningText = [<Danger>Por favor, ingresa en la tabla las canciones del lanzamiento.</Danger>]
 
 export const featuringArtistTooltip = [
   "Indica si el Artista será Principal o Featuring.",
   "Presionar para más información."
+]
+
+export const maxArtistsText = [
+  <Warning>{`Ya tienes el máximo número de Artistas que tu Plan te permite.`}</Warning>,
+  <Link href="https://www.laflota.com.ar/dashboard/contrasena-perdida/" target="_blank" variant="body2" underline="hover">
+    Ingresa a www.laflota.com.ar para aumentar tu plan.
+  </Link>,
 ]
 
 export const infoSpotifyUri = [
@@ -70,3 +79,10 @@ export const getHelperCollaboratorText = indexCollaborator => {
 export const releaseDateInfoTooltip = ["Elije la fecha en la que este lanzamiento será publicado en las DSPs.",
   "Para lanzamientos programados recomendamos 10 días de anticipación."
 ]
+
+export const bienvenidoDialogText = [
+  "Por favor, aguarda unos instantes mientras enlazamos tus Artistas cargados en el sistema anterior.",
+  "A partir de ahora podes crear, editar, publicar y gestionar tu arte y trabajo desde un sólo lugar! Los lanzamientos creados anteriormente los podes encontrar en el panel anterior, hasta que terminamos la migración.",
+  "Esperamos que les guste ♡", <br />, <br />, "Equipo de La Flota"
+];
+

@@ -56,10 +56,11 @@ export const EDIT_TRACK_POST_UPLOAD_IN_DB = "edit_track_post_upload_in_db";
 export const SET_TRACK_UPLOAD_PROGRESS = "set_track_upload_progress";
 export const TRACK_UPLOADING_DELETE = "track_uploading_delete";
 export const TRACK_UPLOADING_EDIT = "track_uploading_edit";
+export const TRACKS_UPLOADING_CLEAN = "tracks_uploading_clean";
 
 // ArtistsInvited Types
-export const INVITED_ARTISTS_ADD = "INVITED_ARTISTS_ADD";
-export const INVITED_ARTIST_EDIT_WITH_ID = "INVITED_ARTIST_EDIT_WITH_ID";
+export const INVITED_ARTISTS_ADD = "invited_artists_add";
+export const INVITED_ARTIST_EDIT_WITH_ID = "invited_artist_edit_with_id";
 export const INVITED_ARTIST_DELETE_WITH_ID = "invited_artist_delete_with_id";
 export const INVITED_ARTISTS_SIGN_OUT = "invited_artists_sign_out";
 
@@ -72,3 +73,8 @@ export const ERROR_FROM_BACKEND = "error_from_backend";
 export const ERROR_FROM_FIRESTORE = "error_from_firestore";
 export const ERROR_CLEAN_LAST = "error_clean_last";
 export const ERROR_BASIC_MSG = "error_basic_msg";
+
+//Activities
+export const ACTIVITIES_ADD = "activities_add";
+export const ACTIVITIES_DELETE_BY_ID = "activities_delete_by_id";
+export const ACTIVITIES_SIGN_OUT = "activities_sign_out";

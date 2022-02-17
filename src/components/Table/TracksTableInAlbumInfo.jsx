@@ -11,7 +11,7 @@ const TracksTableInAlbumInfo = ({ tracksTableData }) => {
 
         <Table
           tableHeaderColor="primary"
-          tableHead={["N°", "Nombre", "ISRC", "Artistas"]}
+          tableHead={["N°", "Nombre", "ISRC", "Artistas", "Duración (sec)"]}
           tableData={tracksTableData}
         />
 

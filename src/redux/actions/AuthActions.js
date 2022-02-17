@@ -33,10 +33,10 @@ const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) 
   const artists = await FirestoreServices.getElements(userUid, "artists", dispatch);
   const labels = await FirestoreServices.getElements(userUid, "labels", dispatch);
   const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch);
-  // const invitedArtists = [];
+  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch)
   const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch);
 
-  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators));
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
 }
 
 const getAllDataFromDBToStore = async (userUid, userDataFromDB, dispatch) => {
@@ -83,7 +83,6 @@ export const signInFromGoogle = userInfoFromGoogle => async dispatch => {
 }
 
 export const signInDoubleSystem = ({ email, password }) => async dispatch => {
-  console.log("SINGIN IN ")
   const userEmailExistInFB = await FirestoreServices.userByEmailInFS(email, dispatch);
   if (userEmailExistInFB) await signIn({ email, password, fromSignUp: false }, dispatch);
   else {

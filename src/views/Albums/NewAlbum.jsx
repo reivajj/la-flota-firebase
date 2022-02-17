@@ -8,20 +8,23 @@ import CardFooter from "components/Card/CardFooter.js";
 
 import { Grid, Typography, CircularProgress, Fab, Button } from '@mui/material';
 import SimpleReactValidator from "simple-react-validator";
-import { createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
+import { albumCleanUpdatingAlbum, createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
 
 import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
 import { NewTrackDialog, editAction, deleteAction } from "views/Tracks/NewTrackDialog";
-import { deleteTrackInTracksUploading, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
+import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
 import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
-import { albumCoverHelperText, getInvalidDateTitle, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper, preSaleCheckBoxHelper, releaseDateInfoTooltip, getInvalidDateContentText, helperTextBeginNewRelease } from '../../utils/textToShow.utils';
+import {
+  albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper,
+  preSaleCheckBoxHelper, releaseDateInfoTooltip, titleInvalidOldReleaseDate, invalidDateContentText, titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText
+} from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
 import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
@@ -40,10 +43,11 @@ import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { createSubgenreRedux } from "redux/actions/UserDataActions";
-import { checkOldReleaseDate, checkPreOrderDate, validateUPC } from "utils/albums.utils";
+import { checkOldReleaseDate, checkPreOrderDate } from "utils/albums.utils";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { createLabelRedux } from "redux/actions/LabelsActions";
 import { getActualYear } from 'utils/timeRelated.utils';
+import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 
 const NewAlbum = ({ editing }) => {
 
@@ -59,8 +63,11 @@ const NewAlbum = ({ editing }) => {
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
   const artistInvited = useSelector(store => store.artistsInvited);
+  const oldCollaborators = useSelector(store => store.collaborators)
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = 1;
+
+  const cannotAddArtists = currentUserData.plan === "charly-garcia" && myArtists.length > 1;
 
   useEffect(() => {
     setTracksDataTable(getTracksAsDataTable(myTracks) || [[]]);
@@ -113,14 +120,15 @@ const NewAlbum = ({ editing }) => {
 
   const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
-  const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "" });
+  const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
   const [openLoader, setOpenLoader] = useState(false);
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
+  const [selloInStore, setSelloInStore] = useState(false);
 
   const [trackData, setTrackData] = useState({
-    disc_number: cantAlbumsFromUser, explicit: 0, allOtherArtists: [],
+    disc_number: cantAlbumsFromUser, explicit: false, allOtherArtists: [],
     subgenre: currentAlbumData.subgenre, genreName: currentAlbumData.genreName,
     subgenreName: currentAlbumData.subgenreName, genre: currentAlbumData.genre,
     position: tracksDataTable.length + 1, title: "", track: "", artists: [],
@@ -138,18 +146,20 @@ const NewAlbum = ({ editing }) => {
   }
   // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
+    if (myTracks.length === 0) {
+      setOpenInvalidDateDialog({ open: true, beginner: "no-tracks", title: noTracksWarningTitle, text: noTracksWarningText });
+      return;
+    }
     if (currentAlbumData.oldRelease ? !checkOldReleaseDate(currentAlbumData) : false) {
-      setOpenInvalidDateDialog({ open: true, beginner: "old-release" });
+      setOpenInvalidDateDialog({ open: true, beginner: "old-release", title: titleInvalidOldReleaseDate, text: invalidDateContentText });
       return;
     }
     if (currentAlbumData.preOrder ? !checkPreOrderDate(currentAlbumData) : false) {
-      setOpenInvalidDateDialog({ open: true, beginner: "pre-order" });
+      setOpenInvalidDateDialog({ open: true, beginner: "pre-order", title: titleInvalidPreCompraDate, text: invalidDateContentText });
       return;
     }
-    if (validator.current.allValid() && currentAlbumData.cover) {
-      console.log("ALL VALID: ");
-      // createAlbum();
-    } else {
+    if (validator.current.allValid() && currentAlbumData.cover) createAlbum();
+    else {
       validator.current.showMessages();
       forceUpdate();
     }
@@ -166,7 +176,8 @@ const NewAlbum = ({ editing }) => {
     }
     setCreatingAlbumState("artists-created");
 
-    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId)));
+    const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
+    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, explicitAlbum)));
     if (albumDataFromFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
@@ -180,7 +191,7 @@ const NewAlbum = ({ editing }) => {
     }
     setCreatingAlbumState("tracks-created");
 
-    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId)))
+    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId, oldCollaborators)))
     if (tracksCollaboratorsResponse === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
     }
@@ -216,7 +227,7 @@ const NewAlbum = ({ editing }) => {
     setTrackData({
       ...trackData, position: tracksDataTable.length + 1, artists: [...artistFromLaFlota,
       ...getAllOtherArtistsFromAlbumAndTrack(artistFromLaFlota[0], artistsWithUniqueName(currentAlbumData.allOtherArtists), artistsWithUniqueName([...myTracks.map(track => track.allOtherArtists).flat()]))],
-      preview: currentAlbumData.preview, preOrder: currentAlbumData.preOrder, isrc: ""
+      preview: currentAlbumData.preview, preOrder: currentAlbumData.preOrder, isrc: "", explicit: false,
     })
     setOpenNewTrackDialog(true);
   }
@@ -281,6 +292,7 @@ const NewAlbum = ({ editing }) => {
     setOpenLoaderLabelCreate(true);
     const createLabelResponse = await toWithOutError(dispatch(createLabelRedux({ name: labelName, details: "" }, currentUserId)))
 
+    if (createLabelResponse === "SELLO_IN_STORE") setSelloInStore(true);
     if (createLabelResponse === "ERROR") {
       setButtonState("error");
       setOpenLoaderLabelCreate(false);
@@ -301,16 +313,26 @@ const NewAlbum = ({ editing }) => {
 
   const needArtistLabelCover = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover;
   const needArtistLabelCoverAndContinue = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover && currentAlbumData.basicFieldsComplete;
+  const showingNotBasicAlbumFields = needArtistLabelCoverAndContinue || openLoader;
+
+  const handleCloseSuccessUpload = () => {
+    dispatch(albumCleanUpdatingAlbum());
+    dispatch(tracksCleanUploadingTracks());
+    navigate('/admin/albums');
+  }
 
   return (
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
-        <SuccessDialog isOpen={creatingAlbumState === "success"} title="Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
-          handleClose={() => navigate(-1)} />
+        <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Seleccionalo, en vez de crear uno nuevo.`]]}
+          handleClose={() => setSelloInStore(false)} successImageSource="/images/successArtists.jpg" />
 
-        <InfoDialog isOpen={openInvalidDateDialog.open} handleClose={() => setOpenInvalidDateDialog({ open: false, beginner: "" })}
-          title={getInvalidDateTitle(openInvalidDateDialog.beginner)} contentTexts={getInvalidDateContentText} />
+        <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
+          handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
+
+        <InfoDialog isOpen={openInvalidDateDialog.open} handleClose={() => setOpenInvalidDateDialog({ open: false, beginner: "", title: "", text: [""] })}
+          title={openInvalidDateDialog.title} contentTexts={openInvalidDateDialog.text} />
 
         <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
           title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
@@ -367,7 +389,7 @@ const NewAlbum = ({ editing }) => {
 
           </Grid>
 
-          {needArtistLabelCoverAndContinue && <AddOtherArtistsAlbumForm
+          {showingNotBasicAlbumFields && <AddOtherArtistsAlbumForm
             checkBoxLabel="¿Lanzamiento Colaborativo?"
             checkBoxHelper={lanzamientoColaborativoTooltip}
             checkBoxColor="#9c27b0"
@@ -375,10 +397,10 @@ const NewAlbum = ({ editing }) => {
           />}
 
           <Grid container item xs={12}>
-            <Grid item xs={needArtistLabelCoverAndContinue ? 6 : 12}>
+            <Grid item xs={showingNotBasicAlbumFields ? 6 : 12}>
               <TextFieldWithAddElement
                 name="label_name"
-                sx={needArtistLabelCoverAndContinue ? textFieldStyle : textFieldLaFlotaArtistStyle}
+                sx={showingNotBasicAlbumFields ? textFieldStyle : textFieldLaFlotaArtistStyle}
                 required
                 select
                 label="Sello Discográfico"
@@ -394,7 +416,7 @@ const NewAlbum = ({ editing }) => {
               />
             </Grid>
 
-            {needArtistLabelCoverAndContinue && <Grid item xs={6}>
+            {showingNotBasicAlbumFields && <Grid item xs={6}>
               <TextFieldWithInfo
                 name="title"
                 sx={textFieldStyle}
@@ -407,7 +429,7 @@ const NewAlbum = ({ editing }) => {
             </Grid>}
           </Grid>
 
-          {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
+          {showingNotBasicAlbumFields && <Grid container item xs={12}>
             <Grid item xs={6}>
               <TextFieldWithInfoImage
                 name="version"
@@ -437,7 +459,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>
 
-        {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
+        {showingNotBasicAlbumFields && <Grid container item xs={12}>
           <Grid container item xs={6}>
             <Grid item xs={6}>
               <TextFieldWithInfo
@@ -514,7 +536,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>}
 
-        {needArtistLabelCoverAndContinue && <Grid container item xs={12}>
+        {showingNotBasicAlbumFields && <Grid container item xs={12}>
 
           <Grid item xs={6}>
             <TextFieldWithInfo
@@ -579,7 +601,7 @@ const NewAlbum = ({ editing }) => {
           </Grid>
         </Grid>}
 
-        {needArtistLabelCoverAndContinue && <Grid container item xs={12} paddingTop={3} justifyContent="center">
+        {showingNotBasicAlbumFields && <Grid container item xs={12} paddingTop={3} justifyContent="center">
 
           <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
 
@@ -625,7 +647,7 @@ const NewAlbum = ({ editing }) => {
 
         </Grid>}
 
-        {(needArtistLabelCoverAndContinue || openLoader) &&
+        {showingNotBasicAlbumFields &&
           <Grid container item xs={12} paddingTop={4} justifyContent="center">
             <Grid item xs={8} >
               <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
@@ -639,18 +661,18 @@ const NewAlbum = ({ editing }) => {
 
         <Grid item xs={12} paddingTop={4}>
           <CardFooter style={{ display: 'inline-flex' }}>
-            {needArtistLabelCoverAndContinue && currentAlbumData.basicFieldsComplete
-             ? <ProgressButton
-              textButton={buttonText}
-              loading={openLoader}
-              buttonState={buttonState}
-              onClickHandler={allFieldsValidCreateAlbum}
-              // onClickHandler={testingNewRelease}
-              noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
-              noFab={false} />
-            : <Button onClick={coverLabelArtistAllValids}>
-              Continuar
-            </Button>
+            {(needArtistLabelCoverAndContinue && currentAlbumData.basicFieldsComplete) || openLoader
+              ? <ProgressButton
+                textButton={buttonText}
+                loading={openLoader}
+                buttonState={buttonState}
+                onClickHandler={allFieldsValidCreateAlbum}
+                // onClickHandler={testingNewRelease}
+                noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
+                noFab={false} />
+              : <Button onClick={coverLabelArtistAllValids}>
+                Continuar
+              </Button>
             }
           </CardFooter>
         </Grid>

@@ -10,8 +10,9 @@ export const labelsAddStore = labels => {
   }
 }
 
-export const createLabelRedux = (label, userId) => async dispatch => {
+export const createLabelRedux = (label, userId) => async (dispatch, getState) => {
 
+  if (getState().labels.labels.some(oldLabel => label.name === oldLabel.name)) return "SELLO_IN_STORE";
   let labelFromThirdWebApi = await BackendCommunication.createLabelFuga(label.name, dispatch);
   if (labelFromThirdWebApi === "ERROR") return "ERROR";
 
@@ -31,11 +32,11 @@ export const createLabelRedux = (label, userId) => async dispatch => {
   return label;
 }
 
-export const deleteLabelRedux = (labelFugaId, labelId, userId) => async dispatch => {
+export const deleteLabelRedux = (dataLabel, labelFugaId, labelId, userId) => async dispatch => {
   let deleteResponse = await BackendCommunication.deleteLabelFuga(labelFugaId, dispatch);
   if (deleteResponse === "ERROR") return "ERROR";
 
-  await FirestoreServices.deleteElementFS(labelId, userId, "labels", "totalLabels", -1, dispatch);
+  await FirestoreServices.deleteElementFS(dataLabel, labelId, userId, "labels", "totalLabels", -1, dispatch);
 
   dispatch({
     type: ReducerTypes.LABEL_DELETE_WITH_ID,

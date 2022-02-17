@@ -27,3 +27,15 @@ export const getFilteredArtistByUrl = (params, artists) => {
   if (params.view === "artist") return artists.filter(artist => artist.id === params.id);
   return artists;
 }
+
+export const getArtistPropsForDataTable = artists => {
+  let artistsPropsToTable = [];
+  artists.forEach(artist => {
+    artistsPropsToTable.push([
+      artist.name,
+      artist.spotify_uri,
+      artist.apple_id
+    ]);
+  });
+  return artistsPropsToTable;
+}

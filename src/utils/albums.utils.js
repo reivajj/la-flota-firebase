@@ -11,7 +11,7 @@ export const getFilteredAlbumsByUrl = (params, albums) => {
 export const getTitleLanzamientos = (params, labels, artists) => {
   if (!Object.keys(params).length) return "Lanzamientos";
   let elemShowingAlbums = [...artists, ...labels].find(elem => elem.id === params.id || elem.name === params.label_name);
-  return ` Lanzamientos de ${elemShowingAlbums ? elemShowingAlbums.name : ""}` ;
+  return ` Lanzamientos de ${elemShowingAlbums ? elemShowingAlbums.name : ""}`;
 }
 
 export const getAlbumById = (albums, albumId) => {
@@ -58,14 +58,29 @@ export const checkOldReleaseDate = albumData => {
   return true;
 }
 
+export const getAlbumsPropsForDataTable = (albums) => {
+  let albumDataTable = [];
+  albums.forEach(album => {
+    albumDataTable.push([
+      album.title,
+      album.nombreArtist,
+      album.upc,
+      album.format,
+      `${album.dayOfMonth}/${album.month}/${album.year}`,
+    ])
+  });
+  return albumDataTable;
+}
+
 export const getTracksDataTableFromFugaAssets = (fugaTracksAssets, handleEditTrack, handleDeleteTrack) => {
   let tracksDataTable = [];
   fugaTracksAssets.forEach(fugaTrackAsset => {
     tracksDataTable.push([
-      `${fugaTrackAsset.sequence}`,
-      `${fugaTrackAsset.name}`,
-      `${fugaTrackAsset.isrc}`,
-      `${fugaTrackAsset.display_artist}`,
+      fugaTrackAsset.sequence,
+      fugaTrackAsset.name,
+      fugaTrackAsset.isrc,
+      fugaTrackAsset.display_artist,
+      fugaTrackAsset.duration,
       // editAction(fugaTrackAsset, handleEditTrack),
       // deleteAction(fugaTrackAsset, handleDeleteTrack),
     ])

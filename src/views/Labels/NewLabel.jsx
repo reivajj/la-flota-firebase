@@ -14,6 +14,7 @@ import { createLabelRedux } from '../../redux/actions/LabelsActions';
 import { errorFormat, toWithOutError, useForceUpdate } from "utils";
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import SaveIcon from '@mui/icons-material/Save';
+import SuccessDialog from 'components/Dialogs/SuccessDialog';
 
 const NewLabel = () => {
   const dispatch = useDispatch();
@@ -29,6 +30,7 @@ const NewLabel = () => {
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
+  const [selloInStore, setSelloInStore] = useState(false);
 
   const allFieldsValidCreateLabel = () => {
     if (validator.current.allValid()) {
@@ -42,6 +44,10 @@ const NewLabel = () => {
   const createLabel = async () => {
     setOpenLoader(true);
     let result = await toWithOutError(dispatch(createLabelRedux({ name, details, }, currentUserId)));
+    if (result === "SELLO_IN_STORE") {
+      setSelloInStore(true);
+      return;
+    }
     if (result.fugaId) navigate('/admin/labels');
     else {
       setButtonState("error");
@@ -58,6 +64,10 @@ const NewLabel = () => {
   return (
     <Grid container justifyContent="center">
       <Grid item xs={12} sm={12} md={6}>
+
+        <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Deberías poder verlo en tus Sellos.`]]}
+          handleClose={() => navigate('/admin/labels')} successImageSource="/images/successArtists.jpg" />
+
         <Card>
           <CardHeader color="primary">
             <Typography sx={cardTitleWhiteStyles}>Crear Sello</Typography>

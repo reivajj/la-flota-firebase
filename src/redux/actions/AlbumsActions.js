@@ -11,9 +11,9 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId) => async dispatch => {
+export const createAlbumRedux = (album, userId, explicit) => async dispatch => {
 
-  let formDataAlbum = createAlbumModel(album);
+  let formDataAlbum = createAlbumModel(album, explicit);
   album.ownerId = userId;
   let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
@@ -38,7 +38,7 @@ export const deleteAlbumRedux = dataAlbum => async dispatch => {
   let deleteResponse = await BackendCommunication.deleteAlbumFuga(dataAlbum.fugaId, dispatch);
   if (deleteResponse === "ERROR") return "ERROR";
 
-  await FirestoreServices.deleteElementFS(dataAlbum.id, dataAlbum.ownerId, "albums", "totalAlbums", -1, dispatch);
+  await FirestoreServices.deleteElementFS(dataAlbum, dataAlbum.id, dataAlbum.ownerId, "albums", "totalAlbums", -1, dispatch);
   await FirestoreServices.deleteAllTracksFromAlbumIdFS(dataAlbum.id, dataAlbum.ownerId, dispatch);
 
   dispatch({
@@ -89,4 +89,3 @@ export const updateIdentifierOtherArtistsAlbumRedux = (identifierValue, identifi
     payload: { identifierValue, identifierField, otherArtistIndex }
   }
 }
-

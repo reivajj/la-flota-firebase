@@ -1,7 +1,6 @@
 import React from "react";
 import { Image } from 'mui-image';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 // core components
 import { Grid, Typography, Card, Link, ButtonBase } from '@mui/material';
 // import { deleteAlbumDialogText } from "utils/textToShow.utils";
@@ -90,7 +89,7 @@ const AlbumTotalInfo = () => {
                 </Typography>
 
                 <Grid item xs={12} >
-                  <Typography ><b style={selloTextStyle}>Sello: </b>{linkToSello}</Typography>
+                  <Typography ><b style={selloTextStyle}>Sello: </b>{`${status === 'fetched' ? data.label.name : ""}`}</Typography>
                 </Grid>
 
                 <Grid item xs={12} sx={{ paddingTop: "1em" }}>
@@ -117,7 +116,6 @@ const AlbumTotalInfo = () => {
                     {`ESTADO: ${status === "fetched" ? getOurStateFromFugaState(data.state) : ""}`}
                   </Typography>
                 </Grid>
-
 
               </Grid>
 

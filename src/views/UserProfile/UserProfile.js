@@ -18,7 +18,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import { errorFormat, to, useForceUpdate } from 'utils';
-import { editPerfil } from "redux/actions/UserDataActions";
+import { userDataUpdateRedux } from "redux/actions/UserDataActions";
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 
 const ITEM_HEIGHT = 48;
@@ -82,7 +82,7 @@ const UserProfile = () => {
   const handleSubmit = async () => {
     if (checkFields()) {
       setOpenLoader(true);
-      let [error, resultEdit] = await to(dispatch(editPerfil({ ...formData, generosMusicales })));
+      let [error, resultEdit] = await to(dispatch(userDataUpdateRedux({ ...formData, generosMusicales })));
       console.log("RESULT:", resultEdit, error);
       setEditState(resultEdit);
       setOpenLoader(false);
@@ -160,7 +160,7 @@ const UserProfile = () => {
                     value={"XXXXXXXXXXXXXXXX"} />
                 </Grid>
 
-                <Grid item xs={12} textAlign="center">
+                <Grid item xs={12} textAlign="center" sx={{ display: "none" }}>
                   <Button variant="contained" color="secondary" onClick={handleOpenChangeCredentials} endIcon={<LockOpen />}>
                     Editar Correo/Contraseña
                   </Button>
@@ -289,7 +289,7 @@ const UserProfile = () => {
               <ProgressButton
                 textButton={buttonText}
                 loading={openLoader}
-                buttonState={editState}
+                buttonState={editState.toLowerCase()}
                 onClickHandler={handleSubmit}
                 noneIcon={<Save />}
                 color="secondary"

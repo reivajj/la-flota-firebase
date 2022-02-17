@@ -1,4 +1,3 @@
-import { getFunctions, httpsCallable } from "firebase/functions";
 import axios from 'axios';
 import { to } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
@@ -7,7 +6,6 @@ import { loginErrorStore } from 'redux/actions/AuthActions';
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 const localUrl = "http://localhost:5000/filemanagerapp/api/";
 export const targetUrl = webUrl;
-const functions = getFunctions();
 
 // ======================================LABELS=============================================\\
 
@@ -19,7 +17,6 @@ export const createLabelFuga = async (labelName, dispatch) => {
     dispatch(createBackendError(errorCreatingLabelInThirdWebApi));
     return "ERROR";
   }
-  console.log("La respuesta de Fuga", labelFromThirdWebApi);
 
   return labelFromThirdWebApi;
 }
@@ -29,6 +26,8 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
     axios.delete(`${targetUrl}labels/${labelFugaId}`));
 
   if (errorDeletingLabelInThirdWebApi) {
+    const errorCodeIfExist = errorDeletingLabelInThirdWebApi.response.data.properties.msgFromFuga.code;
+    if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
     dispatch(createBackendError(errorDeletingLabelInThirdWebApi));
     return "ERROR";
   }
@@ -97,6 +96,20 @@ export const deleteArtistFuga = async (artistFugaId, dispatch) => {
     return "ERROR";
   }
   return "SUCCESS";
+}
+
+export const getDgArtistsFuga = async (userEmail, dispatch) => {
+  let [errorGettingDgArtists, dgArtists] = await to(axios.get(`${targetUrl}users/searchArtistsByEmail/${userEmail}`));
+  if (errorGettingDgArtists) {
+    dispatch(createBackendError(errorGettingDgArtists));
+    return "ERROR";
+  }
+
+  if (dgArtists.data.response === "El usuario no tiene Artistas") return "NO_ARTISTS";
+  if (dgArtists.data.response === "No existe el Email en La Flota") return "NO_USER";
+
+  console.log("DG ARTISTS FROM BE: ", dgArtists.data.response);
+  return dgArtists.data.response;
 }
 
 // ======================================ALBUMS=============================================\\
@@ -183,7 +196,7 @@ export const createCollaboratorFuga = async (collaborator, dispatch) => {
     dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
     return "ERROR";
   }
-  console.log("La respuesta de crear el track en Fuga: ", collaboratorFromThirdWebApi);
+  console.log("La respuesta de crear el collaborator en Fuga: ", collaboratorFromThirdWebApi);
   let personsWithId = collaboratorFromThirdWebApi.data.response.id;
   return personsWithId;
 }
@@ -207,14 +220,15 @@ export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => 
   if (userInWp === "ERROR") return "ERROR";
 
   if (userInWp) {
-    const checkPasswordInWpDB = httpsCallable(functions, 'users-checkPasswordInWpDB');
-    const passwordHashInDB = userInWp.userPass;
-    const [errorCheckingPassword, passwordOk] = await to(checkPasswordInWpDB({ passwordHashInDB, password }));
+    // const checkPasswordInWpDB = httpsCallable(functions, 'users-checkPasswordInWpDB');
+    // const passwordHashInDB = userInWp.userPass;
+    const [errorCheckingPassword, passwordOk] = await to(axios.post(`${targetUrl}users/login`, { email, password }));
     if (errorCheckingPassword) {
       dispatch(loginErrorStore({ error: errorCheckingPassword, errorMsg: "El email existe, pero la contraseña es incorrecta." }));
       return "ERROR";
     }
-    return { existEmail: true, passwordCheck: passwordOk.data, userInWp };
+    console.log("RESPONSE PASS: ", passwordOk);
+    return { existEmail: true, passwordCheck: passwordOk.data.response, userInWp };
   }
   return { existEmail: false };
 }

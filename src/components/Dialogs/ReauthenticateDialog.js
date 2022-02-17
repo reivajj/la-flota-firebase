@@ -8,7 +8,7 @@ import { Person } from '@mui/icons-material';
 import { TextField } from '@mui/material';
 import { authUpdateEmail, authUpdatePassword, reauthenticateWithCredentialOk } from "../../services/AuthServices";
 import { useDispatch, useSelector } from 'react-redux';
-import { editPerfil } from "../../redux/actions/UserDataActions";
+import { userDataUpdateRedux } from "../../redux/actions/UserDataActions";
 
 const ReauthenticateDialog = ({ isOpen, setIsOpen }) => {
 
@@ -29,7 +29,7 @@ const ReauthenticateDialog = ({ isOpen, setIsOpen }) => {
     const resultUpdateEmail = await authUpdateEmail(newEmail);
     if (resultUpdateEmail) {
       console.log("Email actualizado");
-      dispatch(editPerfil({ email: newEmail, id: userData.id, rol: userData.rol }));
+      dispatch(userDataUpdateRedux({ email: newEmail, id: userData.id, rol: userData.rol }));
       setIsOpen(false);
     }
     else console.log("Hubo un problema al actualizar el email");

@@ -15,6 +15,12 @@ export const createTrackLocalRedux = (trackData, userId) => {
   };
 }
 
+export const tracksCleanUploadingTracks = () => {
+  return {
+    type: ReducerTypes.TRACKS_UPLOADING_CLEAN
+  }
+}
+
 export const deleteTrackInTracksUploading = trackId => {
   return {
     type: ReducerTypes.TRACK_UPLOADING_DELETE,
@@ -52,7 +58,7 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
   let amountOfIsrcsCodesMissing = 0;
   tracksData.forEach(track => { if (track.isrc === "") amountOfIsrcsCodesMissing++; });
   let isrcsCodes = await toWithOutError(getAmountOfIsrcCodesToUseFS(amountOfIsrcsCodesMissing, dispatch));
-  console.log("ISRCS : ", isrcsCodes);
+
   tracksData.map((track, index) => {
     if (track.isrc === "") track.isrc = isrcsCodes[index];
     return track;

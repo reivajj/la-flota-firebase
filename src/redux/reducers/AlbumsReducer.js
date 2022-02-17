@@ -39,7 +39,7 @@ const AlbumsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ADD_ALBUMS:
       const newAlbums = checkNewAlbums(state.albums, action.payload)
-      return { addingAlbum: initialState.addingAlbum, albums: [...state.albums, ...newAlbums] };
+      return { ...state, albums: [...state.albums, ...newAlbums] };
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM:
       return { ...state, addingAlbum: action.payload }

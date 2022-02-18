@@ -59,7 +59,6 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("No es obligatoria la imagen");
   // const [imageReference, setImageReference] = useState('');
-
   const cannotAddArtists = plan === "charly-garcia" && artistsFromStore.length > 1;
 
   const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(cannotAddArtists);

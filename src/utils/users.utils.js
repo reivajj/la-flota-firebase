@@ -1,0 +1,1 @@
+export const getEmailIfNotHaveUser = userData => userData.nombre ? `${userData.nombre} ${userData.apellido}` : `${userData.email}`;

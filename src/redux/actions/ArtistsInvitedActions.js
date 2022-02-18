@@ -2,7 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 import { createArtistRedux } from './ArtistsActions';
 import { toWithOutError, to } from 'utils';
 
-export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId, artistsInvited) => async dispatch => {
+export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId, ownerEmail, artistsInvited) => async dispatch => {
   let allOtherArtistsNotEmptyAlbum = allOtherArtistsAlbum.filter(otherArtist => otherArtist.name !== "");
   
   let allOtherArtistNotCreatedPreviously = allOtherArtistsNotEmptyAlbum.filter(otherArtist => {
@@ -11,7 +11,7 @@ export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId, artistsIn
   })
 
   const createOtherArtistOneByOne = allOtherArtistNotCreatedPreviously.map(async dataArtist => {
-    dataArtist.ownerId = ownerId;
+    dataArtist.ownerId = ownerId; dataArtist.ownerEmail = ownerEmail;
     let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataArtist, ownerId, "artistsInvited", "totalArtistsInvited")));
     if (artistCreatedResult === "ERROR") return "ERROR";
     return "SUCCESS";

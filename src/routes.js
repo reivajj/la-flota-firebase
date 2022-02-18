@@ -1,13 +1,11 @@
 import { Dashboard, Person, Notifications } from "@mui/icons-material";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/DashboardBasicUser.js";
-// import UserProfile from "views/UserProfile/UserProfile.js";
-// import TableList from "views/TableList/TableList.js";
-// import Typography from "views/Typography/Typography.js";
 import MyAlbums from "views/Albums/MyAlbums";
 import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
 import UserProfile from "views/UserProfile/UserProfile";
+import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 
 const dashboardRoutes = [
   {
@@ -17,34 +15,13 @@ const dashboardRoutes = [
     component: DashboardPage,
     layout: "/admin"
   },
-  // {
-  //   path: "/table",
-  //   name: "Table List",
-  //   icon: "content_paste",
-  //   component: TableList,
-  //   layout: "/admin"
-  // },
-  // {
-  //   path: "/typography",
-  //   name: "Typography",
-  //   icon: LibraryBooks,
-  //   component: Typography,
-  //   layout: "/admin"
-  // },
-  // {
-  //   path: "/icons",
-  //   name: "Icons",
-  //   icon: BubbleChart,
-  //   component: Icons,
-  //   layout: "/admin"
-  // },
-  // {
-  //   path: "/notifications",
-  //   name: "Notifications",
-  //   icon: Notifications,
-  //   component: NotificationsPage,
-  //   layout: "/admin"
-  // },
+  {
+    path: "/dashboard-admin",
+    name: "Dashboard Admin",
+    icon: Dashboard,
+    component: DashboardAdmin,
+    layout: "/admin"
+  },
   {
     path: "/artists",
     name: "Artistas",
@@ -73,13 +50,6 @@ const dashboardRoutes = [
     component: UserProfile,
     layout: "/admin"
   },
-  // {
-  //   path: "/test",
-  //   name: "TEST",
-  //   icon: Person,
-  //   component: AddTrackTest,
-  //   layout: "/admin"
-  // }
 ];
 
 export default dashboardRoutes;

@@ -7,3 +7,8 @@ export const getLocalDateString = stringDateUS => {
 export const getActualYear = () => {
   return new Date().getYear() + 1900;
 }
+
+export const unaHoraEnMilisegundos = 3600000;
+export const oneDayInMS = 24 * unaHoraEnMilisegundos;
+export const getCantDaysInMS = cantDays => oneDayInMS * cantDays;
+

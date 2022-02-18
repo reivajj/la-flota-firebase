@@ -78,3 +78,9 @@ export const ERROR_BASIC_MSG = "error_basic_msg";
 export const ACTIVITIES_ADD = "activities_add";
 export const ACTIVITIES_DELETE_BY_ID = "activities_delete_by_id";
 export const ACTIVITIES_SIGN_OUT = "activities_sign_out";
+
+//Users
+export const USERS_ADD = "users_add";
+export const USERS_DELETE_BY_ID = "users_delete_by_id";
+export const USERS_SIGN_OUT = "users_sign_out";
+export const USERS_EDIT_BY_ID = "users_edit_by_id";

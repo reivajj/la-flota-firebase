@@ -3,13 +3,14 @@ import { Grid, Typography } from '@mui/material';
 import TableWithHeader from "../../components/Table/TableWithHeader";
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getAlbumsPropsForDataTable } from "utils/albums.utils";
 import { getArtistPropsForDataTable } from "utils/artists.utils";
 import { artistsCreateFromDGArtistsRedux } from '../../redux/actions/ArtistsActions';
 import { toWithOutError } from 'utils';
 import { userDataUpdateRedux } from '../../redux/actions/UserDataActions';
 import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import { bienvenidoDialogText } from '../../utils/textToShow.utils';
+import { getAlbumsPropsForUsersDataTable } from '../../utils/tables.utils';
+import DashboardAdmin from './DashboardAdmin';
 
 const DashboardBasicUser = () => {
 
@@ -19,6 +20,7 @@ const DashboardBasicUser = () => {
   const albums = useSelector(store => store.albums.albums);
   const artists = useSelector(store => store.artists.artists);
   const currentUserData = useSelector(store => store.userData);
+  const rol = currentUserData.rol;
 
   const [openBienvenidaAndCreateArtists, setOpenBienvenidaAndCreateArtists] = useState(false);
   const [messageFinishCreating, setMessageFinishCreating] = useState("");
@@ -26,6 +28,10 @@ const DashboardBasicUser = () => {
   const handleCloseBienvenida = () => {
     setOpenBienvenidaAndCreateArtists(false);
   }
+
+  useEffect(() => {
+    if (rol.indexOf('admin') >= 0) navigate('/admin/dashboard-admin');
+  }, [])
 
   useEffect(() => {
     if (!openBienvenidaAndCreateArtists && currentUserData.isNewInFBSystem) {
@@ -44,8 +50,8 @@ const DashboardBasicUser = () => {
     }
   }, [currentUserData.isNewInFBSystem])
 
-  const albumsTableElements = getAlbumsPropsForDataTable(albums) || [];
-  const albumsTableHeaders = ["Nombre", "Artista Principal", "UPC", "Formato", "Fecha de Lanzamiento"];
+  const albumsTableElements = getAlbumsPropsForUsersDataTable(albums) || [];
+  const albumsTableHeaders = ["Nombre Lanzamiento", "Artista Principal", "UPC", "Formato", "Fecha de Lanzamiento"];
   const handleGoToAlbums = () => navigate("/admin/albums");
   const propsToAlbumsTable = {
     titleTable: "Lanzamientos", tableElements: albumsTableElements, tableHeaders: albumsTableHeaders,
@@ -76,13 +82,12 @@ const DashboardBasicUser = () => {
         <Grid item xs={6}>
           <TableWithHeader {...propsToArtistsTable} />
         </Grid>
-        
+
         <Grid item xs={6}>
           <TableWithHeader {...propsToAlbumsTable} />
         </Grid>
 
       </Grid>
-
 
     </Grid>
   );

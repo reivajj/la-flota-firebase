@@ -22,7 +22,6 @@ export const getTracksFieldsFromFugaTrack = track => {
 }
 
 export const isValidFormatISRC = isrcCode => {
-  console.log("ISRC CODE : ", isrcCode);
   if (!isrcCode) return true;
   if (isrcCode.length !== 15) return false;
   let isrcParts = isrcCode.split('-');

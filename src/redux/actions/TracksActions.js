@@ -53,7 +53,7 @@ const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvi
   return dataTrack;
 }
 
-export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId, artistInvited, artistRecentlyCreated) => async dispatch => {
+export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId, ownerEmail, artistInvited, artistRecentlyCreated) => async dispatch => {
 
   let amountOfIsrcsCodesMissing = 0;
   tracksData.forEach(track => { if (track.isrc === "") amountOfIsrcsCodesMissing++; });
@@ -72,7 +72,7 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
       dispatch(setUploadProgress(dataTrack.position, percentageProgress))
     }
 
-    dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId;
+    dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId; dataTrack.ownerEmail = ownerEmail;
     let result = await toWithOutError(dispatch(createTrackInAlbumRedux(dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated)))
     if (result === "ERROR") return "ERROR";
 

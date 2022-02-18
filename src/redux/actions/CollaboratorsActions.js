@@ -35,6 +35,7 @@ export const createCollaboratorRedux = (collaborator, userId, oldCollaborators, 
   console.log("RECENTLY ADDED ALL: ", allCollaboratorsRecentyAdded, "/ Was recently added: ", collaboratRecentlyAdded);
   if (collaboratRecentlyAdded) return "SUCCESS";
 
+  collaborator.added = true;
   collaborator.whenCreatedTS = new Date().getTime();
   collaborator.lastUpdateTS = collaborator.whenCreatedTS;
   delete collaborator.role; delete collaborator.fugaId; delete collaborator.trackFugaId;
@@ -66,7 +67,7 @@ const getPersonIdFromPeople = (peopleWithId, personName) => {
   if (result && result.id) return result.id;
 }
 
-const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWithId, ownerId) => {
+const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWithId, ownerId, ownerEmail) => {
   console.log("PERSONS FROM BE: ", peopleWithId);
   console.log("COLL FROM TRACKS : ", uploadedTracks);
   let collaboratorsForEachTrack = [];
@@ -75,8 +76,8 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
       if (coll.name !== "") {
         coll.roles.forEach(collRol => {
           collaboratorsForEachTrack.push({
-            trackFugaId: track.fugaId, id: uuidv4(), added: false,
-            ownerId, name: coll.name, role: collRol, person: getPersonIdFromPeople(peopleWithId, coll.name)
+            trackFugaId: track.fugaId, id: uuidv4(), added: false, ownerEmail, ownerId,
+            name: coll.name, role: collRol, person: getPersonIdFromPeople(peopleWithId, coll.name)
           });
         })
       }
@@ -85,15 +86,19 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
   return collaboratorsForEachTrack;
 }
 
-export const createCollaboratorsRedux = (tracksCreated, ownerId, oldCollaborators) => async dispatch => {
+export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail, oldCollaborators) => async dispatch => {
 
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
+  console.log("PEOPLE A CREAR: ", peopleToCreateFormData);
+  // PORQUE ESTOY PASANDOLE OLD COLLABORATORS. NO LO ESTOY USANDO AL PARAM.
   let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch, oldCollaborators);
   if (peopleFromBackend === "ERROR") return "ERROR";
 
-  let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId);
-  const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async dataCollaborator => {
-    let collaboratorCreatedResult = await toWithOutError(dispatch(createCollaboratorRedux(dataCollaborator, ownerId, oldCollaborators, allCollaboratorsNotEmptyTracks)));
+  let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId, ownerEmail);
+  const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async (dataCollaborator, _, allDataCollsUpdating) => {
+    let collaboratorCreatedResult = await toWithOutError(
+      dispatch(createCollaboratorRedux(dataCollaborator, ownerId, oldCollaborators, allDataCollsUpdating))
+    );
     if (collaboratorCreatedResult === "ERROR") return "ERROR";
     return collaboratorCreatedResult;
   });

@@ -1,12 +1,13 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import {
   getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection,
-  getDocs, where, increment, deleteDoc, limit, writeBatch
+  getDocs, where, increment, deleteDoc, limit, writeBatch, orderBy
 } from "firebase/firestore";
 import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { createUserDocItem } from 'factory/users.factory';
 import { v4 as uuidv4 } from 'uuid';
+import { getCantDaysInMS } from '../utils/timeRelated.utils';
 
 const db = getFirestore(firebaseApp);
 
@@ -23,14 +24,17 @@ export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
   return "EDITED";
 }
 
-export const getUserDoc = async (userId, dispatch) => {
+export const getUserDocFS = async (userId, dispatch) => {
   let userInDBRef = doc(db, "users", userId);
   let [errorGettingUserDoc, userDoc] = await to(getDoc(userInDBRef));
-  if (errorGettingUserDoc) return "ERROR";
+  if (errorGettingUserDoc) {
+    dispatch(createFireStoreError("Error buscando un Usuario: ", errorGettingUserDoc));
+    return "ERROR";
+  }
   return userDoc;
 }
 
-export const updateUserDoc = async (userId, userDoc, dispatch) => {
+export const updateUserDocPostLoginFS = async (userId, userDoc, dispatch) => {
   let userInDBRef = doc(db, "users", userId);
   let userDocData = userDoc.data();
   let date = new Date();
@@ -46,8 +50,9 @@ export const updateUserDoc = async (userId, userDoc, dispatch) => {
   return userDocData;
 }
 
-export const getElements = async (userId, typeOfElement, dispatch) => {
-  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
+export const getElements = async (userId, typeOfElement, dispatch, limitNumber) => {
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
   let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
   if (errorGettingElementsFromUser) {
     dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
@@ -55,8 +60,28 @@ export const getElements = async (userId, typeOfElement, dispatch) => {
   }
 
   let elementsFromUser = [];
-  elementsFromUserSnapshot.forEach(albumDoc => {
-    elementsFromUser.push(albumDoc.data());
+  elementsFromUserSnapshot.forEach(elementDoc => {
+    elementsFromUser.push(elementDoc.data());
+  });
+
+  return elementsFromUser;
+}
+
+export const getElementsAdminDev = async (userId, typeOfElement, dispatch, limitNumber) => {
+
+  if (!collectionsWithActivities.includes(typeOfElement)) return;
+
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("lastUpdateTS", ">", Date.now() - getCantDaysInMS(7)),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
+  let [errorGettingElementsFromUser, elementQuerySnap] = await to(getDocs(elementsDbFromUserRef));
+  if (errorGettingElementsFromUser) {
+    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement} siendo admin.`, errorGettingElementsFromUser));
+    return "ERROR";
+  }
+
+  let elementsFromUser = [];
+  elementQuerySnap.forEach(elementDoc => {
+    elementsFromUser.push(elementDoc.data());
   });
 
   return elementsFromUser;
@@ -94,7 +119,7 @@ const addActivityFS = async (collection, ownerId, element, typeOfAction, dispatc
   if (!collectionsWithActivities.includes(collection)) return;
   let activity = {
     action: typeOfAction, target: collection, targetId: element.id,
-    ownerId, targetName: getBasicInfoElement(element, collection)
+    ownerId, targetName: getBasicInfoElement(element, collection), lastUpdateTS: new Date().getTime()
   };
 
   const newActivityDbRef = doc(db, "usersActivity", uuidv4());

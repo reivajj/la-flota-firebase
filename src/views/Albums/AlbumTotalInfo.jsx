@@ -6,7 +6,7 @@ import { Grid, Typography, Card, Link, ButtonBase } from '@mui/material';
 // import { deleteAlbumDialogText } from "utils/textToShow.utils";
 // import { deleteAlbumRedux } from "redux/actions/AlbumsActions";
 import { useSelector } from 'react-redux';
-import { getAlbumById, getArtistNameAndPrimaryOfAlbum, getStateColor, getTracksDataTableFromFugaAssets } from "utils/albums.utils";
+import { getAlbumById, getArtistNameAndPrimaryOfAlbum, getStateColor, getOurStateFromFugaState } from "utils/albums.utils";
 import { targetUrl } from "services/BackendCommunication";
 import { useFetch } from '../../customHooks/useAxios';
 import { getLocalDateString } from '../../utils/timeRelated.utils';
@@ -14,7 +14,8 @@ import TracksTableInAlbumInfo from '../../components/Table/TracksTableInAlbumInf
 import ArtistInAddTrack from '../Artists/ArtistInAddTrack';
 // import { NewTrackDialog } from 'views/Tracks/NewTrackDialog';
 // import { getTracksFieldsFromFugaTrack } from "utils/tracks.utils";
-import { getOurStateFromFugaState } from '../../utils/albums.utils';
+// import { getOurStateFromFugaState } from '../../utils/albums.utils';
+import { getTracksDataTableFromFugaAssets } from '../../utils/tables.utils';
 
 const AlbumTotalInfo = () => {
 
@@ -25,10 +26,10 @@ const AlbumTotalInfo = () => {
 
   const dataAlbum = getAlbumById(albums, params.albumId);
 
-  const url = `${targetUrl}albums/${dataAlbum.fugaId}`;
+  const url = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
 
   const { status, data, error } = useFetch(url);
-  
+
   const stateInfoStyle = { color: getStateColor(data.state ? data.state : ""), fontSize: "1em", fontWeight: 400 };
 
   console.log("data album: ", dataAlbum);
@@ -50,12 +51,12 @@ const AlbumTotalInfo = () => {
   const albumArtists = getArtistNameAndPrimaryOfAlbum(dataAlbum);
   // const handleEditAlbum = () => navigate(`/admin/edit-album/${dataAlbum.id}`);
   // const goToAlbumInfo = () => console.log("ALBUM INFO: ", dataAlbum);
-  const goToLabelAlbum = () => navigate(`/admin/labels?view=label&label_name=${dataAlbum.label_name}`);
+  // const goToLabelAlbum = () => navigate(`/admin/labels?view=label&label_name=${dataAlbum.label_name}`);
   // const goToPrincipalArtist = () => navigate(`/admin/artists?view=artist&id=${dataAlbum.artistId}`);
 
-  const linkToSello = <Link component="button" underline="hover" sx={linkToLabelStyles} onClick={goToLabelAlbum}  >
-    {dataAlbum.label_name}
-  </Link>
+  // const linkToSello = <Link component="button" underline="hover" sx={linkToLabelStyles} onClick={goToLabelAlbum}  >
+  //   {dataAlbum.label_name}
+  // </Link>
 
   return (
     <Grid container justifyContent="center">

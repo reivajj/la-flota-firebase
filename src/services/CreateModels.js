@@ -79,7 +79,7 @@ export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated
   formDataTrack.append("track", dataTrack.track);
   formDataTrack.append("sequence", dataTrack.position);
   formDataTrack.append("language", dataTrack.track_language_id);
-  formDataTrack.append("audio_locale", dataTrack.track_language_id);
+  formDataTrack.append("audio_locale", dataTrack.audio_locale_id);
   formDataTrack.append("parental_advisory", dataTrack.explicit);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
   if (dataTrack.subgenre) formDataTrack.append("subgenre", dataTrack.subgenre);

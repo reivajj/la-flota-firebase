@@ -6,7 +6,7 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import { Grid, Typography, CircularProgress, Fab, Button } from '@mui/material';
+import { Grid, Typography, Button } from '@mui/material';
 import SimpleReactValidator from "simple-react-validator";
 import { albumCleanUpdatingAlbum, createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
@@ -14,10 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
-import { NewTrackDialog, editAction, deleteAction } from "views/Tracks/NewTrackDialog";
+import { NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
-import CheckIcon from '@mui/icons-material/Check';
-import { green } from '@mui/material/colors';
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
@@ -48,6 +46,7 @@ import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { createLabelRedux } from "redux/actions/LabelsActions";
 import { getActualYear } from 'utils/timeRelated.utils';
 import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
+import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 
 const NewAlbum = ({ editing }) => {
 
@@ -57,7 +56,7 @@ const NewAlbum = ({ editing }) => {
   const forceUpdate = useForceUpdate();
 
   const currentUserData = useSelector(store => store.userData);
-  const currentUserId = currentUserData.id;
+  const currentUserId = currentUserData.id; const currentUserEmail = currentUserData.email;
   const currentAlbumData = useSelector(store => store.albums.addingAlbum);
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
@@ -65,12 +64,10 @@ const NewAlbum = ({ editing }) => {
   const artistInvited = useSelector(store => store.artistsInvited);
   const oldCollaborators = useSelector(store => store.collaborators)
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
-  const cantAlbumsFromUser = 1;
-
-  const cannotAddArtists = currentUserData.plan === "charly-garcia" && myArtists.length > 1;
+  const cantAlbumsFromUser = "";
 
   useEffect(() => {
-    setTracksDataTable(getTracksAsDataTable(myTracks) || [[]]);
+    setTracksDataTable(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
   }, [myTracks])
 
   const changeAlbumId = () => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, id: uuidv4() }));
@@ -81,15 +78,6 @@ const NewAlbum = ({ editing }) => {
     else putAlbumIdOnEditingArtist();
   }, [])
 
-  const trackUploadProgress = progressTrack => {
-    return (
-      progressTrack < 100
-        ? <CircularProgress variant="determinate" value={progressTrack} size={24} />
-        : <Fab aria-label="uploadSucces" color="primary" sx={buttonSuccessStyle} component="span">
-          <CheckIcon size={24} />
-        </Fab>
-    )
-  }
 
   const handleDeleteTrack = trackInfo => dispatch(deleteTrackInTracksUploading(trackInfo.id));
   const handleEditTrack = trackInfo => {
@@ -97,23 +85,11 @@ const NewAlbum = ({ editing }) => {
     setOpenNewTrackDialog(true);
   }
 
-  const getTracksAsDataTable = tracksTotalInfo => {
-    return tracksTotalInfo.map(trackWithAllInfo => [
-      `${trackWithAllInfo.position}`,
-      `${trackWithAllInfo.title}`,
-      `${trackWithAllInfo.isrc}`,
-      `${trackWithAllInfo.artists ? trackWithAllInfo.artists.length > 1 ? "SI" : "NO" : "NO"}`,
-      editAction(trackWithAllInfo, handleEditTrack),
-      deleteAction(trackWithAllInfo, handleDeleteTrack),
-      trackUploadProgress(trackWithAllInfo.progress),
-    ]);
-  }
-
   const [openAddArtistDialog, setOpenAddArtistDialog] = useState(false);
 
   const [progress, setProgress] = useState(0);
   const [messageForCover, setMessageForCover] = useState("");
-  const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks) || [[]]);
+  const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
   const [openAddLabel, setOpenAddLabel] = useState(false);
@@ -169,7 +145,8 @@ const NewAlbum = ({ editing }) => {
     setOpenLoader(true);
     const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
 
-    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum, currentUserId, artistInvited)))
+    const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum
+      , currentUserId, currentUserEmail, artistInvited)))
     if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
@@ -177,21 +154,23 @@ const NewAlbum = ({ editing }) => {
     setCreatingAlbumState("artists-created");
 
     const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
-    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, explicitAlbum)));
+    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum)));
     if (albumDataFromFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
     }
     setCreatingAlbumState("album-created");
 
-    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id, albumDataFromFuga.fugaId, currentUserId, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
+    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id,
+      albumDataFromFuga.fugaId, currentUserId, currentUserEmail, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
     if (responseTracksFromFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
     }
     setCreatingAlbumState("tracks-created");
 
-    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga, currentUserId, oldCollaborators)))
+    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
+      currentUserId, currentUserEmail, oldCollaborators)))
     if (tracksCollaboratorsResponse === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
     }
@@ -256,9 +235,11 @@ const NewAlbum = ({ editing }) => {
   }
 
   const handlerLanguageChoose = event => {
-    let languageId = languagesFuga.find(l => l.name === event.target.value).id;
-    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, languageId, languageName: event.target.value }));
+    let language = languagesFuga.find(l => l.name === event.target.value);
+    if (language === undefined) language.id = "ES";
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, languageId: language.id, languageName: event.target.value }));
   }
+  
   const handlerGenreChoose = event => {
     let genreId = allFugaGenres.find(g => g.name === event.target.value).id;
     setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
@@ -689,14 +670,6 @@ const textFieldStyleYears = { width: "58%", marginLeft: "38%" }
 const textFieldStyleText = { width: "58%", marginRight: "38%" }
 const textFieldLaFlotaArtistStyle = { width: "40%" };
 
-const buttonSuccessStyle = {
-  backgroundColor: green[500],
-  '&:hover': {
-    backgroundColor: green[700],
-  },
-  width: "35px",
-  height: "35px"
-}
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",
   marginTop: "0px",

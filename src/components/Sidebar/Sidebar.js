@@ -14,12 +14,15 @@ import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
 
 import styles from "assets/jss/material-dashboard-react/components/sidebarStyle.js";
 import { useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 const useStyles = makeStyles(styles);
 
 const Sidebar = props => {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const url = useLocation();
+  const currentUser = useSelector(store => store.userData);
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = routeName => {
@@ -31,6 +34,8 @@ const Sidebar = props => {
   var links = (
     <List className={classes.list}>
       {routes.map((prop, key) => {
+        const isAdmin = currentUser.rol.indexOf('admin') >= 0;
+        const showLink = prop.path === '/dashboard' ? !isAdmin : prop.path === '/dashboard-admin' ? isAdmin : true; 
         var activePro = " ";
         var listItemClasses;
         if (prop.path === "/upgrade-to-pro") {
@@ -48,7 +53,7 @@ const Sidebar = props => {
           [" " + classes.whiteFont]: activeRoute(prop.layout + prop.path)
         });
 
-        return (
+        return showLink ? (
           <NavLink
             to={prop.layout + prop.path}
             className={activePro + classes.item}
@@ -72,7 +77,8 @@ const Sidebar = props => {
               />
             </ListItem>
           </NavLink>
-        );
+        )
+          : null;
 
       })}
     </List>
@@ -122,7 +128,7 @@ const Sidebar = props => {
           anchor={"left"}
           variant="permanent"
           open
-          classes={{ paper: classNames(classes.drawerPaper)}}
+          classes={{ paper: classNames(classes.drawerPaper) }}
         >
           {brand}
           <div className={classes.sidebarWrapper}>{links}</div>

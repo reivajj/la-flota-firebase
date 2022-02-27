@@ -9,6 +9,8 @@ import { getAlbumsPropsForAdminDataTable } from "utils/tables.utils";
 import { usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
 import UserDialog from '../Users/UserDialog';
 import { getEmailIfNotHaveUser } from '../../utils/users.utils';
+import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
+import { getElementsAdminQueryFS } from "services/FirestoreServices";
 
 const DashboardAdmin = () => {
 
@@ -21,7 +23,20 @@ const DashboardAdmin = () => {
   const rol = currentUserData.rol;
 
   const [userSelected, setUserSelected] = useState(false);
+  const [setStatusAlbumsSnapshot, statusAlbumsSnapshot] = useState("idle");
+  const [setDataAlbumsSnapshot, dataAlbumsSnapshot] = useState("idle");
+  
+  const { data, status, error } = useFirestoreQuery(getElementsAdminQueryFS("albums", 3));
 
+  if (status === "loading") return "Loading...";
+  if (status === "error") return `Error: ${error.message}`;
+
+  // useEffect(() => {
+  //   if (status === "loading") return "Loading...";
+  //   if (status === "error") return `Error: ${error.message}`;
+  // }, [data, status, error])
+
+  status === "success" && console.log("DATA OK : ", data);
 
   const handleCloseUserDialog = () => setUserSelected(false);
 

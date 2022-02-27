@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Image } from 'mui-image';
-import { Delete, Edit } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import DeleteDialog from "components/Dialogs/DeleteDialog";
 import { Divider, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { Grid, Typography, Card, CardContent, CardActions, IconButton, Button } 
 import { deleteAlbumDialogText } from "utils/textToShow.utils";
 import { deleteAlbumRedux } from "redux/actions/AlbumsActions";
 
+
 const AlbumCard = ({ dataAlbum }) => {
 
   const dispatch = useDispatch();
@@ -20,6 +21,8 @@ const AlbumCard = ({ dataAlbum }) => {
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonText, setButtonText] = useState("Confirmar");
   const [buttonState, setButtonState] = useState("delete");
+
+
 
   const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
   const handleCloseDelete = () => setOpenDeleteDialog(false);
@@ -49,6 +52,7 @@ const AlbumCard = ({ dataAlbum }) => {
 
   return (
     <Grid container justifyContent="center">
+
       <Card sx={cardElementStyle}>
 
         <CardContent>
@@ -120,14 +124,14 @@ const AlbumCard = ({ dataAlbum }) => {
                 color="secondary"
                 onClick={goToAlbumInfo}
               >
-                Ir a Album
+                Ir a álbum
               </Button>
             </Grid>
 
             <Grid container item direction="row" justifyContent="center" xs={12}>
               <Grid item xs={1}>
-                <IconButton color="inherit" size="small" onClick={handleOpenDeleteDialog}>
-                  <Delete fontSize="inherit" />
+                <IconButton color="inherit" size="small" key="delete" onClick={handleOpenDeleteDialog}>
+                  <Delete fontSize="small" />
                 </IconButton>
               </Grid>
             </Grid>
@@ -137,7 +141,7 @@ const AlbumCard = ({ dataAlbum }) => {
       </Card>
 
       <DeleteDialog isOpen={openDeleteDialog} setIsOpen={setOpenDeleteDialog} handleClose={handleCloseDelete}
-        title={"Eliminar Album"} textName={dataAlbum.title} textContent={deleteAlbumDialogText}
+        title={"Eliminar Lanzamiento"} textName={dataAlbum.title} textContent={deleteAlbumDialogText}
         deleteAction={handleDelete} deleteButtonText={buttonText} openLoader={openLoader} buttonState={buttonState}
       />
     </Grid >

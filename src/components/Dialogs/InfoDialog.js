@@ -10,8 +10,7 @@ const InfoDialog = (props) => {
 
   return (
     <Dialog
-      maxWidth="xs"
-      fullWidth
+      maxWidth="md"
       id="info-dialog"
       open={isOpen}
       onClose={handleClose}>

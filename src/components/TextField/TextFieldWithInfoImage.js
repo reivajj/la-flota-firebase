@@ -56,7 +56,7 @@ const TextFieldWithInfoImage = (props) => {
         element: (message) => errorFormat(message)
       }) : ""}
 
-      <ImageDialog title="Ejemplo de un Album con su Versión en el Título." contentTexts={contentTexts ? contentTexts : [[""]]}
+      <ImageDialog title="Ejemplo de un Lanzamiento con su Versión en el Título." contentTexts={contentTexts ? contentTexts : [[""]]}
         imageSource={imageSource} isOpen={openImageDialog} handleClose={() => setOpenImageDialog(!openImageDialog)} />
     </>
   )

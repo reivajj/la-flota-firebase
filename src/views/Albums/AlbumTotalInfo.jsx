@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image } from 'mui-image';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 // core components
-import { Grid, Typography, Card, Link, ButtonBase } from '@mui/material';
+import { Grid, Typography, Card, ButtonBase, IconButton, CircularProgress, Backdrop } from '@mui/material';
 // import { deleteAlbumDialogText } from "utils/textToShow.utils";
 // import { deleteAlbumRedux } from "redux/actions/AlbumsActions";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { getAlbumById, getArtistNameAndPrimaryOfAlbum, getStateColor, getOurStateFromFugaState } from "utils/albums.utils";
 import { targetUrl } from "services/BackendCommunication";
 import { useFetch } from '../../customHooks/useAxios';
@@ -16,24 +16,42 @@ import ArtistInAddTrack from '../Artists/ArtistInAddTrack';
 // import { getTracksFieldsFromFugaTrack } from "utils/tracks.utils";
 // import { getOurStateFromFugaState } from '../../utils/albums.utils';
 import { getTracksDataTableFromFugaAssets } from '../../utils/tables.utils';
+import { Link as LinkIcon } from '@mui/icons-material';
+import LiveLinksDialog from './LiveLinksDialog';
+import { toWithOutError } from 'utils';
+import { albumGetLiveLinkRedux } from "redux/actions/AlbumsActions";
 
 const AlbumTotalInfo = () => {
 
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const params = useParams();
-
   const albums = useSelector(store => store.albums.albums);
-
   const dataAlbum = getAlbumById(albums, params.albumId);
 
-  const url = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
+  const [openLiveLinksDialog, setOpenLiveLinksDialog] = useState("idle");
+  const [liveLinksInfo, setLiveLinksInfo] = useState([]);
+  const [openLoaderLinks, setOpenLoaderLinks] = useState(false);
 
+  const url = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
   const { status, data, error } = useFetch(url);
 
   const stateInfoStyle = { color: getStateColor(data.state ? data.state : ""), fontSize: "1em", fontWeight: 400 };
 
   console.log("data album: ", dataAlbum);
   status === "fetched" && console.log("data albumFuga: ", data);
+
+  const handleOpenLiveLinks = async () => {
+    setOpenLoaderLinks(true);
+    let liveLinksResponse = await toWithOutError(dispatch(albumGetLiveLinkRedux(dataAlbum)));
+    if (liveLinksResponse === "ERROR") setOpenLiveLinksDialog("error");
+    if (liveLinksResponse.length === 0) setOpenLiveLinksDialog("not found yet");
+    if (liveLinksResponse.length > 0) {
+      setOpenLoaderLinks(false);
+      setLiveLinksInfo(liveLinksResponse);
+      setOpenLiveLinksDialog("founded");
+    }
+    setOpenLoaderLinks(false);
+  }
 
   // const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   // const [trackData, setTrackData] = useState({});
@@ -61,9 +79,16 @@ const AlbumTotalInfo = () => {
   return (
     <Grid container justifyContent="center">
 
+      <Backdrop open={openLoaderLinks}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <LiveLinksDialog isOpen={openLiveLinksDialog !== "idle"} handleClose={() => setOpenLiveLinksDialog("idle")}
+        liveLinksInfo={liveLinksInfo} />
+
       <Card sx={cardElementStyle}>
 
-        <Grid container spacing={2} >
+        <Grid container spacing={2} sx={{ height: "17.9em" }}>
 
           <Grid item>
             <ButtonBase sx={{ width: "20em", height: "20em" }}>
@@ -86,7 +111,7 @@ const AlbumTotalInfo = () => {
                 </Typography>
 
                 <Typography variant="body2" gutterBottom sx={artistTextStyle}>
-                  {`Artistas: ${status === 'fetched' ? data.display_artist : ""}`}
+                  {`${albumArtists.length > 1 ? "Artistas" : "Artista"}: ${status === 'fetched' ? data.display_artist : ""}`}
                 </Typography>
 
                 <Grid item xs={12} >
@@ -102,20 +127,28 @@ const AlbumTotalInfo = () => {
                 <Grid item xs container sx={{ paddingTop: "1em" }}>
                   <Grid item xs={12}>
                     <Typography sx={moreInfoTextStyle}>
-                      {`FECHA DE CREACIÓN: ${status === "fetched" ? getLocalDateString(data.created_date) : ""}`}
+                      {`Fecha de creación: ${status === "fetched" ? getLocalDateString(data.created_date) : ""}`}
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography sx={moreInfoTextStyle}>
-                      {`FECHA DE LANZAMIENTO: ${status === "fetched" ? getLocalDateString(data.original_release_date) : ""}`}
+                      {`Fecha de lanzamiento: ${status === "fetched" ? getLocalDateString(data.original_release_date) : ""}`}
                     </Typography>
                   </Grid>
                 </Grid>
 
-                <Grid item xs={12} sx={{ paddingTop: "0.5em" }}>
-                  <Typography sx={stateInfoStyle}>
-                    {`ESTADO: ${status === "fetched" ? getOurStateFromFugaState(data.state) : ""}`}
-                  </Typography>
+                <Grid container item >
+                  <Grid item sx={{ paddingTop: "0.5em", width: "28%" }}>
+                    <Typography sx={stateInfoStyle}>
+                      {`Estado: ${status === "fetched" ? getOurStateFromFugaState(data.state) : ""}`}
+                    </Typography>
+                  </Grid>
+
+                  {data.state === "DELIVERED" && <Grid item xs={1}>
+                    <IconButton sx={linkIconStyle} color="inherit" fontSize="large" key="link" onClick={handleOpenLiveLinks}>
+                      <LinkIcon fontSize="large" />
+                    </IconButton>
+                  </Grid>}
                 </Grid>
 
               </Grid>
@@ -136,7 +169,7 @@ const AlbumTotalInfo = () => {
       <Card sx={cardElementStyle}>
 
         <Grid item xs={12} padding="1em 1em 0em">
-          <Typography sx={artistsTitleStyle}>Artistas del Album</Typography>
+          <Typography sx={artistsTitleStyle}>{`${albumArtists.length > 1 ? "Artistas" : "Artista"} del Lanzamiento`}</Typography>
         </Grid>
 
         <Grid container item xs={12} spacing={2} sx={gridArtistViewsStyle}>
@@ -170,3 +203,4 @@ const moreInfoTextStyle = { color: "rgba(0,0,0,0.4)", whiteSpace: "nowrap", marg
 const selloTextStyle = { color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "1em", marginBottom: "0" };
 const gridArtistViewsStyle = { margin: "0em 1em 1em 1em", height: "100%", };
 const artistsTitleStyle = { fontSize: "1.5em", fontWeight: 500 };
+const linkIconStyle = { textAlign: "inital", fontSize: "1rem", verticalAlign: "text-top", padding: 0 };

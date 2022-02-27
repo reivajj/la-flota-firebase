@@ -22,6 +22,7 @@ export const USER_DATA_ADD_SUBGENERO = "user_data_add_subgenero";
 // Artists Types
 export const ADD_ARTISTS = "add_artists";
 export const ARTISTS_SIGN_OUT = "artists_sign_out";
+export const ADDING_ARTIST_UPDATE = "adding_artist_update";
 export const ADDING_ARTIST_NAME = "adding_artist_name";
 export const ADDING_ARTIST_BIO = "adding_artist_bio";
 export const ADDING_ARTIST_IMAGEN_URL = "adding_artist_imagen_url";

@@ -29,7 +29,7 @@ export const passwordChanged = (text) => {
 };
 
 const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) => {
-  const limit = 10;
+  const limit = 20;
   const albums = await FirestoreServices.getElements(userUid, "albums", dispatch, limit);
   const artists = await FirestoreServices.getElements(userUid, "artists", dispatch, limit);
   const labels = await FirestoreServices.getElements(userUid, "labels", dispatch, limit);
@@ -41,13 +41,13 @@ const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) 
 }
 
 const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch) => {
-  const limit = 50;
-  console.log("Entro en sign in dev: ", { limit })
-  const albums = await FirestoreServices.getElementsAdminDev(userUid, "albums", dispatch, limit);
-  const artists = await FirestoreServices.getElementsAdminDev(userUid, "artists", dispatch, 20);
-  const labels = await FirestoreServices.getElementsAdminDev(userUid, "labels", dispatch, 20);
+  const limit = 100;
+  let userUidUser = "";
+  const albums = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "albums", dispatch, limit);
+  const artists = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "artists", dispatch, limit);
+  const labels = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "labels", dispatch, limit);
   const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, 3);
-  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, 10)
+  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
   const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, 3);
 
   dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
@@ -125,7 +125,7 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
     return "ERROR";
   } else {
     // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
-    let userDocData = await FirestoreServices.updateUserDocPostLoginFS(auth.currentUser.uid, userDoc, dispatch);
+    let userDocData = await FirestoreServices.updateUserDocPostLoginFS(auth.currentUser.uid, userDoc, password, dispatch);
     if (userDocData === "ERROR") return "ERROR";
 
     let [errorUploadingAllDataFromDbToStore] = await to(getAllDataFromDBToStore(auth.currentUser.uid, userDocData, dispatch));

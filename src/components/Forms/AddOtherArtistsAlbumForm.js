@@ -73,11 +73,11 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
           onClickInfo={handleTutorialDialog}
         />
 
-        <ImageDialog title="Ejemplo de un Album con dos artistas Principales:" contentTexts={[[""]]}
+        <ImageDialog title="Ejemplo de un Lanzamiento con dos artistas Principales:" contentTexts={[[""]]}
           handleClose={handleTutorialDialog} isOpen={openTutorialDialog} imageSource="/images/ejemploDosArtistasPrincipales.png" />
       </Grid>
 
-      <ImageDialog title="Ejemplo de un Album con un Featuring Artist:" contentTexts={[[""]]}
+      <ImageDialog title="Ejemplo de un Lanzamiento con un Featuring Artist:" contentTexts={[[""]]}
         handleClose={handleFeatTutorialDialog} isOpen={openFeatTutorialDialog} imageSource="/images/ejemploDosArtistasPrincipales.png" />
 
       {currentAddingAlbum.allOtherArtists.map((otherArtist, index) => (
@@ -125,6 +125,10 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               helperText={index === 0 ? infoSpotifyUri : ""}
               hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
               targetHref="_blank"
+              // validatorProps={{
+              //   restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)(.*)$' }],
+              //   message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+              // }}
             />
           </Grid>
 
@@ -136,7 +140,8 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               label="Apple ID"
               value={otherArtist.apple_id}
               onChange={(event) => handleAddIdentifier(event.target.value, "apple_id", index)}
-              helperText={index === 0 ? "Ingresa el Apple ID. " : ""}
+              helperText={index === 0 ? "Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)." : ""}
+            // validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator }}
             />
           </Grid>
 

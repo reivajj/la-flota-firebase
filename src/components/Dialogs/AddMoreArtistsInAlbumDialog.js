@@ -5,6 +5,8 @@ import {
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useSelector } from 'react-redux';
 import { infoSpotifyUri, maxArtistsText } from 'utils/textToShow.utils';
+import { infoHelperTextAppleId } from 'utils/textToShow.utils';
+import Danger from '../Typography/Danger';
 
 
 export const AddMoreArtistsInAlbumDialog = (props) => {
@@ -52,7 +54,13 @@ export const AddMoreArtistsInAlbumDialog = (props) => {
                 helperText={infoSpotifyUri}
                 hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
                 targetHref="_blank"
+                validatorProps={{
+                  restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                  message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+                }}
               />
+
+              {/* {spotifyInvalid && <Danger>El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)</Danger>} */}
 
               <TextFieldWithInfo
                 name="apple_id"
@@ -60,8 +68,8 @@ export const AddMoreArtistsInAlbumDialog = (props) => {
                 label="Apple ID"
                 value={currentArtistData.apple_id}
                 onChange={changeAppleId}
-                helperText="Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. 
-                    Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)."
+                helperText={infoHelperTextAppleId}
+                validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator }}
               />
 
               <TextField
@@ -90,8 +98,8 @@ export const AddMoreArtistsInAlbumDialog = (props) => {
               </DialogContentText>
             )}
             <DialogContentText key={"plan"} sx={{ paddingTop: "2em" }}>
-                <Typography sx={{ fontWeight: 500 }}>{`Tu Plan actual es: ${currentPlan}. (Si crees que es un error, contáctanos)`}</Typography>
-              </DialogContentText>
+              <Typography sx={{ fontWeight: 500 }}>{`Tu Plan actual es: ${currentPlan}. (Si crees que es un error, contáctanos)`}</Typography>
+            </DialogContentText>
           </DialogContent>
 
         </>

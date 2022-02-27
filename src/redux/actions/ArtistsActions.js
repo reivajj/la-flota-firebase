@@ -5,6 +5,7 @@ import { createArtistModel } from '../../services/CreateModels';
 import { to, toWithOutError } from 'utils';
 import { v4 as uuidv4 } from 'uuid';
 import { cloneDeepLimited } from '../../utils';
+import { writeCloudLog } from '../../services/LoggingService';
 
 export const artistsAddStore = artists => {
   return {
@@ -13,23 +14,74 @@ export const artistsAddStore = artists => {
   }
 }
 
+export const artistsAttachFugaIdToArtistDoc = (artist, userId, ownerEmail) => async dispatch => {
+  let userByEmailData = await FirestoreServices.getUserDataByEmailInFS(ownerEmail, dispatch);
+  if (!userByEmailData.id) return "ERROR";
+
+  let artistFromFuga = await BackendCommunication.getArtistByIdFuga(artist.fugaId, dispatch);
+  if (artistFromFuga === "ERROR") return "ERROR";
+
+  let artistIdentfiersFromFuga = await BackendCommunication.getArtistsIdentifierByIdFuga(artist.fugaId, dispatch);
+  if (artistIdentfiersFromFuga === "ERROR") return "ERROR";
+
+  artistIdentfiersFromFuga.forEach(identifierData => {
+    if (identifierData.issuingOrganization.id === 746109) {
+      artist.spotifyIdentifierIdFuga = identifierData.id;
+      artist.spotify_uri = identifierData.identifier;
+    }
+    if (identifierData.issuingOrganization.id === 1330598) {
+      artist.appleIdentifierIdFuga = identifierData.id;
+      artist.apple_id = identifierData.identifier;
+    }
+  });
+
+  artist.whenCreatedTS = new Date().getTime();
+  artist.lastUpdateTS = artist.whenCreatedTS;
+  artist.ownerId = userByEmailData.id; artist.ownerEmail = userByEmailData.email;
+  artist.fugaId = artistFromFuga.data.response.id;
+  artist.fugaPropietaryId = artistFromFuga.data.response.proprietary_id || artist.id;
+
+  console.log("ARTIST POST FUGA: ", artist);
+
+  await FirestoreServices.createElementFS(artist, artist.id, artist.ownerId, "artists", "cantTotalArtists", 1, dispatch);
+
+  dispatch({
+    type: ReducerTypes.ADD_ARTISTS,
+    payload: [artist]
+  });
+
+  return "SUCCESS";
+}
+
 // TypeOfArtists = ["artists", "artistsInvited"];
-export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => async dispatch => {
+export const createArtistRedux = (isAdmin, artist, userId, ownerEmail, typeOfArtist, totalField) => async dispatch => {
+
+  let userByEmailData = "";
+  if (isAdmin) {
+    userByEmailData = await FirestoreServices.getUserDataByEmailInFS(ownerEmail, dispatch);
+    if (!userByEmailData.id) return "ERROR";
+  }
 
   delete artist.imagenRef;
   let formDataArtist = createArtistModel(artist, false);
+  console.log("FORM DATA ARTIST: ", formDataArtist);
+  writeCloudLog("creating artist model to send fuga", formDataArtist, { notError: "not error" }, "info");
+
   let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist, dispatch);
   if (artistFromThirdWebApi === "ERROR") return "ERROR";
 
   artist.whenCreatedTS = new Date().getTime();
   artist.lastUpdateTS = artist.whenCreatedTS;
-  artist.ownerId = userId;
+  artist.ownerId = isAdmin ? userByEmailData.id : userId;
+  artist.ownerEmail = ownerEmail;
+
+  console.log("ARTIST: ", artist);
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
   artist.spotifyIdentifierIdFuga = artistFromThirdWebApi.data.response.spotifyIdentifierIdFuga;
   artist.appleIdentifierIdFuga = artistFromThirdWebApi.data.response.appleIdentifierIdFuga;
 
-  await FirestoreServices.createElementFS(artist, artist.id, userId, typeOfArtist, totalField, 1, dispatch);
+  await FirestoreServices.createElementFS(artist, artist.id, isAdmin ? userByEmailData.id : userId, typeOfArtist, totalField, 1, dispatch);
 
   // Si vengo de artistsInvited no debo agregarlos al Store de Artists.
   if (typeOfArtist !== "artists") return "SUCCESS";
@@ -42,9 +94,9 @@ export const createArtistRedux = (artist, userId, typeOfArtist, totalField) => a
   return "SUCCESS";
 }
 
-export const artistsCreateFromDGArtistsRedux = (ownerId, ownerMail) => async dispatch => {
+export const artistsCreateFromDGArtistsRedux = (ownerId, ownerEmail) => async dispatch => {
 
-  let dgArtists = await BackendCommunication.getDgArtistsFuga(ownerMail, dispatch);
+  let dgArtists = await BackendCommunication.getDgArtistsFuga(ownerEmail, dispatch);
   if (dgArtists === "NO_ARTISTS") return "NO_ARTISTS";
   if (dgArtists === "NO_USER") return "NO_USER";
   if (dgArtists.length === 0) return "NO_ARTISTS";
@@ -58,9 +110,7 @@ export const artistsCreateFromDGArtistsRedux = (ownerId, ownerMail) => async dis
     dataDgArtist.biography = cloneDataDgArtists.bio || "";
     delete dataDgArtist.bio;
 
-    console.log("AGREGANDO DG ARTIST: ", dataDgArtist);
-
-    let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataDgArtist, ownerId, "artists", "totalArtists")));
+    let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(false, dataDgArtist, ownerId, ownerEmail, "artists", "totalArtists")));
     if (artistCreatedResult === "ERROR") return "ERROR";
     return "SUCCESS";
   });
@@ -79,6 +129,8 @@ const cleanNotEditedFields = (allFields, fieldsEdited) => {
 export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId, photoFile, userId, fieldsEdited) => async dispatch => {
   let onlyEditedFields = cleanNotEditedFields(newArtistsFields, fieldsEdited);
   let rawDataArtist = createArtistModel(onlyEditedFields, true);
+
+  writeCloudLog("updating artist model to send fuga", rawDataArtist, { notError: "not error" }, "info");
 
   if (rawDataArtist.name || rawDataArtist.biography) {
     let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, dispatch);
@@ -112,8 +164,8 @@ export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId,
 }
 
 export const deleteArtistRedux = (dataArtist, artistId, artistFugaId, userId) => async dispatch => {
-  let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
-  if (deleteResponse === "ERROR") return "ERROR";
+  // let deleteResponse = await BackendCommunication.deleteArtistFuga(artistFugaId, dispatch);
+  // if (deleteResponse === "ERROR") return "ERROR";
 
   await FirestoreServices.deleteElementFS(dataArtist, artistId, userId, "artists", "totalArtists", -1, dispatch);
 
@@ -164,5 +216,12 @@ export const saveAddingArtistAppleId = artistTempAppleId => {
   return {
     type: ReducerTypes.ADDING_ARTIST_APPLE_ID,
     payload: artistTempAppleId
+  }
+}
+
+export const updateAddingArtistRedux = newAddingArtist => {
+  return {
+    type: ReducerTypes.ADDING_ARTIST_UPDATE,
+    payload: newAddingArtist
   }
 }

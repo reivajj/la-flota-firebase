@@ -57,7 +57,6 @@ const Rutas = () => {
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
 
-          {/* <Route path="test" element={<AddTrackTest />} /> */}
         </Route>
 
       </Routes>

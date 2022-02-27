@@ -12,7 +12,7 @@ export const createOtherArtistsRedux = (allOtherArtistsAlbum, ownerId, ownerEmai
 
   const createOtherArtistOneByOne = allOtherArtistNotCreatedPreviously.map(async dataArtist => {
     dataArtist.ownerId = ownerId; dataArtist.ownerEmail = ownerEmail;
-    let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(dataArtist, ownerId, "artistsInvited", "totalArtistsInvited")));
+    let artistCreatedResult = await toWithOutError(dispatch(createArtistRedux(false, dataArtist, ownerId, ownerEmail, "artistsInvited", "totalArtistsInvited")));
     if (artistCreatedResult === "ERROR") return "ERROR";
     return "SUCCESS";
   });

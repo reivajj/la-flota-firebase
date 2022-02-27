@@ -4,6 +4,7 @@ import * as BackendCommunication from 'services/BackendCommunication.js';
 import { toWithOutError } from 'utils';
 import { createPersonsModel } from 'services/CreateModels';
 import { v4 as uuidv4 } from 'uuid';
+import { writeCloudLog } from '../../services/LoggingService';
 
 
 export const addCollaborators = collaborators => {
@@ -22,7 +23,9 @@ export const collaboratorsSignOut = () => {
 
 export const createCollaboratorRedux = (collaborator, userId, oldCollaborators, allCollaboratorsRecentyAdded) => async dispatch => {
 
+  writeCloudLog("creating collaborator to send to fuga", collaborator, { notError: "not error" }, "info");
   // Siempre debo crear el COLLABORATOR. Es unico por role y track.
+  if (!collaborator.person) return "ERROR COLABORADOR ID FALTANTE";
   let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, dispatch);
   if (collaboratorFromBackend === "ERROR") return "ERROR";
 
@@ -89,10 +92,13 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
 export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail, oldCollaborators) => async dispatch => {
 
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
+  writeCloudLog("creating people to send to fuga", peopleToCreateFormData, { notError: "not error" }, "info");
   console.log("PEOPLE A CREAR: ", peopleToCreateFormData);
   // PORQUE ESTOY PASANDOLE OLD COLLABORATORS. NO LO ESTOY USANDO AL PARAM.
   let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch, oldCollaborators);
   if (peopleFromBackend === "ERROR") return "ERROR";
+
+  writeCloudLog("creating people post fuga pre collaborators", peopleToCreateFormData, { notError: "not error" }, "info");
 
   let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId, ownerEmail);
   const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async (dataCollaborator, _, allDataCollsUpdating) => {

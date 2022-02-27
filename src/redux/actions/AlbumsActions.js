@@ -2,6 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel } from 'services/CreateModels';
+import { writeCloudLog } from '../../services/LoggingService';
 
 export const albumsAddStore = albums => {
   return {
@@ -16,6 +17,9 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async d
   let formDataAlbum = createAlbumModel(album, explicit);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
+
+  writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
+
   let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
@@ -24,6 +28,8 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async d
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
   delete album.cover;
+
+  writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, post fuga pre fs`, album, { notError: "not error" }, "info");
 
   await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);
 
@@ -48,6 +54,22 @@ export const deleteAlbumRedux = dataAlbum => async dispatch => {
   });
 
   return "SUCCESS";
+}
+
+
+export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
+  let liveLinksResponse = await BackendCommunication.getAlbumLiveLinksById(dataAlbum.fugaId, dispatch);
+  if (liveLinksResponse === "ERROR") return "ERROR";
+  console.log("LIVE LINK IN ACTIONS: ", liveLinksResponse);
+  if (liveLinksResponse.length > 0) {
+    dataAlbum.liveLink = liveLinksResponse;
+    dispatch({
+      type: ReducerTypes.ADD_ALBUMS,
+      payload: [dataAlbum]
+    });
+  }
+
+  return liveLinksResponse;
 }
 
 export const albumCleanUpdatingAlbum = () => {

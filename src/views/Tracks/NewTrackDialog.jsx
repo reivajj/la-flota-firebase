@@ -23,10 +23,13 @@ import { allFugaGenres } from 'variables/genres';
 import { createSubgenreRedux } from '../../redux/actions/UserDataActions';
 import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
-import { isValidFormatISRC } from "utils/tracks.utils";
+import { isValidFormatISRC, readAndCheckAudioFile } from "utils/tracks.utils";
 import { editAction, deleteAction } from '../../utils/tables.utils';
+import { readFileDataAsBase64 } from '../../utils/tracks.utils';
+import { textLowQualityAudio, textFloatingPointAudio } from '../../utils/textToShow.utils';
+import InfoDialog from '../../components/Dialogs/InfoDialog';
 
-const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Album. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
+const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Lanzamiento. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
 export const NewTrackDialog = (props) => {
 
@@ -44,6 +47,7 @@ export const NewTrackDialog = (props) => {
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [buttonState, setButtonState] = useState("none");
   const [isrcInvalid, setIsrcInvalid] = useState(false);
+  const [openLowQualityAudioDialog, setOpenLowQualityAudioDialog] = useState({ open: false, title: "", text: [""] });
 
   const handleCancelDialog = () => {
     setOpenNewTrackDialog(false);
@@ -52,7 +56,7 @@ export const NewTrackDialog = (props) => {
       genre: trackData.genre || "", genreName: trackData.genreName || "", subgenre: trackData.subgenre || "",
       price: "", lyrics: "", isrc: "", track_language_id: trackData.track_language_id, audio_locale_id: trackData.audio_locale_id,
       progress: 0, artists: [...trackData.artists, ...trackData.allOtherArtists], collaborators: trackData.collaborators,
-      track_language_name: trackData.track_language_name, allOtherArtists: [], id: "", audio_locale_name: trackData.audio_locale_name,
+      track_language_name: trackData.track_language_name, allOtherArtists: [], id: "", audio_locale_name: trackData.audio_locale_name || "",
     });
   };
 
@@ -90,9 +94,12 @@ export const NewTrackDialog = (props) => {
 
   const deleteArtistFromArtists = index => trackData.artists.filter((_, i) => i !== index);
 
-  const getTrackFromLocal = event => {
-    setTrackData({ ...trackData, track: event.target.files[0] });
-    setTrackMissing(false);
+  const getTrackFromLocal = async event => {
+    let trackStatus = await readAndCheckAudioFile(event.target.files[0], new window.wavefile.WaveFile(), setOpenLowQualityAudioDialog);
+    if (trackStatus === "SUCCESS") {
+      setTrackData({ ...trackData, track: event.target.files[0] });
+      setTrackMissing(false);
+    }
   };
 
   const handleExplicitChange = newExplicitEvent => setTrackData({ ...trackData, explicit: newExplicitEvent.target.checked });
@@ -152,13 +159,10 @@ export const NewTrackDialog = (props) => {
   }
 
   return (
-    <Dialog
-      open={openDialog}
-      onClose={handleCancelDialog}
-      aria-labelledby="form-dialog-title"
-      maxWidth="lg"
-      fullWidth
-    >
+    <Dialog open={openDialog} onClose={handleCancelDialog} aria-labelledby="form-dialog-title" maxWidth="lg" fullWidth>
+
+      <InfoDialog isOpen={openLowQualityAudioDialog.open} handleClose={() => setOpenLowQualityAudioDialog({ open: false, title: "", text: [""] })}
+        title={openLowQualityAudioDialog.title} contentTexts={openLowQualityAudioDialog.text} />
 
       <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
         title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
@@ -191,11 +195,12 @@ export const NewTrackDialog = (props) => {
 
           <AddOtherArtistsTrackForm
             checkBoxLabel="¿Quieres agregar otro artista?"
-            checkBoxHelper="Agrega artistas Principales o Featuring que no aparecen en el Album."
+            checkBoxHelper="Agrega artistas Principales o Featuring que no aparecen en el Lanzamiento."
             checkBoxColor="#508062"
             buttonColor="#508062"
             setTrackData={setTrackData}
             trackData={trackData}
+            validator={validator}
           />
 
           <Grid item xs={12} >
@@ -313,7 +318,7 @@ export const NewTrackDialog = (props) => {
               fileType="audio/wav, audio/x-wav"
               color="#508062" />
             {trackData.track && <Success>{`Nombre del Archivo: ${trackData.track.name}`}</Success>}
-            {trackMissing && <Danger>Debes agregar un archivo de Audio (wav, flac)</Danger>}
+            {trackMissing && <Danger>Debes agregar un archivo de Audio (wav)</Danger>}
           </Grid>
 
         </Grid>

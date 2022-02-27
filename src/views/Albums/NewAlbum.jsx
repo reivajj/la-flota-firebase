@@ -21,7 +21,8 @@ import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline } from '@mui/icons-material/';
 import {
   albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper,
-  preSaleCheckBoxHelper, releaseDateInfoTooltip, titleInvalidOldReleaseDate, invalidDateContentText, titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText
+  preSaleCheckBoxHelper, releaseDateInfoTooltip, titleInvalidOldReleaseDate, invalidDateContentText,
+  titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText, imageConstraintsMessage
 } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
@@ -47,6 +48,8 @@ import { createLabelRedux } from "redux/actions/LabelsActions";
 import { getActualYear } from 'utils/timeRelated.utils';
 import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
+import useScript from '../../customHooks/useScript';
+
 
 const NewAlbum = ({ editing }) => {
 
@@ -66,6 +69,8 @@ const NewAlbum = ({ editing }) => {
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = "";
 
+  useScript("https://cdn.jsdelivr.net/npm/wavefile");
+
   useEffect(() => {
     setTracksDataTable(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
   }, [myTracks])
@@ -77,7 +82,6 @@ const NewAlbum = ({ editing }) => {
     if (!editing) changeAlbumId();
     else putAlbumIdOnEditingArtist();
   }, [])
-
 
   const handleDeleteTrack = trackInfo => dispatch(deleteTrackInTracksUploading(trackInfo.id));
   const handleEditTrack = trackInfo => {
@@ -111,7 +115,7 @@ const NewAlbum = ({ editing }) => {
     price: "", lyrics: "", isrc: "", track_language_name: currentAlbumData.languageName,
     track_language_id: currentAlbumData.languageId, progress: 0, id: "", preview: currentAlbumData.preview,
     collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LYRICIST"] }],
-    preOrder: currentAlbumData.preOrder,
+    preOrder: currentAlbumData.preOrder, audio_locale_name: "",
   });
 
   const coverLabelArtistAllValids = () => {
@@ -187,7 +191,7 @@ const NewAlbum = ({ editing }) => {
     let img = new Image()
     img.src = window.URL.createObjectURL(event.target.files[0])
     img.onload = async () => {
-      if (img.width >= 1400 && img.height >= 1400) {
+      if (img.width >= 1400 && img.height >= 1400 && img.width <= 8000 && img.height <= 8000) {
         setMessageForCover("");
         let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
         if (errorAddingFile) {
@@ -197,7 +201,7 @@ const NewAlbum = ({ editing }) => {
         dispatch(updateAddingAlbumImageUrlAndCoverRedux({ imagenUrl: urlAndFile.url, cover: urlAndFile.file }));
         setMessageForCover("");
       }
-      else setMessageForCover("La imagen debe tener una resolucion mínima de 1400x1400 píxeles y un tamaño máximo de 20mb");
+      else setMessageForCover(imageConstraintsMessage);
     }
   }
 
@@ -239,7 +243,7 @@ const NewAlbum = ({ editing }) => {
     if (language === undefined) language.id = "ES";
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, languageId: language.id, languageName: event.target.value }));
   }
-  
+
   const handlerGenreChoose = event => {
     let genreId = allFugaGenres.find(g => g.name === event.target.value).id;
     setTrackData({ ...trackData, genre: genreId, genreName: event.target.value });
@@ -432,7 +436,7 @@ const NewAlbum = ({ editing }) => {
                 label="Formato del Lanzamiento"
                 value={currentAlbumData.format}
                 onChange={event => handlerBasicUpdateAlbum(event.target.value, "format")}
-                helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Album."
+                helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Lanzamiento."
                 selectItems={["Single", "EP", "Álbum"]}
               />
             </Grid>
@@ -471,7 +475,7 @@ const NewAlbum = ({ editing }) => {
                 helperText="El dueño de los Derechos de Autor.
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
                 validatorProps={{
-                  restrictions: 'required|max:50', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
+                  restrictions: 'required|max:200', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
                   validator, sx: { width: "60%" }
                 }}
               />
@@ -508,7 +512,7 @@ const NewAlbum = ({ editing }) => {
                 helperText="El dueño de los Derechos de Publicación de esta grabación.
             → Ej. 1: Fito Paez | Ej. 2: Sony Music"
                 validatorProps={{
-                  restrictions: 'required|max:50', message: "Por favor indicá el publicador del lanzamiento.",
+                  restrictions: 'required|max:200', message: "Por favor indicá el publicador del lanzamiento.",
                   validator, sx: { width: "60%" }
                 }}
               />
@@ -561,7 +565,7 @@ const NewAlbum = ({ editing }) => {
               selectItems={allFugaGenres}
               selectKeyField="id"
               selectValueField="name"
-              validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Album.", validator }}
+              validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Lanzamiento.", validator }}
             />
           </Grid>
 
@@ -635,6 +639,11 @@ const NewAlbum = ({ editing }) => {
             </Grid>
           </Grid>}
 
+
+        {/* <Grid item xs={12}>
+          <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
+            tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />
+        </Grid> */}
         <Grid item xs={12}>
           <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
             tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />

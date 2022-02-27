@@ -8,10 +8,10 @@ import { Info, Delete } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import BasicSwitch from 'components/Switch/BasicSwitch';
-import { getNumeracionOrdinalFromIndex } from "utils/textToShow.utils";
+import { getNumeracionOrdinalFromIndex, infoHelperTextAppleId } from "utils/textToShow.utils";
 import { createBackendError } from '../../redux/actions/ErrorHandlerActions';
 
-const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData }) => {
+const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData, validator }) => {
 
   const dispatch = useDispatch();
   const buttonColorStyle = { backgroundColor: buttonColor, '&:hover': { backgroundColor: buttonColor } };
@@ -106,6 +106,10 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               value={otherArtist.spotify_uri}
               onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
               helperText={index === 0 ? "Ingresa el código URi de Spotify. " : ""}
+              validatorProps={{
+                restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+              }}
             />
           </Grid>
 
@@ -116,7 +120,8 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               label="Apple ID"
               value={otherArtist.apple_id}
               onChange={(event) => handlerAddAppleID(event.target.value, index)}
-              helperText={index === 0 ? "Ingresa el Apple ID. " : ""}
+              helperText={index === 0 ? infoHelperTextAppleId : ""}
+              validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator }}
             />
           </Grid>
 

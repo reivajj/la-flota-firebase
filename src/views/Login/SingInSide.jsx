@@ -107,11 +107,6 @@ const SignInSide = () => {
               onChange={(evento) => changePassword(evento.target.value)}
             />
 
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-
             <ProgressButton
               fullWidth
               variant="contained"

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createTrackModel } from 'services/CreateModels';
 import { toWithOutError } from 'utils';
 import { getAmountOfIsrcCodesToUseFS } from '../../services/FirestoreServices';
+import { writeCloudLog } from '../../services/LoggingService';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
@@ -36,9 +37,13 @@ const setUploadProgress = (position, percentageProgress) => {
 }
 
 const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated) => async dispatch => {
+  writeCloudLog("creating track pre model", dataTrack, { notError: "not error" }, "info");
+
   let formDataTrack = createTrackModel(dataTrack, artistInvited, artistRecentlyCreated);
 
-  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dispatch);
+  writeCloudLog(`creating track to send to fuga with album fugaId: ${dataTrack.albumFugaId}`, formDataTrack, { notError: "not error" }, "info");
+
+  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dataTrack.albumFugaId, dispatch);
   if (trackFromThirdWebApi === "ERROR") return "ERROR";
 
   dataTrack.whenCreatedTS = new Date().getTime();
@@ -47,6 +52,8 @@ const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvi
   dataTrack.isrc = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.isrc;
   dataTrack.trackSizeBytes = dataTrack.track.size; dataTrack.trackType = dataTrack.track.type;
   delete dataTrack.track;
+
+  writeCloudLog("creating track post fuga pre fs", dataTrack, { notError: "not error" }, "info");
 
   await FirestoreServices.createElementFS(dataTrack, dataTrack.id, userId, "tracks", "totalTracks", 1, dispatch);
 

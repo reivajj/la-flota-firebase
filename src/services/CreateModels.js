@@ -27,7 +27,7 @@ export const createAlbumModel = (dataAlbum, explicit) => {
   formDataAlbum.append("label", dataAlbum.labelFugaId);
   formDataAlbum.append("language", dataAlbum.languageId);
   formDataAlbum.append("catalog_number", uuidv4());
-  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format]);
+  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format] || "ALBUM");
   formDataAlbum.append("c_line_text", dataAlbum.c_line);
   formDataAlbum.append("c_line_year", dataAlbum.c_year);
   formDataAlbum.append("p_line_text", dataAlbum.p_line);

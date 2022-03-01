@@ -20,22 +20,23 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async d
 
   writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
 
-  let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, dispatch)
+  let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, ownerEmail, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
   album.fugaId = albumFromThirdWebApi.data.response.albumId; album.state = "PENDING";
   if (!album.upc) album.upc = albumFromThirdWebApi.data.response.upc;
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
-  delete album.cover;
+  
+  let albumToUploadToFS = { ...album, cover: "" };
 
-  writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, post fuga pre fs`, album, { notError: "not error" }, "info");
+  writeCloudLog(`creating album ${albumToUploadToFS.name} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
 
-  await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);
+  await FirestoreServices.createElementFS(albumToUploadToFS, albumToUploadToFS.id, userId, "albums", "totalAlbums", 1, dispatch);
 
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,
-    payload: [album]
+    payload: [albumToUploadToFS]
   });
 
   return album;

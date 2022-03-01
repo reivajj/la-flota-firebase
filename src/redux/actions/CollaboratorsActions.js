@@ -94,8 +94,7 @@ export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail, old
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
   writeCloudLog("creating people to send to fuga", peopleToCreateFormData, { notError: "not error" }, "info");
   console.log("PEOPLE A CREAR: ", peopleToCreateFormData);
-  // PORQUE ESTOY PASANDOLE OLD COLLABORATORS. NO LO ESTOY USANDO AL PARAM.
-  let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch, oldCollaborators);
+  let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch);
   if (peopleFromBackend === "ERROR") return "ERROR";
 
   writeCloudLog("creating people post fuga pre collaborators", peopleToCreateFormData, { notError: "not error" }, "info");

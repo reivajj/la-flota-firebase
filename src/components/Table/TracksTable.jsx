@@ -21,7 +21,7 @@ const TracksTable = ({ tracksTableData, handleClickAddTrack }) => {
         <CardBody style={{ width: "90%" }}>
           <Table
             tableHeaderColor="primary"
-            tableHead={["N°", "Nombre", "ISRC", "Artistas Invitados", "Editar", "Eliminar", "Carga"]}
+            tableHead={["N°", "Nombre", "ISRC", "Editar", "Eliminar", "Carga"]}
             tableData={tracksTableData}
           />
         </CardBody>

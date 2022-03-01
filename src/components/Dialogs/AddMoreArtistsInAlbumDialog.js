@@ -6,8 +6,6 @@ import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { useSelector } from 'react-redux';
 import { infoSpotifyUri, maxArtistsText } from 'utils/textToShow.utils';
 import { infoHelperTextAppleId } from 'utils/textToShow.utils';
-import Danger from '../Typography/Danger';
-
 
 export const AddMoreArtistsInAlbumDialog = (props) => {
 

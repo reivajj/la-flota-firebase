@@ -63,11 +63,11 @@ export const createArtistRedux = (isAdmin, artist, userId, ownerEmail, typeOfArt
   }
 
   delete artist.imagenRef;
-  let formDataArtist = createArtistModel(artist, false);
-  console.log("FORM DATA ARTIST: ", formDataArtist);
-  writeCloudLog("creating artist model to send fuga", formDataArtist, { notError: "not error" }, "info");
+  let rawDataArtist = createArtistModel(artist, false);
+  console.log("FORM DATA ARTIST: ", rawDataArtist);
+  writeCloudLog("creating artist model to send fuga", rawDataArtist, { notError: "not error" }, "info");
 
-  let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(formDataArtist, dispatch);
+  let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(rawDataArtist, ownerEmail, dispatch);
   if (artistFromThirdWebApi === "ERROR") return "ERROR";
 
   artist.whenCreatedTS = new Date().getTime();
@@ -126,27 +126,27 @@ const cleanNotEditedFields = (allFields, fieldsEdited) => {
   return allFields;
 }
 
-export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId, photoFile, userId, fieldsEdited) => async dispatch => {
+export const updateArtistRedux = (oldArtistData, newArtistsFields, artistFugaId, photoFile, ownerEmail, fieldsEdited) => async dispatch => {
   let onlyEditedFields = cleanNotEditedFields(newArtistsFields, fieldsEdited);
   let rawDataArtist = createArtistModel(onlyEditedFields, true);
 
   writeCloudLog("updating artist model to send fuga", rawDataArtist, { notError: "not error" }, "info");
 
   if (rawDataArtist.name || rawDataArtist.biography) {
-    let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, dispatch);
+    let artistFromThirdWebApi = await BackendCommunication.updateArtistFuga(rawDataArtist, artistFugaId, ownerEmail, dispatch);
     if (artistFromThirdWebApi === "ERROR") return "ERROR";
   }
 
   if (rawDataArtist.spotify_uri !== undefined) {
     let spotifyIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(oldArtistData.spotifyIdentifierIdFuga,
-      { identifierField: "spotify_uri", identifierValue: rawDataArtist.spotify_uri }, artistFugaId, dispatch);
+      { identifierField: "spotify_uri", identifierValue: rawDataArtist.spotify_uri }, artistFugaId, ownerEmail, dispatch);
     if (spotifyIdentifierResponse === "ERROR") return "ERROR";
     onlyEditedFields.spotifyIdentifierIdFuga = spotifyIdentifierResponse;
   }
 
   if (rawDataArtist.apple_id !== undefined) {
     let appleIdentifierResponse = await BackendCommunication.updateArtistIdentifierFuga(oldArtistData.appleIdentifierIdFuga,
-      { identifierField: "apple_id", identifierValue: rawDataArtist.apple_id }, artistFugaId, dispatch);
+      { identifierField: "apple_id", identifierValue: rawDataArtist.apple_id }, artistFugaId, ownerEmail, dispatch);
     if (appleIdentifierResponse === "ERROR") return "ERROR";
     onlyEditedFields.appleIdentifierIdFuga = appleIdentifierResponse;
   }

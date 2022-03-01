@@ -57,6 +57,20 @@
       ]
     },
     {
+      "collectionGroup": "isrcs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "used",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isrc",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "labels",
       "queryScope": "COLLECTION",
       "fields": [

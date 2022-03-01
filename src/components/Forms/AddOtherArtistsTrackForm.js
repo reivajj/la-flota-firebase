@@ -48,6 +48,12 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
     return `Nombre ${getNumeracionOrdinalFromIndex[otherArtistIndex]} Artista`;
   }
 
+  // const getValidatorProps = indexOhterArtist => {
+  //   if (indexCollaborator === 0) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Compositor", validator };
+  //   if (indexCollaborator === 1) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
+  //   return null;
+  // }
+
   return (
     <>
       <Grid container item xs={12} sx={{ marginLeft: "6%" }}>
@@ -94,13 +100,13 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               value={otherArtist.name}
               required
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
-              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
+              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Eliminar el campo si no quieres agregar otro artista. " : ""}
             />
           </Grid>
 
           <Grid item sx={gridUriStyle} key={index + "trackOtherspotifyUriGrid"}>
             <TextFieldWithInfo
-              name="spotifyUriSecondArtist"
+              name={`spotifyUri ${index}`}
               sx={textFieldURIStyle}
               label="Código Uri de Spotify"
               value={otherArtist.spotify_uri}
@@ -115,7 +121,7 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
 
           <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
             <TextFieldWithInfo
-              name="appleIdOhterTackArtist"
+              name={`apple id ${index}`}
               sx={textFieldAppleIDStyle}
               label="Apple ID"
               value={otherArtist.apple_id}

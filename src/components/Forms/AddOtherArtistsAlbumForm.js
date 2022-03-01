@@ -14,7 +14,7 @@ import { featuringArtistTooltip, getNumeracionOrdinalFromIndex, infoSpotifyUri }
 import { Delete } from '@mui/icons-material';
 
 
-const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor }) => {
+const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, validator }) => {
 
   const [openTutorialDialog, setOpenTutorialDialog] = useState(false);
   const [openFeatTutorialDialog, setOpenFeatTutorialDialog] = useState(false);
@@ -111,6 +111,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               value={otherArtist.name}
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
               helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
+              validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: validator }}
             />
           </Grid>
 
@@ -125,10 +126,10 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               helperText={index === 0 ? infoSpotifyUri : ""}
               hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
               targetHref="_blank"
-              // validatorProps={{
-              //   restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)(.*)$' }],
-              //   message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
-              // }}
+              validatorProps={{
+                restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+              }}
             />
           </Grid>
 
@@ -141,7 +142,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               value={otherArtist.apple_id}
               onChange={(event) => handleAddIdentifier(event.target.value, "apple_id", index)}
               helperText={index === 0 ? "Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo. Podes encontrarla en tu perfil en iTunes (son los últimos dígitos de la URL de tu perfil)." : ""}
-            // validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator }}
+              validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator: validator }}
             />
           </Grid>
 

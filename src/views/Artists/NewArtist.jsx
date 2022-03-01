@@ -28,7 +28,6 @@ import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
 import SuccessDialog from "components/Dialogs/SuccessDialog";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { userIsAdmin } from "utils/users.utils";
-import { isValidSpotifyUri } from "utils/tracks.utils";
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
@@ -61,7 +60,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("No es obligatoria la imagen");
   // const [imageReference, setImageReference] = useState('');
-  const cannotAddArtists = plan === "charly-garcia" && artistsFromStore.length > 1;
+  const cannotAddArtists = !editing && (plan === "charly-garcia" && artistsFromStore.length > 1);
 
   const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(cannotAddArtists);
   const [openLoader, setOpenLoader] = useState(false);
@@ -87,6 +86,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   }
 
   const createArtist = async () => {
+    console.log(currentArtistData);
     setOpenLoader(true);
     let result = "ERROR";
     if (currentArtistData.fugaId) {
@@ -95,7 +95,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     else {
       result = await toWithOutError(dispatch(
         editing
-          ? updateArtistRedux(currentArtistEditingData, currentArtistData, currentArtistEditingData.fugaId, photoFile, currentUserId,
+          ? updateArtistRedux(currentArtistEditingData, currentArtistData, currentArtistEditingData.fugaId, photoFile, currentArtistData.ownerEmail,
             { apple_id: appleIdEdited, spotify_uri: spotifyUriEdited, name: nameEdited, biography: biographyEdited })
           : createArtistRedux(userIsAdmin(rol), currentArtistData, currentUserId, userIsAdmin(rol) ? currentArtistData.ownerEmail : currentUser.email, "artists", "totalArtists")));
     }

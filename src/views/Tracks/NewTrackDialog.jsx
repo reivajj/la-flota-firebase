@@ -25,8 +25,6 @@ import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElem
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { isValidFormatISRC, readAndCheckAudioFile } from "utils/tracks.utils";
 import { editAction, deleteAction } from '../../utils/tables.utils';
-import { readFileDataAsBase64 } from '../../utils/tracks.utils';
-import { textLowQualityAudio, textFloatingPointAudio } from '../../utils/textToShow.utils';
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 
 const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Lanzamiento. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
@@ -83,6 +81,7 @@ export const NewTrackDialog = (props) => {
       return;
     }
     else setIsrcInvalid(false);
+    console.log(validator.current);
     if (validator.current.allValid() && trackData.track) {
       handleCreateTrack();
     } else {
@@ -159,7 +158,7 @@ export const NewTrackDialog = (props) => {
   }
 
   return (
-    <Dialog open={openDialog} onClose={handleCancelDialog} aria-labelledby="form-dialog-title" maxWidth="lg" fullWidth>
+    <Dialog open={openDialog} onClose={handleCancelDialog} aria-labelledby="form-dialog-title" maxWidth="xl" fullWidth>
 
       <InfoDialog isOpen={openLowQualityAudioDialog.open} handleClose={() => setOpenLowQualityAudioDialog({ open: false, title: "", text: [""] })}
         title={openLowQualityAudioDialog.title} contentTexts={openLowQualityAudioDialog.text} />
@@ -202,12 +201,6 @@ export const NewTrackDialog = (props) => {
             trackData={trackData}
             validator={validator}
           />
-
-          <Grid item xs={12} >
-            <DialogTitle id="collaborators-dialog-title" sx={collaboratorsTitleStyle}>Colaboradores de la Canción</DialogTitle>
-          </Grid>
-
-          <AddCollaboratorsForm setTrackData={setTrackData} trackData={trackData} validator={validator} />
 
           <Grid item xs={12} >
             <DialogTitle id="info-general-dialog-title" sx={collaboratorsTitleStyle}>Información General</DialogTitle>
@@ -320,6 +313,13 @@ export const NewTrackDialog = (props) => {
             {trackData.track && <Success>{`Nombre del Archivo: ${trackData.track.name}`}</Success>}
             {trackMissing && <Danger>Debes agregar un archivo de Audio (wav)</Danger>}
           </Grid>
+
+
+          <Grid item xs={12} >
+            <DialogTitle id="collaborators-dialog-title" sx={collaboratorsTitleStyle}>Colaboradores de la Canción</DialogTitle>
+          </Grid>
+
+          <AddCollaboratorsForm setTrackData={setTrackData} trackData={trackData} validator={validator} />
 
         </Grid>
 

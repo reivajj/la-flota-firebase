@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { getAllArtistsOfTrack, ifNoPrimaryChangeIt } from '../utils/artists.utils';
 
 // Lo uso tanto para crear como para editar.
 export const createArtistModel = (dataArtist, editing) => {
@@ -50,26 +51,8 @@ export const createAlbumModel = (dataAlbum, explicit) => {
 
 export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated) => {
 
-  let artistsArray = [...dataTrack.artists, ...dataTrack.allOtherArtists];
-  let artistsArrayToUpload = [];
-  let elementFoundedInInvited = ""; let elementFoundedInRecently = "";
-  artistsArray.forEach(artist => {
-    if (artist.fugaId) artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId });
-    else {
-      elementFoundedInInvited = artistInvited.find(artistInvited => artistInvited.name === artist.name);
-      elementFoundedInRecently = artistRecentlyCreated.find(artistRecently => artistRecently.name === artist.name);
-      if (elementFoundedInInvited) {
-        console.log("Element founded in vited: ", elementFoundedInInvited);
-        artist.fugaId = elementFoundedInInvited.fugaId;
-      }
-      if (elementFoundedInRecently) {
-        console.log("Element founded in recently: ", elementFoundedInRecently);
-        artist.fugaId = elementFoundedInRecently.fugaId;
-      }
-      
-      artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId })
-    };
-  });
+  let artistsArrayToUpload = getAllArtistsOfTrack([...dataTrack.artists, ...dataTrack.allOtherArtists], artistInvited, artistRecentlyCreated);
+  artistsArrayToUpload = ifNoPrimaryChangeIt(artistsArrayToUpload);
 
   let formDataTrack = new FormData();
 
@@ -78,9 +61,9 @@ export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated
   formDataTrack.append("artists", JSON.stringify(artistsArrayToUpload));
   formDataTrack.append("track", dataTrack.track);
   formDataTrack.append("sequence", dataTrack.position);
-  formDataTrack.append("language", dataTrack.track_language_id);
-  formDataTrack.append("audio_locale", dataTrack.audio_locale_id);
-  formDataTrack.append("parental_advisory", dataTrack.explicit);
+  formDataTrack.append("language", dataTrack.track_language_id || "ES");
+  formDataTrack.append("audio_locale", dataTrack.audio_locale_id || "ES");
+  formDataTrack.append("parental_advisory", dataTrack.explicit || false);
   if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
   if (dataTrack.subgenre) formDataTrack.append("subgenre", dataTrack.subgenre);
   if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);

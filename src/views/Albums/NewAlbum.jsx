@@ -147,38 +147,47 @@ const NewAlbum = ({ editing }) => {
 
   const createAlbum = async () => {
     setOpenLoader(true);
+    let albumDataFromFuga = ""; let responseTracksFromFuga = ""; let internalState = "";
     const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
-
+    console.log("ALL FINAL ARTIST: ", allOtherArtistsNotRepeatedFromTracksAndAlbum);
     const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum
       , currentUserId, currentUserEmail, artistInvited)))
     if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
     }
-    setCreatingAlbumState("artists-created");
+    else internalState = "artists-created"; setCreatingAlbumState("artists-created");
 
-    const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
-    let albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum)));
-    if (albumDataFromFuga === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-      return;
+    if (internalState === "artists-created") {
+      const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
+      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum)));
+      if (albumDataFromFuga === "ERROR") {
+        setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+        return;
+      }
+      else internalState = "album-created"; setCreatingAlbumState("album-created");
     }
-    setCreatingAlbumState("album-created");
 
-    let responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id,
-      albumDataFromFuga.fugaId, currentUserId, currentUserEmail, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
-    if (responseTracksFromFuga === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
-      return;
+    if (internalState === "album-created") {
+      responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id,
+        albumDataFromFuga.fugaId, currentUserId, currentUserEmail, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
+      if (responseTracksFromFuga === "ERROR") {
+        setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+        return;
+      }
+      else internalState = "tracks-created"; setCreatingAlbumState("tracks-created");
     }
-    setCreatingAlbumState("tracks-created");
 
-    const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
-      currentUserId, currentUserEmail, oldCollaborators)))
-    if (tracksCollaboratorsResponse === "ERROR") {
-      setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+    if (internalState === "tracks-created") {
+      const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
+        currentUserId, currentUserEmail, oldCollaborators)))
+      if (tracksCollaboratorsResponse === "ERROR") {
+        setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      }
+      else internalState = "collaborators-created"; setCreatingAlbumState("collaborators-created");
     }
-    else {
+
+    if (internalState === "collaborators-created" || internalState === "tracks-created") {
       setButtonState("success");
       setCreatingAlbumState("success");
     }
@@ -379,6 +388,7 @@ const NewAlbum = ({ editing }) => {
             checkBoxHelper={lanzamientoColaborativoTooltip}
             checkBoxColor="#9c27b0"
             buttonColor="#9c27b0"
+            validator={validator}
           />}
 
           <Grid container item xs={12}>

@@ -2,6 +2,7 @@
 import { Grid, IconButton, CircularProgress, Fab, Typography } from '@mui/material';
 import { Delete, Edit, Check, AddCircle } from '@mui/icons-material/';
 import { getStateColor } from 'utils/albums.utils';
+import { secondsToMmSs } from './timeRelated.utils';
 
 export const trackUploadProgress = (progressTrack, buttonSuccessStyle) => {
   return (
@@ -14,7 +15,7 @@ export const trackUploadProgress = (progressTrack, buttonSuccessStyle) => {
 }
 
 export const moreInfoActionRender = (userId, handleMorInfo) => {
-  return <IconButton onClick={() => handleMorInfo(userId)} aria-label="Ir al elemento">
+  return <IconButton onClick={() => handleMorInfo(userId)} aria-label="Ir al elemento" target="_blank">
     <AddCircle />
   </IconButton>
 }
@@ -44,7 +45,6 @@ export const getTracksAsDataTable = (tracksTotalInfo, handleEditTrack, handleDel
     `${trackWithAllInfo.position}`,
     `${trackWithAllInfo.title}`,
     `${trackWithAllInfo.isrc}`,
-    `${trackWithAllInfo.artists ? trackWithAllInfo.artists.length > 1 ? "SI" : "NO" : "NO"}`,
     editAction(trackWithAllInfo, handleEditTrack),
     deleteAction(trackWithAllInfo, handleDeleteTrack),
     trackUploadProgress(trackWithAllInfo.progress),
@@ -93,7 +93,7 @@ export const getTracksDataTableFromFugaAssets = (fugaTracksAssets, handleEditTra
       fugaTrackAsset.name,
       fugaTrackAsset.isrc,
       fugaTrackAsset.display_artist,
-      fugaTrackAsset.duration,
+      secondsToMmSs(fugaTrackAsset.duration),
       // editAction(fugaTrackAsset, handleEditTrack),
       // deleteAction(fugaTrackAsset, handleDeleteTrack),
     ])

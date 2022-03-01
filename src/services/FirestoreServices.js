@@ -276,7 +276,7 @@ export const createUserDocs = async (newUserData, dispatch) => {
 export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
   const batch = writeBatch(db);
 
-  const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), limit(amountOfIsrcs));
+  const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), orderBy("isrc", "asc"), limit(amountOfIsrcs));
   let [errorGettingIsrcs, isrcsSnapshot] = await to(getDocs(isrcsDbRef));
   if (errorGettingIsrcs) {
     dispatch(createFireStoreError("Error obteniendo los ISRC.", errorGettingIsrcs));
@@ -293,7 +293,7 @@ export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
   let isrcs = [];
   isrcsSnapshot.forEach(isrcDoc => {
     isrcs.push(isrcDoc.data().isrc);
-    batch.update(isrcDoc.ref, { used: true })
+    batch.update(isrcDoc.ref, { used: true });
   });
 
   let [errorUpdatingIsrcsStates] = await to(batch.commit());

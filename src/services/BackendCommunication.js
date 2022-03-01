@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { to } from '../utils';
+import { copyFormDataToJSON, to } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 import { loginErrorStore } from 'redux/actions/AuthActions';
 import { writeCloudLog } from './LoggingService';
@@ -51,26 +51,26 @@ export const getArtistByIdFuga = async (fugaId, dispatch) => {
   return artistInFuga;
 }
 
-export const createArtistFuga = async (formDataArtist, dispatch) => {
+export const createArtistFuga = async (rawDataArtist, ownerEmail, dispatch) => {
   let [errorUploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
-    axios.post(`${targetUrl}artists/withIdentifiers`, formDataArtist));
+    axios.post(`${targetUrl}artists/withIdentifiers`, rawDataArtist));
 
   if (errorUploadingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUploadingArtistInThirdWebApi));
-    writeCloudLog("Error creating artist in fuga", formDataArtist, errorUploadingArtistInThirdWebApi, "error");
+    writeCloudLog(`Error creating artist in fuga, ownerEmail: ${ownerEmail}`, rawDataArtist, errorUploadingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
   return artistFromThirdWebApi;
 }
 
-export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) => {
+export const updateArtistFuga = async (rawDataArtist, artistFugaId, ownerEmail, dispatch) => {
   let [errorUpdatingArtistInThirdWebApi] = await to(
-    axios.put(`${targetUrl}artists/${artistFugaId}`, formDataArtist));
+    axios.put(`${targetUrl}artists/${artistFugaId}`, rawDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
-    writeCloudLog("Error updating artist in fuga", formDataArtist, errorUpdatingArtistInThirdWebApi, "error");
+    writeCloudLog(`Error updating artist in fuga, ownerEmail: ${ownerEmail}`, rawDataArtist, errorUpdatingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
@@ -87,26 +87,26 @@ export const getArtistsIdentifierByIdFuga = async (artistFugaId, dispatch) => {
   return artistsIdentifiers.data.response;
 }
 
-export const updateArtistIdentifierFuga = async (identifierId, formDataArtist, artistFugaId, dispatch) => {
+export const updateArtistIdentifierFuga = async (identifierId, rawDataArtist, artistFugaId, ownerEmail, dispatch) => {
   let errorUpdatingArtistInThirdWebApi = ""; let resultIdentifier = "";
   let errorDeletingIdentifier = "";
-  if (formDataArtist.identifierValue === "") {
+  if (rawDataArtist.identifierValue === "") {
     [errorDeletingIdentifier] = await to(axios.delete(`${targetUrl}artists/${artistFugaId}/identifier/${identifierId}`));
     if (errorDeletingIdentifier) {
       dispatch(createBackendError(errorDeletingIdentifier));
-      writeCloudLog("Error deleting artist identifier in fuga", { identifierId, formDataArtist, artistFugaId }, errorDeletingIdentifier, "error");
+      writeCloudLog(`Error deleting artist identifier in fuga, ownerEmail: ${ownerEmail}`, { identifierId, rawDataArtist, artistFugaId }, errorDeletingIdentifier, "error");
       return "ERROR";
     }
     [errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
-      axios.post(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+      axios.post(`${targetUrl}artists/${artistFugaId}/identifier`, rawDataArtist));
   }
 
   else[errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
-    axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+    axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, rawDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
-    writeCloudLog("Error updating artist in fuga", { identifierId, artistFugaId, formDataArtist }, errorUpdatingArtistInThirdWebApi, "error");
+    writeCloudLog("Error updating artist in fuga", { identifierId, artistFugaId, rawDataArtist }, errorUpdatingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
@@ -143,11 +143,12 @@ export const getDgArtistsFuga = async (userEmail, dispatch) => {
 
 // ======================================ALBUMS=============================================\\
 
-export const createAlbumFuga = async (formDataAlbum, dispatch) => {
+export const createAlbumFuga = async (formDataAlbum, ownerEmail, dispatch) => {
   let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${targetUrl}albums`, formDataAlbum));
   if (errorUploadingAlbumInThirdWebApi) {
     dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
-    writeCloudLog("Error creating album in fuga", formDataAlbum, errorUploadingAlbumInThirdWebApi, "error");
+    writeCloudLog(`Error creating album in fuga, ownerEmail: ${ownerEmail}`,
+      copyFormDataToJSON(formDataAlbum), errorUploadingAlbumInThirdWebApi, "error");
     return "ERROR";
   }
 
@@ -213,18 +214,18 @@ export const createTrackFuga = async (formDataTrack, onUploadProgress, albumFuga
   let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
-    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}`, formDataTrack, errorUploadingTrackInThirdWebApi, "error");
+    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
     return "ERROR";
   }
 
   return trackFromThirdWebApi;
 }
 
-export const createPersonsFuga = async (formDataPeople, dispatch) => {
-  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, formDataPeople));
+export const createPersonsFuga = async (rawDataPeople, dispatch) => {
+  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, rawDataPeople));
   if (errorUploadingPersonsInThirdWebApi) {
     dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
-    writeCloudLog("Error creating person in fuga", formDataPeople, errorUploadingPersonsInThirdWebApi, "error");
+    writeCloudLog("Error creating person in fuga", copyFormDataToJSON(rawDataPeople), errorUploadingPersonsInThirdWebApi, "error");
 
     return "ERROR";
   }
@@ -233,6 +234,11 @@ export const createPersonsFuga = async (formDataPeople, dispatch) => {
 }
 
 export const createCollaboratorFuga = async (collaborator, dispatch) => {
+  if (!collaborator.person || collaborator.role.length === 0) {
+    writeCloudLog("Error creating collaborator in fuga", collaborator, "COLLABORATORS: EMPTY PERSON OR ROLES", "error");
+    return "ERROR";
+  }
+
   let rawDataCollaborator = { person: collaborator.person, role: collaborator.role };
   let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
   if (errorAttachingCollaboratorInThirdWebApi) {

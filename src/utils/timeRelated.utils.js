@@ -7,3 +7,13 @@ export const getLocalDateString = stringDateUS => {
 export const getActualYear = () => {
   return new Date().getYear() + 1900;
 }
+
+export const unaHoraEnMilisegundos = 3600000;
+export const oneDayInMS = 24 * unaHoraEnMilisegundos;
+export const getCantDaysInMS = cantDays => oneDayInMS * cantDays;
+
+export const secondsToMmSs = timeInSeconds => {
+  let minutes = Math.floor(timeInSeconds / 60);
+  let seconds = timeInSeconds - minutes * 60;
+  return `${minutes}:${seconds > 9 ? seconds : "0" + seconds}`;
+}

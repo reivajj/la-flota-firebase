@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { to } from '../utils';
+import { copyFormDataToJSON, to } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 import { loginErrorStore } from 'redux/actions/AuthActions';
+import { writeCloudLog } from './LoggingService';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
-const localUrl = "http://localhost:5000/filemanagerapp/api/";
+export const localUrl = "http://localhost:5000/filemanagerapp/api/";
 export const targetUrl = webUrl;
 
 // ======================================LABELS=============================================\\
@@ -15,6 +16,7 @@ export const createLabelFuga = async (labelName, dispatch) => {
 
   if (errorCreatingLabelInThirdWebApi) {
     dispatch(createBackendError(errorCreatingLabelInThirdWebApi));
+    writeCloudLog("Error creating label in fuga", labelName, errorCreatingLabelInThirdWebApi, "error");
     return "ERROR";
   }
 
@@ -28,6 +30,7 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
   if (errorDeletingLabelInThirdWebApi) {
     const errorCodeIfExist = errorDeletingLabelInThirdWebApi.response.data.properties.msgFromFuga.code;
     if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
+    writeCloudLog("Error deleting label in fuga", labelFugaId, errorDeletingLabelInThirdWebApi, "error");
     dispatch(createBackendError(errorDeletingLabelInThirdWebApi));
     return "ERROR";
   }
@@ -38,52 +41,75 @@ export const deleteLabelFuga = async (labelFugaId, dispatch) => {
 
 // ======================================ARTISTS=============================================\\
 
-export const createArtistFuga = async (formDataArtist, dispatch) => {
+export const getArtistByIdFuga = async (fugaId, dispatch) => {
+  let [errorGettingArtist, artistInFuga] = await to(axios.get(`${targetUrl}artists/${fugaId}`));
+  if (errorGettingArtist) {
+    dispatch(createBackendError(errorGettingArtist));
+    writeCloudLog("Error getting artist in fuga", fugaId, errorGettingArtist, "error");
+    return "ERROR";
+  }
+  return artistInFuga;
+}
+
+export const createArtistFuga = async (rawDataArtist, ownerEmail, dispatch) => {
   let [errorUploadingArtistInThirdWebApi, artistFromThirdWebApi] = await to(
-    axios.post(`${targetUrl}artists/withIdentifiers`, formDataArtist));
+    axios.post(`${targetUrl}artists/withIdentifiers`, rawDataArtist));
 
   if (errorUploadingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUploadingArtistInThirdWebApi));
+    writeCloudLog(`Error creating artist in fuga, ownerEmail: ${ownerEmail}`, rawDataArtist, errorUploadingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
   return artistFromThirdWebApi;
 }
 
-export const updateArtistFuga = async (formDataArtist, artistFugaId, dispatch) => {
+export const updateArtistFuga = async (rawDataArtist, artistFugaId, ownerEmail, dispatch) => {
   let [errorUpdatingArtistInThirdWebApi] = await to(
-    axios.put(`${targetUrl}artists/${artistFugaId}`, formDataArtist));
+    axios.put(`${targetUrl}artists/${artistFugaId}`, rawDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
+    writeCloudLog(`Error updating artist in fuga, ownerEmail: ${ownerEmail}`, rawDataArtist, errorUpdatingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
   return "SUCCESS";
 }
 
-export const updateArtistIdentifierFuga = async (identifierId, formDataArtist, artistFugaId, dispatch) => {
+export const getArtistsIdentifierByIdFuga = async (artistFugaId, dispatch) => {
+  let [errorGettingArtistIdentfiers, artistsIdentifiers] = await to(axios.get(`${targetUrl}artists/${artistFugaId}/identifier`));
+  if (errorGettingArtistIdentfiers) {
+    dispatch(createBackendError(errorGettingArtistIdentfiers));
+    writeCloudLog("Error getting artist identifiers", errorGettingArtistIdentfiers);
+    return "ERROR";
+  }
+  return artistsIdentifiers.data.response;
+}
+
+export const updateArtistIdentifierFuga = async (identifierId, rawDataArtist, artistFugaId, ownerEmail, dispatch) => {
   let errorUpdatingArtistInThirdWebApi = ""; let resultIdentifier = "";
   let errorDeletingIdentifier = "";
-  if (formDataArtist.identifierValue === "") {
+  if (rawDataArtist.identifierValue === "") {
     [errorDeletingIdentifier] = await to(axios.delete(`${targetUrl}artists/${artistFugaId}/identifier/${identifierId}`));
     if (errorDeletingIdentifier) {
       dispatch(createBackendError(errorDeletingIdentifier));
+      writeCloudLog(`Error deleting artist identifier in fuga, ownerEmail: ${ownerEmail}`, { identifierId, rawDataArtist, artistFugaId }, errorDeletingIdentifier, "error");
       return "ERROR";
     }
     [errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
-      axios.post(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+      axios.post(`${targetUrl}artists/${artistFugaId}/identifier`, rawDataArtist));
   }
 
   else[errorUpdatingArtistInThirdWebApi, resultIdentifier] = await to(
-    axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, formDataArtist));
+    axios.put(`${targetUrl}artists/${artistFugaId}/identifier`, rawDataArtist));
 
   if (errorUpdatingArtistInThirdWebApi) {
     dispatch(createBackendError(errorUpdatingArtistInThirdWebApi));
+    writeCloudLog("Error updating artist in fuga", { identifierId, artistFugaId, rawDataArtist }, errorUpdatingArtistInThirdWebApi, "error");
     return "ERROR";
   }
 
-  console.log("result identifier: ", resultIdentifier.data);
   return resultIdentifier.data.response.id;
 }
 
@@ -92,7 +118,10 @@ export const deleteArtistFuga = async (artistFugaId, dispatch) => {
   let [errorDeletingArtistInFuga] = await to(axios.delete(`${targetUrl}artists/${artistFugaId}`));
 
   if (errorDeletingArtistInFuga) {
+    // const errorCodeIfExist = errorDeletingArtistInFuga.response.data.properties.msgFromFuga.code;
+    // if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
     dispatch(createBackendError(errorDeletingArtistInFuga));
+    writeCloudLog("Error deleting artist in fuga", artistFugaId, errorDeletingArtistInFuga, "error");
     return "ERROR";
   }
   return "SUCCESS";
@@ -102,26 +131,38 @@ export const getDgArtistsFuga = async (userEmail, dispatch) => {
   let [errorGettingDgArtists, dgArtists] = await to(axios.get(`${targetUrl}users/searchArtistsByEmail/${userEmail}`));
   if (errorGettingDgArtists) {
     dispatch(createBackendError(errorGettingDgArtists));
+    writeCloudLog("Error getting dg artists", userEmail, errorGettingDgArtists, "error");
     return "ERROR";
   }
 
   if (dgArtists.data.response === "El usuario no tiene Artistas") return "NO_ARTISTS";
   if (dgArtists.data.response === "No existe el Email en La Flota") return "NO_USER";
 
-  console.log("DG ARTISTS FROM BE: ", dgArtists.data.response);
   return dgArtists.data.response;
 }
 
 // ======================================ALBUMS=============================================\\
 
-export const createAlbumFuga = async (formDataAlbum, dispatch) => {
+export const createAlbumFuga = async (formDataAlbum, ownerEmail, dispatch) => {
   let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${targetUrl}albums`, formDataAlbum));
   if (errorUploadingAlbumInThirdWebApi) {
     dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
+    writeCloudLog(`Error creating album in fuga, ownerEmail: ${ownerEmail}`,
+      copyFormDataToJSON(formDataAlbum), errorUploadingAlbumInThirdWebApi, "error");
     return "ERROR";
   }
 
   return albumFromThirdWebApi;
+}
+
+export const getAlbumLiveLinksById = async (albumId, dispatch) => {
+  let [errorGettingLiveLinks, liveLinksResponse] = await to(axios.get(`${targetUrl}albums/${albumId}/live_links`));
+  if (errorGettingLiveLinks) {
+    dispatch(createBackendError(errorGettingLiveLinks));
+    writeCloudLog("Error getting live links in fuga", albumId, errorGettingLiveLinks, "error");
+    return "ERROR";
+  }
+  return liveLinksResponse.data.response.live_link;
 }
 
 export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
@@ -131,19 +172,20 @@ export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
     const errorCodeIfExist = errorDeletingAlbumInFuga.response.data.data.code;
     if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
     dispatch(createBackendError(errorDeletingAlbumInFuga));
+    writeCloudLog("Error deleting album in fuga", albumFugaId, errorDeletingAlbumInFuga, "error");
+
     return "ERROR";
   }
   return "SUCCESS";
 }
 
 export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) => {
-  console.log("TRACKS : ", tracksData);
-  // let clonedTracksData = cloneDeepLimited(tracksData);
 
   for (const trackData of tracksData) {
     const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${albumId}/tracks/${trackData.fugaId}`));
     if (errorAttachingTrack) {
       dispatch(createBackendError(errorAttachingTrack));
+      writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId }, errorAttachingTrack, "error");
       return "ERROR";
     }
     console.log("RESULT:", result);
@@ -153,13 +195,13 @@ export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) 
 
 export const rearrengePositionsFuga = async (tracksData, albumId, dispatch) => {
   let traksIdsAndPositions = [];
-  console.log("TRACKS EN REARRENGE: ", tracksData);
   tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
 
   let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
     { rearrengeInstructions: traksIdsAndPositions }));
   if (errorRearrengingPositions) {
     dispatch(createBackendError(errorRearrengingPositions));
+    writeCloudLog("Error rearrenging album positions in fuga", { tracksData, albumId }, errorRearrengingPositions, "error");
     return "ERROR";
   }
   return result;
@@ -167,36 +209,43 @@ export const rearrengePositionsFuga = async (tracksData, albumId, dispatch) => {
 
 // ======================================TRACKS=============================================\\
 
-export const createTrackFuga = async (formDataTrack, onUploadProgress, dispatch) => {
+// ESTA LLEGANDO EL FORMDATA TRACK VACIO.
+export const createTrackFuga = async (formDataTrack, onUploadProgress, albumFugaId, dispatch) => {
   let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
+    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
     return "ERROR";
   }
-  console.log("La respuesta de crear el track en Fuga: ", trackFromThirdWebApi);
 
   return trackFromThirdWebApi;
 }
 
-export const createPersonsFuga = async (formDataPeople, dispatch) => {
-  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, formDataPeople));
+export const createPersonsFuga = async (rawDataPeople, dispatch) => {
+  let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, rawDataPeople));
   if (errorUploadingPersonsInThirdWebApi) {
     dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
+    writeCloudLog("Error creating person in fuga", copyFormDataToJSON(rawDataPeople), errorUploadingPersonsInThirdWebApi, "error");
+
     return "ERROR";
   }
-  console.log("La respuesta de crear el person en Fuga: ", personsFromThirdWebApi);
   let personsWithId = personsFromThirdWebApi.data.response;
   return personsWithId;
 }
 
 export const createCollaboratorFuga = async (collaborator, dispatch) => {
+  if (!collaborator.person || collaborator.role.length === 0) {
+    writeCloudLog("Error creating collaborator in fuga", collaborator, "COLLABORATORS: EMPTY PERSON OR ROLES", "error");
+    return "ERROR";
+  }
+
   let rawDataCollaborator = { person: collaborator.person, role: collaborator.role };
   let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
   if (errorAttachingCollaboratorInThirdWebApi) {
     dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
+    writeCloudLog("Error creating collaborator in fuga", collaborator, errorAttachingCollaboratorInThirdWebApi, "error");
     return "ERROR";
   }
-  console.log("La respuesta de crear el collaborator en Fuga: ", collaboratorFromThirdWebApi);
   let personsWithId = collaboratorFromThirdWebApi.data.response.id;
   return personsWithId;
 }
@@ -207,6 +256,7 @@ export const userExistInWpDB = async (email, dispatch) => {
   let [errorCheckingUser, checkingUserResponse] = await to(axios.get(`${targetUrl}users/searchByEmail/${email}`));
   if (errorCheckingUser) {
     dispatch(loginErrorStore({ error: errorCheckingUser, errorMsg: "No se pudo comprobar la existencia del Email. Intente nuevamente." }));
+    writeCloudLog("Error checking user existance in WP", email, errorCheckingUser, "error");
     return "ERROR";
   }
 
@@ -216,7 +266,6 @@ export const userExistInWpDB = async (email, dispatch) => {
 
 export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => {
   let userInWp = await userExistInWpDB(email);
-  console.log("USER IN WP: ", userInWp);
   if (userInWp === "ERROR") return "ERROR";
 
   if (userInWp) {
@@ -225,9 +274,9 @@ export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => 
     const [errorCheckingPassword, passwordOk] = await to(axios.post(`${targetUrl}users/login`, { email, password }));
     if (errorCheckingPassword) {
       dispatch(loginErrorStore({ error: errorCheckingPassword, errorMsg: "El email existe, pero la contraseña es incorrecta." }));
+      writeCloudLog("Error login with password and email", { email, password }, errorCheckingPassword, "error");
       return "ERROR";
     }
-    console.log("RESPONSE PASS: ", passwordOk);
     return { existEmail: true, passwordCheck: passwordOk.data.response, userInWp };
   }
   return { existEmail: false };
@@ -239,6 +288,7 @@ export const createSubgenreFuga = async (subgenreName, dispatch) => {
   const [errorCreatingSubgenre, resultWIthFugaId] = await to(axios.post(`${targetUrl}miscellaneous/subgenres`, { name: subgenreName }));
   if (errorCreatingSubgenre) {
     dispatch(createBackendError(errorCreatingSubgenre));
+    writeCloudLog("Error creating subgenre in fuga", subgenreName, errorCreatingSubgenre, "error");
     return "ERROR";
   }
   return resultWIthFugaId.data.response;

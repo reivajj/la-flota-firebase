@@ -18,12 +18,12 @@ export const userDataAddInfoStore = userInfo => {
 // ACTION CREATORS
 export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists, collaborators, activities) => async dispatch => {
   dispatch(userDataAddInfoStore(userInfo));
-  dispatch(artistsAddStore(artists));
-  dispatch(albumsAddStore(albums));
-  dispatch(labelsAddStore(labels));
-  dispatch(addArtistsInvited(invitedArtists));
-  dispatch(addCollaborators(collaborators));
-  dispatch(activitiesAddStore(activities));
+  dispatch(artistsAddStore(Array.isArray(artists) ? artists : []));
+  dispatch(albumsAddStore(Array.isArray(albums) ? albums : []));
+  dispatch(labelsAddStore(Array.isArray(labels) ? labels : []));
+  dispatch(addArtistsInvited(Array.isArray(invitedArtists) ? invitedArtists : []));
+  dispatch(addCollaborators(Array.isArray(collaborators) ? collaborators : []));
+  dispatch(activitiesAddStore(Array.isArray(activities) ? activities : []));
   return;
 };
 

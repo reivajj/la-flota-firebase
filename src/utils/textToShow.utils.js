@@ -62,7 +62,7 @@ export const albumCoverHelperText = [
   "(si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
 ]
 
-export const deleteAlbumDialogText = "Confirma que quieres eliminar el Album. Se eliminarán todas las canciones que lo componen y se dará de baja de todas las DSPs.";
+export const deleteAlbumDialogText = "Confirma que quieres eliminar el Lanzamiento. Se eliminarán todas las canciones que lo componen y se dará de baja de todas las DSPs.";
 
 export const getNumeracionOrdinalFromIndex = [
   "Primer", "Segundo", "Tercer", "Cuarto", "Quinto", "Séptimo", "Octavo", "Noveno", "Décimo", "Undécimo", "Duodécimo", "Decimotercer",
@@ -86,3 +86,17 @@ export const bienvenidoDialogText = [
   "Esperamos que les guste ♡", <br />, <br />, "Equipo de La Flota"
 ];
 
+export const imageConstraintsMessage = [
+  "La imagen debe tener una resolucion mínima de 1400x1400 píxeles",
+  "y una resolución máxima de 8000x8000 píxeles y un tamaño máximo de 20mb"
+]
+
+export const textLowQualityAudio = [
+  "El archivo de audio tiene una calidad muy baja.",
+  "Debe tener formato WAV, stereo, de 16, 24, o 32 bits y con un Sample Rate entre 44.1 y 192 kHz."
+]
+
+export const textFloatingPointAudio = [
+  "Archivos Floating point WAV no son soportados.",
+  "Debe tener formato WAV, stereo, de 16, 24, o 32 bits y con un Sample Rate entre 44.1 y 192 kHz"
+]

@@ -4,14 +4,14 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import { TextField, Grid, Typography } from "@mui/material";
+import { TextField, Grid, Typography, Button } from "@mui/material";
 
 import SimpleReactValidator from "simple-react-validator";
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   createArtistRedux, saveAddingArtistName, saveAddingArtistBiography,
-  saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId, saveAddingArtistImagenUrlAndReference
+  saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId, saveAddingArtistImagenUrlAndReference, updateAddingArtistRedux, artistsAttachFugaIdToArtistDoc
 } from '../../redux/actions/ArtistsActions';
 import { to, toWithOutError } from '../../utils';
 
@@ -27,17 +27,18 @@ import { infoSpotifyUri, maxArtistsText } from "utils/textToShow.utils";
 import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
 import SuccessDialog from "components/Dialogs/SuccessDialog";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
+import { userIsAdmin } from "utils/users.utils";
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const dispatch = useDispatch();
   const { artistId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
   const currentUser = useSelector(store => store.userData);
+  const rol = currentUser.rol;
   const plan = currentUser.plan;
   const currentUserId = currentUser.id;
   const artistsFromStore = useSelector(store => store.artists.artists);
@@ -59,8 +60,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("No es obligatoria la imagen");
   // const [imageReference, setImageReference] = useState('');
-
-  const cannotAddArtists = plan === "charly-garcia" && artistsFromStore.length > 1;
+  const cannotAddArtists = !editing && (plan === "charly-garcia" && artistsFromStore.length > 1);
 
   const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(cannotAddArtists);
   const [openLoader, setOpenLoader] = useState(false);
@@ -72,6 +72,9 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const [nameEdited, setNameEdited] = useState(false);
   const [spotifyUriEdited, setSpotifyUriEdited] = useState(false);
   const [appleIdEdited, setAppleIdEdited] = useState(false);
+  const [ownerEmailEdited, setOwnerEmailEdited] = useState(false);
+  const [fugaIdEdited, setFugaIdEdited] = useState(false);
+  // const [spotifyUriInvalid, setSpotifyUriInvalid] = useState(false);
 
   const allFieldsValidCreateArtist = () => {
     if (validator.current.allValid()) {
@@ -83,12 +86,19 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   }
 
   const createArtist = async () => {
+    console.log(currentArtistData);
     setOpenLoader(true);
-    let result = await toWithOutError(dispatch(
-      editing
-        ? updateArtistRedux(currentArtistEditingData, currentArtistData, currentArtistEditingData.fugaId, photoFile, currentUserId,
-          { apple_id: appleIdEdited, spotify_uri: spotifyUriEdited, name: nameEdited, biography: biographyEdited })
-        : createArtistRedux(currentArtistData, currentUserId, "artists", "totalArtists")));
+    let result = "ERROR";
+    if (currentArtistData.fugaId) {
+      result = await toWithOutError(dispatch(artistsAttachFugaIdToArtistDoc(currentArtistData, currentUserId, currentArtistData.ownerEmail)));
+    }
+    else {
+      result = await toWithOutError(dispatch(
+        editing
+          ? updateArtistRedux(currentArtistEditingData, currentArtistData, currentArtistEditingData.fugaId, photoFile, currentArtistData.ownerEmail,
+            { apple_id: appleIdEdited, spotify_uri: spotifyUriEdited, name: nameEdited, biography: biographyEdited })
+          : createArtistRedux(userIsAdmin(rol), currentArtistData, currentUserId, userIsAdmin(rol) ? currentArtistData.ownerEmail : currentUser.email, "artists", "totalArtists")));
+    }
     if (result === "SUCCESS") {
       setButtonState("success");
       setOpenLoader(false);
@@ -127,6 +137,16 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     dispatch(saveAddingArtistName(event.target.value));
   }
 
+  const changeArtistOwnerEmail = event => {
+    if (editing && !ownerEmailEdited) setOwnerEmailEdited(true);
+    dispatch(updateAddingArtistRedux({ ...artistDataToShow, ownerEmail: event.target.value }));
+  }
+
+  const changeArtistFugaId = event => {
+    if (editing && !fugaIdEdited) setFugaIdEdited(true);
+    dispatch(updateAddingArtistRedux({ ...artistDataToShow, fugaId: event.target.value }));
+  }
+
   const changeArtistBio = event => {
     if (editing && !biographyEdited) setBiographyEdited(true);
     dispatch(saveAddingArtistBiography(event.target.value));
@@ -138,6 +158,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
     if (editing && !spotifyUriEdited) setSpotifyUriEdited(true);
     dispatch(saveAddingArtistSpotifyUri(event.target.value));
   }
+
   const changeAppleId = event => {
     if (editing && !appleIdEdited) setAppleIdEdited(true);
     dispatch(saveAddingArtistAppleId(event.target.value));
@@ -179,6 +200,32 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
                     {!editing && imageInput}
 
+                    {userIsAdmin(rol) && <Grid item xs={12}>
+                      <TextFieldWithInfo
+                        name="email"
+                        required
+                        fullWidth
+                        label="Email del dueño del Artista"
+                        autoFocus
+                        value={(editing && !ownerEmailEdited) ? artistDataToShow.ownerEmail || "" : currentArtistData.ownerEmail || ""}
+                        onChange={changeArtistOwnerEmail}
+                        validatorProps={{ restrictions: 'max:100', message: "Debes ingresar un email.", validator: validator }}
+                      />
+                    </Grid>}
+
+                    {userIsAdmin(rol) && <Grid item xs={12}>
+                      <TextFieldWithInfo
+                        name="fugaId"
+                        required
+                        fullWidth
+                        label="Fuga Id del Artista"
+                        autoFocus
+                        value={(editing && !fugaIdEdited) ? artistDataToShow.fugaId || "" : currentArtistData.fugaId || ""}
+                        onChange={changeArtistFugaId}
+                        validatorProps={{ restrictions: 'max:50', message: ".", validator: validator }}
+                      />
+                    </Grid>}
+
                     <Grid item xs={12}>
                       <TextFieldWithInfo
                         name="name"
@@ -188,7 +235,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         autoFocus
                         value={(editing && !nameEdited) ? artistDataToShow.name : currentArtistData.name}
                         onChange={changeArtistName}
-                        validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar un nombre.", validator: validator }}
+                        validatorProps={{ restrictions: 'required|max:100', message: "Debes ingresar un nombre.", validator: validator }}
                       />
                     </Grid>
 
@@ -202,6 +249,10 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         helperText={infoSpotifyUri}
                         hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
                         targetHref="_blank"
+                        validatorProps={{
+                          restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                          message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+                        }}
                       />
                     </Grid>
 
@@ -213,6 +264,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         value={(editing && !appleIdEdited) ? artistDataToShow.apple_id : currentArtistData.apple_id}
                         onChange={changeAppleId}
                         helperText={infoHelperTextAppleId}
+                        validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator: validator }}
                       />
                     </Grid>
 

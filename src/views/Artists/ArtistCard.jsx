@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 import { deleteArtistRedux } from "redux/actions/ArtistsActions";
 import ArtistAddedIcon from '../Icons/ArtistAddedIcon';
 
-const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Album en el que esté el Artista."
+const deleteArtistDialogText = "Confirma que quieres eliminar al Artista. No podrás eliminarlo si está en uso, deberás eliminar primero el Lanzamiento en el que esté el Artista."
 
 const ArtistCard = ({ dataArtist, index }) => {
   const dispatch = useDispatch();
@@ -39,7 +39,6 @@ const ArtistCard = ({ dataArtist, index }) => {
   }
 
   const handleEditArtista = () => navigate(`/admin/edit-artist/${dataArtist.id}`);
-
   const handleGoToArtistAlbums = () => navigate(`/admin/albums?view=allOfArtist&id=${dataArtist.id}`);
 
   const handleGoToArtistLabels = () => {
@@ -80,7 +79,7 @@ const ArtistCard = ({ dataArtist, index }) => {
               <Divider sx={dividerStyle} />
             </Grid>
 
-            <Grid container item xs={12} textAlign="left" sx={{ paddingTop: "1em", paddingBottom: 0 }}>
+            <Grid container item xs={12} textAlign="left" sx={{ paddingTop: "1em", paddingBottom: 0, whiteSpace: "nowrap" }}>
               <Grid item xs={12} >
                 <b style={cardDSPNameStyles}>Biografía:</b><b style={cardBioValueStyle}>{` ${dataArtist.biography}`}</b>
               </Grid>
@@ -144,7 +143,7 @@ const ArtistCard = ({ dataArtist, index }) => {
 export default ArtistCard;
 
 const imageStyle = { borderRadius: "30px", marginTop: "20px", width: "15em", height: "15em" };
-const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em", height: "35em" };
+const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "95%", height: "35em" };
 const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
 const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
 const artistAddedIconStyle = { width: "340px", paddingRight: "4%", height: "286px", marginTop: "-25px" };

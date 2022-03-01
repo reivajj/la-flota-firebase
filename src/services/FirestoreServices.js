@@ -1,12 +1,14 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import {
   getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection,
-  getDocs, where, increment, deleteDoc, limit, writeBatch
+  getDocs, where, increment, deleteDoc, limit, writeBatch, orderBy
 } from "firebase/firestore";
 import { to } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { createUserDocItem } from 'factory/users.factory';
 import { v4 as uuidv4 } from 'uuid';
+import { getCantDaysInMS } from '../utils/timeRelated.utils';
+import { writeCloudLog } from './LoggingService';
 
 const db = getFirestore(firebaseApp);
 
@@ -18,19 +20,24 @@ export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
   let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }));
   if (errorUpdatingUserInDB) {
     dispatch(createFireStoreError("Error updating user data info", errorUpdatingUserInDB));
+    writeCloudLog("FS Error updating user without credentials", newUserData, errorUpdatingUserInDB, "error");
     return "ERROR";
   }
   return "EDITED";
 }
 
-export const getUserDoc = async (userId, dispatch) => {
+export const getUserDocFS = async (userId, dispatch) => {
   let userInDBRef = doc(db, "users", userId);
   let [errorGettingUserDoc, userDoc] = await to(getDoc(userInDBRef));
-  if (errorGettingUserDoc) return "ERROR";
+  if (errorGettingUserDoc) {
+    dispatch(createFireStoreError("Error buscando un Usuario: ", errorGettingUserDoc));
+    writeCloudLog("FS Error getting user", userId, errorGettingUserDoc, "error");
+    return "ERROR";
+  }
   return userDoc;
 }
 
-export const updateUserDoc = async (userId, userDoc, dispatch) => {
+export const updateUserDocPostLoginFS = async (userId, userDoc, password, dispatch) => {
   let userInDBRef = doc(db, "users", userId);
   let userDocData = userDoc.data();
   let date = new Date();
@@ -38,25 +45,55 @@ export const updateUserDoc = async (userId, userDoc, dispatch) => {
   userDocData.lastTimeSignedInString = lastTimeSignedInString;
   userDocData.lastTimeSignedIn = date.getTime();
 
-  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { password, lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
   if (errorUpdatingUserSignIn) {
     dispatch(createFireStoreError("Error al actualizar al usuario. Intente nuevamente.", errorUpdatingUserSignIn));
+    writeCloudLog("FS Error getting user doc post login", userId, errorUpdatingUserSignIn, "error");
     return "ERROR";
   };
   return userDocData;
 }
 
-export const getElements = async (userId, typeOfElement, dispatch) => {
-  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
+export const getElements = async (userId, typeOfElement, dispatch, limitNumber) => {
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
   let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
   if (errorGettingElementsFromUser) {
     dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
+    writeCloudLog("FS Error getting elements", { userId, typeOfElement }, errorGettingElementsFromUser, "error");
     return "ERROR";
   }
 
   let elementsFromUser = [];
-  elementsFromUserSnapshot.forEach(albumDoc => {
-    elementsFromUser.push(albumDoc.data());
+  elementsFromUserSnapshot.forEach(elementDoc => {
+    elementsFromUser.push(elementDoc.data());
+  });
+
+  return elementsFromUser;
+}
+
+export const getElementsAdminDev = async (userDataFromDB, userId, typeOfElement, dispatch, limitNumber) => {
+  let elementsDbFromUserRef = {};
+  if (userDataFromDB.rol.indexOf("index") >= 0 && userId !== "") {
+    console.log("ENTRANDO COMO USUARIO: ", userDataFromDB, "/ USER ID: ", userId);
+    elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId),
+      orderBy("lastUpdateTS", "desc"), limit(limitNumber));
+  }
+  else elementsDbFromUserRef = query(collection(db, typeOfElement), where("lastUpdateTS", ">", Date.now() - getCantDaysInMS(7)),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
+
+  if (!collectionsWithActivities.includes(typeOfElement)) return;
+
+  let [errorGettingElementsFromUser, elementQuerySnap] = await to(getDocs(elementsDbFromUserRef));
+  if (errorGettingElementsFromUser) {
+    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement} siendo admin.`, errorGettingElementsFromUser));
+    writeCloudLog("FS Error getting admin elements", { userId, typeOfElement }, errorGettingElementsFromUser, "error");
+    return "ERROR";
+  }
+
+  let elementsFromUser = [];
+  elementQuerySnap.forEach(elementDoc => {
+    elementsFromUser.push(elementDoc.data());
   });
 
   return elementsFromUser;
@@ -73,6 +110,7 @@ export const createElementFS = async (element, elementId, userId, collection, fi
   let [errorCreatingElement] = await to(setDoc(elementDbRef, element))
   if (errorCreatingElement) {
     dispatch(createFireStoreError(`Error creando nuevo elemento en la colección ${collection}.`, errorCreatingElement));
+    writeCloudLog("FS Error creating elements", { userId, element, collection }, errorCreatingElement, "error");
     return "ERROR";
   }
 
@@ -94,13 +132,14 @@ const addActivityFS = async (collection, ownerId, element, typeOfAction, dispatc
   if (!collectionsWithActivities.includes(collection)) return;
   let activity = {
     action: typeOfAction, target: collection, targetId: element.id,
-    ownerId, targetName: getBasicInfoElement(element, collection)
+    ownerId, targetName: getBasicInfoElement(element, collection), lastUpdateTS: new Date().getTime()
   };
 
   const newActivityDbRef = doc(db, "usersActivity", uuidv4());
   let [errorCreatingActivity] = await to(setDoc(newActivityDbRef, activity))
   if (errorCreatingActivity) {
     dispatch(createFireStoreError(`Error creando nueva actividad`, errorCreatingActivity));
+    writeCloudLog("FS Error creating elements", { ownerId, collection, element }, errorCreatingActivity, "error");
     return "ERROR";
   }
 
@@ -115,8 +154,8 @@ export const deleteElementFS = async (element, elementId, userId, collection, fi
 
   let [errorDeletingElementInCollection] = await to(deleteDoc(elementDbRef));
   if (errorDeletingElementInCollection) {
-    console.log(`Error deleting element in ${collection} collection`, errorDeletingElementInCollection);
-    throw new Error({ msg: `Error deleting new element in ${collection} collection`, error: errorDeletingElementInCollection });
+    dispatch(createFireStoreError(`Error eliminando un elemento`, errorDeletingElementInCollection));
+    writeCloudLog("FS Error deleting element", { userId, element, collection }, errorDeletingElementInCollection, "error");
   }
 
   await updateStatsOfCollection(collection, amountToDecrement, dispatch)
@@ -132,7 +171,8 @@ export const deleteAllTracksFromAlbumIdFS = async (albumId, userId, dispatch) =>
 
   let [errorGettingAllTracks, tracksSnapshot] = await to(getDocs(allTracksFromAlbumIdRef));
   if (errorGettingAllTracks) {
-    dispatch(createFireStoreError("Error obteniendo los tracks del Album a eliminar.", errorGettingAllTracks));
+    dispatch(createFireStoreError("Error obteniendo los tracks del Lanzamiento a eliminar.", errorGettingAllTracks));
+    writeCloudLog("FS Error getting all tracks from album to delete", { userId, albumId, collection }, errorGettingAllTracks, "error");
     return "ERROR";
   }
 
@@ -146,7 +186,8 @@ export const deleteAllTracksFromAlbumIdFS = async (albumId, userId, dispatch) =>
 
   let [errorDeletingAllTracks] = await to(batch.commit());
   if (errorDeletingAllTracks) {
-    dispatch(createFireStoreError("Error eliminando los tracks del Album. ", errorDeletingAllTracks));
+    dispatch(createFireStoreError("Error eliminando los tracks del Lanzamiento. ", errorDeletingAllTracks));
+    writeCloudLog("FS Error deleting all tracks from album", { userId, albumId, collection }, errorDeletingAllTracks, "error");
     return "ERROR";
   }
 
@@ -162,6 +203,8 @@ export const updateStatsOfCollection = async (targetCollection, amount, dispatch
   let [errorUpdatingStatsInCollection] = await to(updateDoc(elementStatsDbRef, { total: increment(amount) }));
   if (errorUpdatingStatsInCollection) {
     dispatch(createFireStoreError(`Error actualizando stats en ${targetCollection}`, errorUpdatingStatsInCollection));
+    writeCloudLog("FS Error updating stats of collection", { targetCollection, amount, collection }, errorUpdatingStatsInCollection, "error");
+
     return "ERROR";
   }
 }
@@ -172,6 +215,7 @@ export const updateStatsOfUserDoc = async (targetUserId, targetStat, amount, dis
   let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${targetStat}`]: increment(amount) }));
   if (errorUpdatingStatsInUser) {
     dispatch(createFireStoreError(`Error actualizando las estadísticas en el usuario.`, errorUpdatingStatsInUser));
+    writeCloudLog("FS Error updating stats of user", { targetUserId, targetStat, amount }, errorUpdatingStatsInUser, "error");
     return "ERROR";
   };
 }
@@ -182,29 +226,13 @@ export const updateElementFS = async (oldArtistData, newElementFields, elementId
 
   let [errorUpdatingElementInCollection] = await to(updateDoc(elementDbRef, { ...newElementFields }));
   if (errorUpdatingElementInCollection) {
-    console.log(`Error updating element in ${collection} collection`, errorUpdatingElementInCollection);
-    throw new Error({ msg: `Error updating new element in ${collection} collection`, error: errorUpdatingElementInCollection });
+    dispatch(createFireStoreError(`Error actualizando elemento`, errorUpdatingElementInCollection));
+    writeCloudLog("FS Error creating elements", { oldArtistData, newElementFields, elementId, collection }, errorUpdatingElementInCollection, "error");
+    return "ERROR";
   }
 
   await addActivityFS(collection, oldArtistData.ownerId, { ...oldArtistData, ...newElementFields }, "update", dispatch);
 }
-
-export const getElementsBORRAR = async (userId, typeOfElement, dispatch) => {
-  const elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId));
-  let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
-  if (errorGettingElementsFromUser) {
-    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
-    return "ERROR";
-  }
-
-  let elementsFromUser = [];
-  elementsFromUserSnapshot.forEach(albumDoc => {
-    elementsFromUser.push(albumDoc.data());
-  });
-
-  return elementsFromUser;
-}
-
 
 export const userByEmailInFS = async (email, dispatch) => {
   const userByEmailDbRef = query(collection(db, "usersByEmail"), where("email", "==", email));
@@ -218,6 +246,20 @@ export const userByEmailInFS = async (email, dispatch) => {
   })
 
   return exists;
+}
+
+export const getUserDataByEmailInFS = async (email, dispatch) => {
+  const userByEmailDbRef = query(collection(db, "usersByEmail"), where("email", "==", email));
+  let [errorGettingUserByEmail, userByEmailSnap] = await to(getDocs(userByEmailDbRef));
+  if (errorGettingUserByEmail) return false;
+  if (userByEmailSnap.empty) return false;
+
+  let result = {};
+  userByEmailSnap.forEach(userDoc => {
+    result = userDoc.data()
+  })
+
+  return result;
 }
 
 export const createUserDocs = async (newUserData, dispatch) => {
@@ -234,27 +276,30 @@ export const createUserDocs = async (newUserData, dispatch) => {
 export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
   const batch = writeBatch(db);
 
-  const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), limit(amountOfIsrcs));
+  const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), orderBy("isrc", "asc"), limit(amountOfIsrcs));
   let [errorGettingIsrcs, isrcsSnapshot] = await to(getDocs(isrcsDbRef));
   if (errorGettingIsrcs) {
     dispatch(createFireStoreError("Error obteniendo los ISRC.", errorGettingIsrcs));
+    writeCloudLog("FS Error getting ISRCS", amountOfIsrcs, errorGettingIsrcs, "error");
     return "ERROR";
   }
 
   if (isrcsSnapshot.empty) {
     dispatch(createFireStoreError("No hay ISRCS disponibles. Contactar a soporte."));
+    writeCloudLog("FS Error ISRCS empty", amountOfIsrcs, "NO MORE ISRCS", "error");
     return "ISRCS NO DISPONIBLES";
   }
 
   let isrcs = [];
   isrcsSnapshot.forEach(isrcDoc => {
     isrcs.push(isrcDoc.data().isrc);
-    batch.update(isrcDoc.ref, { used: true })
+    batch.update(isrcDoc.ref, { used: true });
   });
 
   let [errorUpdatingIsrcsStates] = await to(batch.commit());
   if (errorUpdatingIsrcsStates) {
     dispatch(createFireStoreError("Error actualizando los isrcs ya usados. ", errorUpdatingIsrcsStates));
+    writeCloudLog("FS Error updating ISRCS state", amountOfIsrcs, errorUpdatingIsrcsStates, "error");
     return "ERROR";
   }
 
@@ -266,6 +311,13 @@ export const createSubgenreInUserDocFS = async (subgenre, userId, dispatch) => {
   let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { subgenerosPropios: arrayUnion(subgenre) }));
   if (errorUpdatingUserSignIn) {
     dispatch(createFireStoreError("Error al actualizar al usuario. Intente nuevamente.", errorUpdatingUserSignIn));
+    writeCloudLog("FS Error getting ISRCS", { subgenre, userId }, errorUpdatingUserSignIn, "error");
     return "ERROR";
   };
 }
+
+export const getElementsAdminQueryFS = (targetCollection, limitNumber) => {
+  const elementsDbRef = query(collection(db, targetCollection), where("lastUpdateTS", ">", Date.now() - getCantDaysInMS(10)),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
+  return elementsDbRef;
+}  

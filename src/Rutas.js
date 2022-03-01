@@ -19,6 +19,7 @@ import MyAlbums from 'views/Albums/MyAlbums';
 import NewAlbum from 'views/Albums/NewAlbum';
 import UserProfile from 'views/UserProfile/UserProfile';
 import AlbumTotalInfo from './views/Albums/AlbumTotalInfo';
+import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 
 const Rutas = () => {
 
@@ -36,6 +37,7 @@ const Rutas = () => {
         <Route path="/admin/" element={<AdminLayout />}>
 
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="dashboard-admin" element={<DashboardAdmin />} />
           <Route path="user" element={<UserProfile />} />
           <Route path="table" element={<TableList />} />
           <Route path="typography" element={<Typography />} />
@@ -55,7 +57,6 @@ const Rutas = () => {
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
 
-          {/* <Route path="test" element={<AddTrackTest />} /> */}
         </Route>
 
       </Routes>

@@ -14,11 +14,12 @@ import ErrorHandlerReducer from "redux/reducers/ErrorHandlerReducer";
 import ArtistsInvitedReducer from "redux/reducers/ArtistsInvitedReducer";
 import CollaboratorsReducer from "redux/reducers/CollaboratorsReducer";
 import ActivitiesReducer from "redux/reducers/AcitivitiesReducer";
+import UsersReducer from "redux/reducers/UsersReducer";
 
 const persistConfig = {
   key: 'root',
   storage: storage,
-  whitelist: ['userData', 'signUpInfo', 'artists', 'labels', 'albums', 'artistsInvited', 'collaborators', 'activities', 'auth']
+  whitelist: ['userData', 'signUpInfo', 'artists', 'labels', 'albums', 'artistsInvited', 'collaborators', 'activities', 'auth', 'users']
 }
 
 // Si quiero agregar mas a la white list, osea, los reducers que quiero persistir en el storage, 
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
   artistsInvited: ArtistsInvitedReducer,
   collaborators: CollaboratorsReducer,
   activities: ActivitiesReducer,
+  users: UsersReducer,
   errorHandler: ErrorHandlerReducer
 });
 

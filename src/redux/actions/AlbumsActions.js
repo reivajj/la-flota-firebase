@@ -2,6 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel } from 'services/CreateModels';
+import { writeCloudLog } from '../../services/LoggingService';
 
 export const albumsAddStore = albums => {
   return {
@@ -11,24 +12,31 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId, explicit) => async dispatch => {
+export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async dispatch => {
 
   let formDataAlbum = createAlbumModel(album, explicit);
   album.ownerId = userId;
-  let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, dispatch)
+  album.ownerEmail = ownerEmail;
+
+  writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
+
+  let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, ownerEmail, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
-  album.fugaId = albumFromThirdWebApi.data.response.albumId;
+  album.fugaId = albumFromThirdWebApi.data.response.albumId; album.state = "PENDING";
   if (!album.upc) album.upc = albumFromThirdWebApi.data.response.upc;
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
-  delete album.cover;
+  
+  let albumToUploadToFS = { ...album, cover: "" };
 
-  await FirestoreServices.createElementFS(album, album.id, userId, "albums", "totalAlbums", 1, dispatch);
+  writeCloudLog(`creating album ${albumToUploadToFS.name} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
+
+  await FirestoreServices.createElementFS(albumToUploadToFS, albumToUploadToFS.id, userId, "albums", "totalAlbums", 1, dispatch);
 
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,
-    payload: [album]
+    payload: [albumToUploadToFS]
   });
 
   return album;
@@ -47,6 +55,22 @@ export const deleteAlbumRedux = dataAlbum => async dispatch => {
   });
 
   return "SUCCESS";
+}
+
+
+export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
+  let liveLinksResponse = await BackendCommunication.getAlbumLiveLinksById(dataAlbum.fugaId, dispatch);
+  if (liveLinksResponse === "ERROR") return "ERROR";
+  console.log("LIVE LINK IN ACTIONS: ", liveLinksResponse);
+  if (liveLinksResponse.length > 0) {
+    dataAlbum.liveLink = liveLinksResponse;
+    dispatch({
+      type: ReducerTypes.ADD_ALBUMS,
+      payload: [dataAlbum]
+    });
+  }
+
+  return liveLinksResponse;
 }
 
 export const albumCleanUpdatingAlbum = () => {

@@ -29,21 +29,34 @@ export const passwordChanged = (text) => {
 };
 
 const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) => {
-  const albums = await FirestoreServices.getElements(userUid, "albums", dispatch);
-  const artists = await FirestoreServices.getElements(userUid, "artists", dispatch);
-  const labels = await FirestoreServices.getElements(userUid, "labels", dispatch);
-  const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch);
-  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch)
-  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch);
+  const limit = 20;
+  const albums = await FirestoreServices.getElements(userUid, "albums", dispatch, limit);
+  const artists = await FirestoreServices.getElements(userUid, "artists", dispatch, limit);
+  const labels = await FirestoreServices.getElements(userUid, "labels", dispatch, limit);
+  const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, limit);
+  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
+  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, limit);
 
   dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
 }
 
+const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch) => {
+  const limit = 100;
+  let userUidUser = "";
+  const albums = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "albums", dispatch, limit);
+  const artists = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "artists", dispatch, limit);
+  const labels = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "labels", dispatch, limit);
+  const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, 3);
+  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
+  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, 3);
+
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
+}
+
+
 const getAllDataFromDBToStore = async (userUid, userDataFromDB, dispatch) => {
-  let userIsClient = true;
-  if (userIsClient) {
-    await getAllDataFromDBToStoreClient(userUid, userDataFromDB, dispatch);
-  }
+  if (userDataFromDB.rol === 'user') await getAllDataFromDBToStoreClient(userUid, userDataFromDB, dispatch);
+  if (userDataFromDB.rol.indexOf('admin') >= 0) await getAllDataFromDBToStoreAdminDev(userUid, userDataFromDB, dispatch);
 }
 
 export const signInFromGoogle = userInfoFromGoogle => async dispatch => {
@@ -87,7 +100,6 @@ export const signInDoubleSystem = ({ email, password }) => async dispatch => {
   if (userEmailExistInFB) await signIn({ email, password, fromSignUp: false }, dispatch);
   else {
     const emailAndPasswordIsCorrect = await checkEmailAndPasswordInWpDB(email, password, dispatch);
-    console.log("Email and Pw, and userInWP: ", emailAndPasswordIsCorrect);
     if (emailAndPasswordIsCorrect.existEmail && emailAndPasswordIsCorrect.passwordCheck) {
       await signUp({ email, password, nombre: "", apellido: "", userInWp: emailAndPasswordIsCorrect.userInWp }, dispatch);
     }
@@ -106,14 +118,14 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
     }
   }
 
-  let userDoc = await FirestoreServices.getUserDoc(auth.currentUser.uid, dispatch);
+  let userDoc = await FirestoreServices.getUserDocFS(auth.currentUser.uid, dispatch);
   if (userDoc === "ERROR") dispatch(loginErrorStore({ error: "", errorMsg: "Error al buscar al Usuario. Intente nuevamente." }));
   if (!userDoc.exists) {
     dispatch(loginErrorStore({ error: "", errorMsg: "No existe el Usuario" }));
     return "ERROR";
   } else {
     // Apenas obtengo las credenciales y se que tengo al user en mi tabla "users", hago el signIn
-    let userDocData = await FirestoreServices.updateUserDoc(auth.currentUser.uid, userDoc, dispatch);
+    let userDocData = await FirestoreServices.updateUserDocPostLoginFS(auth.currentUser.uid, userDoc, password, dispatch);
     if (userDocData === "ERROR") return "ERROR";
 
     let [errorUploadingAllDataFromDbToStore] = await to(getAllDataFromDBToStore(auth.currentUser.uid, userDocData, dispatch));
@@ -122,6 +134,7 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
       return "ERROR";
     }
 
+    logLoginAnalyticEvent(userDoc.data());
     dispatch({ type: ReducerTypes.SIGN_IN, payload: userDocData });
   }
   return 'SignIn ok';

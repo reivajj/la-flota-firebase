@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Grid, Tooltip, Button, IconButton, FormControl, InputLabel, Select, OutlinedInput, MenuItem } from '@mui/material';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
@@ -6,6 +6,7 @@ import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 import { Info, Delete } from '@mui/icons-material';
 import { peopleRoles } from "variables/varias";
 import { getHelperCollaboratorText } from "utils/textToShow.utils";
+import { cloneDeepLimited } from '../../utils';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -26,6 +27,26 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
     setTrackData({ ...trackData, collaborators: [...trackData.collaborators, collaborator] });
   }
 
+  let isComposeOrLyricist = index => index === 0 || (index === 1 && trackData.audio_locale_name !== "Instrumental");
+  let isLyricist = index => index === 1 && trackData.audio_locale_name !== "Instrumental";
+  
+  const deleteLyricistCollaborator = () => {
+    validator.current.fields[`Nombre Liricista`] = true;
+    setTrackData({ ...trackData, collaborators: trackData.collaborators.filter(coll => !coll.roles.includes("LYRICIST")) })
+  }
+
+  const addLyricistCollaborator = () => {
+    if (trackData.collaborators.filter(coll => coll.roles.includes("LYRICIST")).length > 0) return;
+    let newCollaboratorsWithLyricist = cloneDeepLimited(trackData.collaborators);
+    newCollaboratorsWithLyricist.splice(1, 0, { name: "", roles: ["LYRICIST"] });
+    setTrackData({ ...trackData, collaborators: newCollaboratorsWithLyricist });
+  }
+
+  useEffect(() => {
+    if (trackData.audio_locale_name === "Instrumental") deleteLyricistCollaborator();
+    else addLyricistCollaborator();
+  }, [trackData.audio_locale_name])
+
   const deleteCollaborators = () => setTrackData({ ...trackData, collaborators: trackData.collaborators.filter((_, i) => i < 2) });
   const handleOnChangeCheckBox = event => event.target.checked ? addOneCollaboratorSkeleton() : deleteCollaborators();
   const handleDeleteCollaborator = cIndex => setTrackData({ ...trackData, collaborators: trackData.collaborators.filter((_, i) => i !== cIndex) });
@@ -34,7 +55,7 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
 
   const getValidatorProps = indexCollaborator => {
     if (indexCollaborator === 0) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Compositor", validator };
-    if (indexCollaborator === 1) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
+    if (isLyricist(indexCollaborator)) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
     return null;
   }
 
@@ -45,17 +66,17 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
         <Grid container item key={index + "bigGrid-coll"}>
 
           <Grid item sx={gridDeleteStyle} key={index + "switch-primary"}>
-            {index >= 2 && <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
+            {!isComposeOrLyricist(index) && <IconButton color="inherit" size="large" onClick={(_) => handleDeleteCollaborator(index)}>
               <Delete fontSize="inherit" />
             </IconButton>}
           </Grid>
 
           <Grid item sx={gridNameStyle} key={index + "nameGrid=coll"} textAlign="left">
             <TextFieldWithInfo
-              name={index >= 2 ? `Nombre Colaborador ${index - 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
+              name={!isComposeOrLyricist(index) ? `Nombre Colaborador ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
               required
               sx={textFiedNameStyle}
-              label={index >= 2 ? `Nombre Colaborador ${index - 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
+              label={!isComposeOrLyricist(index) ? `Nombre Colaborador ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
               value={collaborator.name}
               onChange={event => handleAddNameToCollaborator(event.target.value, index)}
               helperText={getHelperCollaboratorText(index)}
@@ -74,7 +95,7 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
                 id="roles"
                 multiple
                 value={collaborator.roles}
-                disabled={index < 2}
+                disabled={isComposeOrLyricist(index)}
                 onChange={event => handleSelectRole(event.target.value, index)}
                 input={<OutlinedInput id="roles" label="Chip" />}
                 renderValue={selected => (

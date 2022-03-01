@@ -1,13 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {
-  Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Card
+  Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Card, Fab
 } from '@mui/material';
-import { green } from '@mui/material/colors';
-import { Fab } from '@mui/material';
 import { Check } from '@mui/icons-material/';
 import { Image } from 'mui-image';
 import Success from "components/Typography/Success";
+import { buttonSuccessStyle } from '../../utils/commonStyles';
 
 const SuccessDialog = (props) => {
 
@@ -69,5 +68,4 @@ SuccessDialog.propTypes = {
   handleClose: PropTypes.func.isRequired,
 }
 
-const buttonSuccessStyle = { backgroundColor: green[500], '&:hover': { backgroundColor: green[700], } };
 const successImageWrapperStyle = { marginTop: "1em", marginBottom: "1.5em", width: "14em", borderRadius: "4em", alignSelf: "center" };

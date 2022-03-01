@@ -39,3 +39,37 @@ export const getArtistPropsForDataTable = artists => {
   });
   return artistsPropsToTable;
 }
+
+export const ifNoPrimaryChangeIt = artists => {
+  let artistPrimary = {};
+  if (artists.length > 0) {
+    artistPrimary = artists.find(artist => artist.primary === true);
+    if (!artistPrimary) artists[0].primary = true;
+  } 
+  return artists;
+}
+
+export const getAllArtistsOfTrack = (artists, artistInvited, artistRecentlyCreated) => {
+  let artistsArrayToUpload = [];
+  let elementFoundedInInvited = ""; let elementFoundedInRecently = "";
+  artists.forEach(artist => {
+    if (artist.fugaId) artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId });
+    else {
+      if (artist.name !== "") {
+        elementFoundedInInvited = artistInvited.find(artistInvited => artistInvited.name === artist.name);
+        elementFoundedInRecently = artistRecentlyCreated.find(artistRecently => artistRecently.name === artist.name);
+        if (elementFoundedInInvited) {
+          console.log("Element founded in vited: ", elementFoundedInInvited);
+          artist.fugaId = elementFoundedInInvited.fugaId;
+        }
+        if (elementFoundedInRecently) {
+          console.log("Element founded in recently: ", elementFoundedInRecently);
+          artist.fugaId = elementFoundedInRecently.fugaId;
+        }
+
+        artistsArrayToUpload.push({ primary: artist.primary, id: artist.fugaId })
+      }
+    };
+  });
+  return artistsArrayToUpload;
+}

@@ -4,6 +4,7 @@ import * as BackendCommunication from 'services/BackendCommunication.js';
 import { toWithOutError } from 'utils';
 import { createPersonsModel } from 'services/CreateModels';
 import { v4 as uuidv4 } from 'uuid';
+import { writeCloudLog } from '../../services/LoggingService';
 
 
 export const addCollaborators = collaborators => {
@@ -22,7 +23,9 @@ export const collaboratorsSignOut = () => {
 
 export const createCollaboratorRedux = (collaborator, userId, oldCollaborators, allCollaboratorsRecentyAdded) => async dispatch => {
 
+  writeCloudLog("creating collaborator to send to fuga", collaborator, { notError: "not error" }, "info");
   // Siempre debo crear el COLLABORATOR. Es unico por role y track.
+  if (!collaborator.person) return "ERROR COLABORADOR ID FALTANTE";
   let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, dispatch);
   if (collaboratorFromBackend === "ERROR") return "ERROR";
 
@@ -35,6 +38,7 @@ export const createCollaboratorRedux = (collaborator, userId, oldCollaborators, 
   console.log("RECENTLY ADDED ALL: ", allCollaboratorsRecentyAdded, "/ Was recently added: ", collaboratRecentlyAdded);
   if (collaboratRecentlyAdded) return "SUCCESS";
 
+  collaborator.added = true;
   collaborator.whenCreatedTS = new Date().getTime();
   collaborator.lastUpdateTS = collaborator.whenCreatedTS;
   delete collaborator.role; delete collaborator.fugaId; delete collaborator.trackFugaId;
@@ -66,7 +70,7 @@ const getPersonIdFromPeople = (peopleWithId, personName) => {
   if (result && result.id) return result.id;
 }
 
-const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWithId, ownerId) => {
+const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWithId, ownerId, ownerEmail) => {
   console.log("PERSONS FROM BE: ", peopleWithId);
   console.log("COLL FROM TRACKS : ", uploadedTracks);
   let collaboratorsForEachTrack = [];
@@ -75,8 +79,8 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
       if (coll.name !== "") {
         coll.roles.forEach(collRol => {
           collaboratorsForEachTrack.push({
-            trackFugaId: track.fugaId, id: uuidv4(), added: false,
-            ownerId, name: coll.name, role: collRol, person: getPersonIdFromPeople(peopleWithId, coll.name)
+            trackFugaId: track.fugaId, id: uuidv4(), added: false, ownerEmail, ownerId,
+            name: coll.name, role: collRol, person: getPersonIdFromPeople(peopleWithId, coll.name)
           });
         })
       }
@@ -85,15 +89,21 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
   return collaboratorsForEachTrack;
 }
 
-export const createCollaboratorsRedux = (tracksCreated, ownerId, oldCollaborators) => async dispatch => {
+export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail, oldCollaborators) => async dispatch => {
 
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
-  let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch, oldCollaborators);
+  writeCloudLog("creating people to send to fuga", peopleToCreateFormData, { notError: "not error" }, "info");
+  console.log("PEOPLE A CREAR: ", peopleToCreateFormData);
+  let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch);
   if (peopleFromBackend === "ERROR") return "ERROR";
 
-  let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId);
-  const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async dataCollaborator => {
-    let collaboratorCreatedResult = await toWithOutError(dispatch(createCollaboratorRedux(dataCollaborator, ownerId, oldCollaborators, allCollaboratorsNotEmptyTracks)));
+  writeCloudLog("creating people post fuga pre collaborators", peopleToCreateFormData, { notError: "not error" }, "info");
+
+  let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId, ownerEmail);
+  const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async (dataCollaborator, _, allDataCollsUpdating) => {
+    let collaboratorCreatedResult = await toWithOutError(
+      dispatch(createCollaboratorRedux(dataCollaborator, ownerId, oldCollaborators, allDataCollsUpdating))
+    );
     if (collaboratorCreatedResult === "ERROR") return "ERROR";
     return collaboratorCreatedResult;
   });

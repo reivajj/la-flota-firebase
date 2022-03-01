@@ -1,6 +1,7 @@
 
 // import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
 import { colorFromFugaState, ourAlbumStateWithEquivalence } from '../variables/varias';
+import { fugaAlbumsState } from '../variables/fuga';
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
@@ -15,26 +16,10 @@ export const getTitleLanzamientos = (params, labels, artists) => {
 }
 
 export const getAlbumById = (albums, albumId) => {
-  return albums.find(a => a.id === albumId);
+  let albumFounded = albums.find(a => a.id === albumId);
+  if (!albumFounded) return {};
+  else return albumFounded;
 }
-
-// export const sortArtistsByPrimaryFirst = artistsWithPrimary => {
-//   return artistsWithPrimary.sort((arA, arB) => {
-//     if (arA.primary) return -1;
-//     if (!arA.primary && arB.primary) return 1;
-//     return 1;
-//   })
-// }
-
-// export const getAlbumDisplayArtistsName = (mainArtistName, allOtherArtists) => {
-
-//   let otherArtistOrderedByPrimary = sortArtistsByPrimaryFirst(allOtherArtists);
-
-//   console.log("TEST: ", otherArtistOrderedByPrimary);
-//   let othersNames = allOtherArtists.map(otherArtist => `${otherArtist.primary ? "and " : "featuring "}${otherArtist.name}`);
-//   console.log("other names: ", othersNames);
-//   return `${mainArtistName} ${othersNames[0]}`
-// }
 
 const firstDateIsLower = (aDayOfMonth, aMonth, aYear, otherDayOfMonth, otherMonth, otherYear) => {
   if (aYear < otherYear) return true;
@@ -58,37 +43,9 @@ export const checkOldReleaseDate = albumData => {
   return true;
 }
 
-export const getAlbumsPropsForDataTable = (albums) => {
-  let albumDataTable = [];
-  albums.forEach(album => {
-    albumDataTable.push([
-      album.title,
-      album.nombreArtist,
-      album.upc,
-      album.format,
-      `${album.dayOfMonth}/${album.month}/${album.year}`,
-    ])
-  });
-  return albumDataTable;
-}
-
-export const getTracksDataTableFromFugaAssets = (fugaTracksAssets, handleEditTrack, handleDeleteTrack) => {
-  let tracksDataTable = [];
-  fugaTracksAssets.forEach(fugaTrackAsset => {
-    tracksDataTable.push([
-      fugaTrackAsset.sequence,
-      fugaTrackAsset.name,
-      fugaTrackAsset.isrc,
-      fugaTrackAsset.display_artist,
-      fugaTrackAsset.duration,
-      // editAction(fugaTrackAsset, handleEditTrack),
-      // deleteAction(fugaTrackAsset, handleDeleteTrack),
-    ])
-  });
-  return tracksDataTable;
-}
-
 export const getArtistNameAndPrimaryOfAlbum = albumData => {
+  if (!albumData) return [];
+  if (!albumData.allOtherArtists) return albumData.nombreArtist ? [{ name: albumData.nombreArtist, primary: true }] : [];
   // let allOtherArtists = [];
   // albumData.allOtherArtists.forEach(otherArtist => allOtherArtists.push({ name: otherArtist.name, primary: otherArtist.primary }))
   return [{ name: albumData.nombreArtist, primary: true },
@@ -100,6 +57,7 @@ export const getOurStateFromFugaState = fugaState => {
 }
 
 export const getStateColor = fugaState => {
+  if (!fugaAlbumsState.includes(fugaState)) return "rgb(231, 190, 66)";
   return colorFromFugaState[fugaState];
 }
 

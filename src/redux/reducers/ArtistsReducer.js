@@ -15,7 +15,7 @@ const initialState = {
   artists: [],
   addingArtist: {
     name: "", biography: "", imagenUrl: "", id: "", spotify_uri: "", apple_id: "", imagenRef: "",
-    spotifyIdentifierIdFuga: "", appleIdentifierIdFuga: ""
+    spotifyIdentifierIdFuga: "", appleIdentifierIdFuga: "", fugaId: "", ownerEmail: "", ownerId: "",
   }
 }
 
@@ -28,6 +28,9 @@ const ArtistsReducer = (state = initialState, action) => {
 
     case ReducerTypes.EDIT_ARTIST_WITH_ID:
       return { addingArtist: initialState.addingArtist, artists: editAndAddArtist(state.artists, action.payload) }
+
+    case ReducerTypes.ADDING_ARTIST_UPDATE:
+      return { ...state, addingArtist: action.payload }  
 
     case ReducerTypes.ARTIST_DELETE_WITH_ID:
       return { ...state, artists: state.artists.filter(artist => artist.id !== action.payload) };

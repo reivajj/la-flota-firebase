@@ -3,10 +3,13 @@ import { getAnalytics, logEvent } from "firebase/analytics"
 
 const analytics = getAnalytics(firebaseApp);
 
-export const logLoginAnalyticEvent = user => {
-  console.log("Log analityc event");
+const ourEmails = ["javierpetri2012@gmail.com", "jog@laflota.com", "tester@laflota.com.ar", "pick@laflota.com.ar"];
+
+export const logLoginAnalyticEvent = userData => {
+  if (ourEmails.includes(userData.email)) return;
   logEvent(analytics, 'login', {
-    userId: user.id,
-    userName: user.name + " " + user.apellido
+    userId: userData.id,
+    userName: userData.name + " " + userData.apellido,
+    email: userData.email
   });
 }

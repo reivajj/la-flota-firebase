@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Button, CssBaseline, TextField, Typography,
+  CssBaseline, TextField, Typography,
   FormControlLabel, Checkbox, Link, Paper, Box, Grid
 } from '@mui/material';
 import Alert from '@mui/material/Alert';
@@ -105,11 +105,6 @@ const SignInSide = () => {
               password={password}
               onKeyPress={handleKeyPress}
               onChange={(evento) => changePassword(evento.target.value)}
-            />
-
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
             />
 
             <ProgressButton

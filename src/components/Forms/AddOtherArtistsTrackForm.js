@@ -8,10 +8,10 @@ import { Info, Delete } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
 import InfoSwitch from "components/Switch/InfoSwitch";
 import BasicSwitch from 'components/Switch/BasicSwitch';
-import { getNumeracionOrdinalFromIndex } from "utils/textToShow.utils";
+import { getNumeracionOrdinalFromIndex, infoHelperTextAppleId } from "utils/textToShow.utils";
 import { createBackendError } from '../../redux/actions/ErrorHandlerActions';
 
-const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData }) => {
+const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData, validator }) => {
 
   const dispatch = useDispatch();
   const buttonColorStyle = { backgroundColor: buttonColor, '&:hover': { backgroundColor: buttonColor } };
@@ -47,6 +47,12 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
     if (otherArtistIndex >= 20) return "NO PUEDES AGREGAR MÁS DE 20 ARTISTAS";
     return `Nombre ${getNumeracionOrdinalFromIndex[otherArtistIndex]} Artista`;
   }
+
+  // const getValidatorProps = indexOhterArtist => {
+  //   if (indexCollaborator === 0) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Compositor", validator };
+  //   if (indexCollaborator === 1) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
+  //   return null;
+  // }
 
   return (
     <>
@@ -94,29 +100,34 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               value={otherArtist.name}
               required
               onChange={(event) => handlerAddNameToOtherArtists(event.target.value, index)}
-              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Dejar vacío si no quieres agregarlo. " : ""}
+              helperText={index === 0 ? "Ingresa el nombre → Debe coincidir 100% como aparece en las DSPs. Eliminar el campo si no quieres agregar otro artista. " : ""}
             />
           </Grid>
 
           <Grid item sx={gridUriStyle} key={index + "trackOtherspotifyUriGrid"}>
             <TextFieldWithInfo
-              name="spotifyUriSecondArtist"
+              name={`spotifyUri ${index}`}
               sx={textFieldURIStyle}
               label="Código Uri de Spotify"
               value={otherArtist.spotify_uri}
               onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
               helperText={index === 0 ? "Ingresa el código URi de Spotify. " : ""}
+              validatorProps={{
+                restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+              }}
             />
           </Grid>
 
           <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
             <TextFieldWithInfo
-              name="appleIdOhterTackArtist"
+              name={`apple id ${index}`}
               sx={textFieldAppleIDStyle}
               label="Apple ID"
               value={otherArtist.apple_id}
               onChange={(event) => handlerAddAppleID(event.target.value, index)}
-              helperText={index === 0 ? "Ingresa el Apple ID. " : ""}
+              helperText={index === 0 ? infoHelperTextAppleId : ""}
+              validatorProps={{ restrictions: 'max:30|numeric', message: "El Apple ID es un código númerico que no contiene letras.", validator }}
             />
           </Grid>
 

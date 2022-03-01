@@ -41,6 +41,7 @@ const AdminLayout = ({ ...rest }) => {
     setMobileOpen(!mobileOpen);
   };
 
+  // PROTECTED ROUTES NOT REGISTERED
   if (!auth || !auth.user || !auth.user.id) return <Navigate to="/login" state={{ from: location }} />;
 
   return (
@@ -49,7 +50,6 @@ const AdminLayout = ({ ...rest }) => {
       <Sidebar
         routes={routes}
         logoText={"La Flota"}
-        // logoText={"La Flota ♫ Distribución Digital"}
         logo={logo}
         image={image}
         handleDrawerToggle={handleDrawerToggle}

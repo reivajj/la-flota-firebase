@@ -274,6 +274,7 @@ export const createUserDocs = async (newUserData, dispatch) => {
 }
 
 export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
+  if (amountOfIsrcs === 0) return [];
   const batch = writeBatch(db);
 
   const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), orderBy("isrc", "asc"), limit(amountOfIsrcs));

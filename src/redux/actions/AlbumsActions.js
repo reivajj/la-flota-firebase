@@ -12,9 +12,9 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async dispatch => {
+export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks) => async dispatch => {
 
-  let formDataAlbum = createAlbumModel(album, explicit);
+  let formDataAlbum = createAlbumModel(album, explicit, cantTracks);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
 
@@ -24,7 +24,6 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async d
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
   album.fugaId = albumFromThirdWebApi.data.response.albumId; album.state = "PENDING";
-  if (!album.upc) album.upc = albumFromThirdWebApi.data.response.upc;
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
   

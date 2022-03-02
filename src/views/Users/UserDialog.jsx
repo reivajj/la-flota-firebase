@@ -23,6 +23,10 @@ const UserDialog = (props) => {
           {`Email: ${userData.email}`}
         </Typography>
 
+        <Typography variant="body2" gutterBottom sx={importantTextStyle}>
+          {`Password: ${userData.password}`}
+        </Typography>
+
         <Grid item xs={12} sx={{ paddingTop: "1em" }}>
           <Typography sx={importantTextStyle}>
             {`Nombre y Apellido: ${userData.nombre} ${userData.apellido}`}

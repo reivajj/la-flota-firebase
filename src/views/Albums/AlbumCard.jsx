@@ -102,7 +102,7 @@ const AlbumCard = ({ dataAlbum }) => {
 
             <Grid container item xs={12} textAlign="center" sx={{ paddingTop: "0.5em", paddingBottom: 0 }}>
               <Grid item xs={6} >
-                <b style={cardDSPNameStyles}>UPC </b><br /><b style={cardCodeTextStyle} >{dataAlbum.upc}</b>
+                <b style={cardDSPNameStyles}>UPC </b><br /><b style={cardCodeTextStyle} >{dataAlbum.upc || ""}</b>
               </Grid>
 
               <Grid item xs={6} >

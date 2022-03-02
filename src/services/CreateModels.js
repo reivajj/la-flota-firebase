@@ -1,3 +1,4 @@
+import { getFormatByCantOfTracks } from 'utils/albums.utils';
 import { v4 as uuidv4 } from 'uuid';
 import { getAllArtistsOfTrack, ifNoPrimaryChangeIt } from '../utils/artists.utils';
 
@@ -15,7 +16,7 @@ export const createArtistModel = (dataArtist, editing) => {
 
 const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
-export const createAlbumModel = (dataAlbum, explicit) => {
+export const createAlbumModel = (dataAlbum, explicit, cantTracks) => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
   let originalReleaseDate = dataAlbum.oldRelease ? `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}` : saleAndReleaseDate;
@@ -28,7 +29,7 @@ export const createAlbumModel = (dataAlbum, explicit) => {
   formDataAlbum.append("label", dataAlbum.labelFugaId);
   formDataAlbum.append("language", dataAlbum.languageId);
   formDataAlbum.append("catalog_number", uuidv4());
-  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format] || "ALBUM");
+  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format] || getFormatByCantOfTracks(cantTracks));
   formDataAlbum.append("c_line_text", dataAlbum.c_line);
   formDataAlbum.append("c_line_year", dataAlbum.c_year);
   formDataAlbum.append("p_line_text", dataAlbum.p_line);
@@ -43,6 +44,8 @@ export const createAlbumModel = (dataAlbum, explicit) => {
   if (dataAlbum.subgenre) formDataAlbum.append("subgenre", dataAlbum.subgenre);
   if (dataAlbum.version) formDataAlbum.append("release_version", dataAlbum.version);
 
+  formDataAlbum.append("extra_1", `Cantidad de Tracks total: ${cantTracks}`);
+  formDataAlbum.append("extra_2", "ALGO DE LAS DSP");
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
 

@@ -179,13 +179,23 @@ export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
   return "SUCCESS";
 }
 
-export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) => {
+export const attachTrackToAlbumFuga = async (trackData, dispatch) => {
+  const [errorAttachingTrack] = await to(axios.put(`${targetUrl}albums/${trackData.albumFugaId}/tracks/${trackData.fugaId}`));
+  if (errorAttachingTrack) {
+    dispatch(createBackendError(errorAttachingTrack));
+    writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
+    return "ERROR";
+  }
+  return "SUCCESS";
+}
+
+export const attachingTracksToAlbumFuga = async (tracksData, dispatch) => {
 
   for (const trackData of tracksData) {
-    const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${albumId}/tracks/${trackData.fugaId}`));
+    const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${trackData.albumFugaId}/tracks/${trackData.fugaId}`));
     if (errorAttachingTrack) {
       dispatch(createBackendError(errorAttachingTrack));
-      writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId }, errorAttachingTrack, "error");
+      writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
       return "ERROR";
     }
     console.log("RESULT:", result);
@@ -193,19 +203,20 @@ export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) 
   return "SUCCESS";
 }
 
-export const rearrengePositionsFuga = async (tracksData, albumId, dispatch) => {
-  let traksIdsAndPositions = [];
-  tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
+// export const rearrengePositionsFuga = async (tracksData, dispatch) => {
+//   let traksIdsAndPositions = [];
+//   let albumId = tracksData.length > 0 ? tracksData[0].albumFugaId : "";
+//   tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
 
-  let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
-    { rearrengeInstructions: traksIdsAndPositions }));
-  if (errorRearrengingPositions) {
-    dispatch(createBackendError(errorRearrengingPositions));
-    writeCloudLog("Error rearrenging album positions in fuga", { tracksData, albumId }, errorRearrengingPositions, "error");
-    return "ERROR";
-  }
-  return result;
-}
+//   let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
+//     { rearrengeInstructions: traksIdsAndPositions }));
+//   if (errorRearrengingPositions) {
+//     dispatch(createBackendError(errorRearrengingPositions));
+//     writeCloudLog("Error rearrenging album positions in fuga", { tracksData, albumId }, errorRearrengingPositions, "error");
+//     return "ERROR";
+//   }
+//   return result;
+// }
 
 // ======================================TRACKS=============================================\\
 

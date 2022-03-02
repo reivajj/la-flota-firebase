@@ -37,7 +37,7 @@ const setUploadProgress = (position, percentageProgress) => {
 }
 
 const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated) => async dispatch => {
-  writeCloudLog("creating track pre model", dataTrack, { notError: "not error" }, "info");
+  writeCloudLog(`creating track pre model, with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`, dataTrack, { notError: "not error" }, "info");
 
   let formDataTrack = createTrackModel(dataTrack, artistInvited, artistRecentlyCreated);
 
@@ -63,6 +63,10 @@ const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvi
 }
 
 export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId, ownerEmail, artistInvited, artistRecentlyCreated) => async dispatch => {
+  if (tracksData.length === 0) return "ERROR";
+
+  writeCloudLog(`creating all tracks pre model with album fugaId: ${albumFugaId} and ownerEmail: ${ownerEmail}`
+    , tracksData, { notError: "not error" }, "info");
 
   let amountOfIsrcsCodesMissing = 0;
   tracksData.forEach(track => { if (track.isrc === "") amountOfIsrcsCodesMissing++; });
@@ -73,8 +77,13 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
     return track;
   });
 
-  const uploadTracksOneByOne = tracksData.map(async dataTrack => {
+  let sortedTracks = tracksData.sort((tA, tB) => {
+    if (tA.position < tB.position) return -1;
+    else return 1;
+  });
 
+  for (const dataTrack of sortedTracks) {
+    const results = [];
     const onUploadProgress = progress => {
       const { loaded, total } = progress
       const percentageProgress = Math.floor((loaded / total) * 100)
@@ -85,21 +94,20 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
     let result = await toWithOutError(dispatch(createTrackInAlbumRedux(dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated)))
     if (result === "ERROR") return "ERROR";
 
-    return result;
-  });
+    let attachTrackToAlbumResponse = await BackendCommunication.attachTrackToAlbumFuga(dataTrack, dispatch);
+    if (attachTrackToAlbumResponse === "ERROR") return "ERROR";
 
-  let responseCreatingAllTracksToAlbum = await toWithOutError(Promise.all(uploadTracksOneByOne));
-  if (responseCreatingAllTracksToAlbum === "ERROR" || responseCreatingAllTracksToAlbum.includes("ERROR")) return "ERROR";
+    console.log("Cree track: ", dataTrack, "CON RESULT: ", result);
+    console.log("ATTACH TRAK OK: ", attachTrackToAlbumResponse);
+    results.push(result);
+  }
 
-  let attachingTracksToAlbumResponse = await BackendCommunication.attachingTracksToAlbumFuga(tracksData, tracksData[0].albumFugaId, dispatch);
-  if (attachingTracksToAlbumResponse === "ERROR") return "ERROR";
-
-  let rearrengePositionsResponse = await BackendCommunication.rearrengePositionsFuga(tracksData, tracksData[0].albumFugaId, dispatch);
-  if (rearrengePositionsResponse === "ERROR") return "ERROR";
+  // let attachingTracksToAlbumResponse = await BackendCommunication.attachingTracksToAlbumFuga(tracksData, dispatch);
+  // if (attachingTracksToAlbumResponse === "ERROR") return "ERROR";
 
   dispatch({
     type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,
-    payload: tracksData
+    payload: sortedTracks
   });
 
   return tracksData;

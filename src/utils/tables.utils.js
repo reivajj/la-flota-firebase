@@ -58,7 +58,7 @@ export const getAlbumsPropsForUsersDataTable = albums => {
     albumDataTable.push([
       album.title,
       album.nombreArtist,
-      album.upc,
+      album.upc || "",
       album.format,
       `${album.dayOfMonth}/${album.month}/${album.year}`,
     ])
@@ -77,7 +77,7 @@ export const getAlbumsPropsForAdminDataTable = (albums, handleOpenUserDialog, ha
       <Typography sx={stateInfoStyle}>Ir al album para ver el Estado.</Typography>,
       // <Typography sx={stateInfoStyle}>{album.state ? getOurStateFromFugaState(album.state) : "Ir al Album para ver el Estado"}</Typography>,
       moreInfoActionRender(album.ownerId, handleOpenUserDialog),
-      album.upc,
+      album.upc || "",
       album.format,
       `${album.dayOfMonth}/${album.month}/${album.year}`,
     ])

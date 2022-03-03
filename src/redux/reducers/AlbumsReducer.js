@@ -41,13 +41,16 @@ const AlbumsReducer = (state = initialState, action) => {
       const newAlbums = checkNewAlbums(state.albums, action.payload)
       return { ...state, albums: [...state.albums, ...newAlbums] };
 
+    case ReducerTypes.ALBUMS_EDIT_BY_ID:
+      return { ...state, albums: [...state.albums.filter(album => album.id !== action.payload.id), action.payload] }
+
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM:
       return { ...state, addingAlbum: action.payload }
 
-    case ReducerTypes.ALBUMS_CLEAN_ADDING_ALBUM: 
-      return { ...state, addingAlbum: initialState.addingAlbum };  
-    
-    case ReducerTypes.ALBUMS_DELETE_BY_ID: 
+    case ReducerTypes.ALBUMS_CLEAN_ADDING_ALBUM:
+      return { ...state, addingAlbum: initialState.addingAlbum };
+
+    case ReducerTypes.ALBUMS_DELETE_BY_ID:
       return { ...state, albums: state.albums.filter(album => album.id !== action.payload) };
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM_IMAGEN_URL_AND_FILE:

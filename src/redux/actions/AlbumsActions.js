@@ -26,7 +26,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
   album.fugaId = albumFromThirdWebApi.data.response.albumId; album.state = "PENDING";
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
-  
+
   let albumToUploadToFS = { ...album, cover: "" };
 
   writeCloudLog(`creating album ${albumToUploadToFS.name} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
@@ -70,6 +70,23 @@ export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
   }
 
   return liveLinksResponse;
+}
+
+export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
+  if (dataAlbumFuga.upc) return "ALREADY_HAS_UPC";
+  let responseUPC = await BackendCommunication.createUPCToSuccessAlbumFuga(dataAlbumFuga.fugaId, dispatch);
+  if (responseUPC === "ERROR") return "ERROR";
+  console.log("RESPONSE UPC: ", responseUPC);
+
+  dataAlbumFuga.upc = responseUPC;
+
+  await FirestoreServices.updateElementFS(dataAlbumFuga, { upc: responseUPC }, dataAlbumFuga.id, "albums", dispatch);
+
+  console.log("DATA ALBUM FUGA: ", dataAlbumFuga);
+  dispatch({
+    type: ReducerTypes.ALBUMS_EDIT_BY_ID,
+    payload: dataAlbumFuga
+  });
 }
 
 export const albumCleanUpdatingAlbum = () => {

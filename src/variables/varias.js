@@ -1,3 +1,9 @@
+export const planesLaFlota = [
+  { id: "charly-garcia", name: "Charly García", maxArtists: 1 },
+  { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez : Dos en la ciudad", maxArtists: 2 },
+  { id: "spinettalandia-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5 }
+]
+
 export const languages = [
   "Spanish", "English", "None", "Afrikaans", "Arabic", "Bulgarian", "Cantonese", "Catalan", "Chinese", "Croatian", "Czech", "Danish", "Dutch", "Estonian", "Finnish", "French",
   "German", "Greek", "Hebrew", "Hindi", "Hungarian", "Icelandic", "Indonesian", "Italian", "Japanese", "Kazakh", "Korean", "Lao", "Latvian", "Lithuanian",

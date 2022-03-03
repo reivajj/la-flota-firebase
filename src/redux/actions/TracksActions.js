@@ -9,6 +9,7 @@ import { writeCloudLog } from '../../services/LoggingService';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
+  trackData.collaborators.map(coll => coll.name.trim())
   trackData.id = trackData.id || uuidv4();
   return {
     type: ReducerTypes.ADD_UPLOADING_TRACKS,
@@ -44,7 +45,7 @@ const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvi
   writeCloudLog(`creating track to send to fuga with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`
     , copyFormDataToJSON(formDataTrack), { notError: "not error" }, "info");
 
-  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, onUploadProgress, dataTrack.albumFugaId, dispatch);
+  let trackFromThirdWebApi = await BackendCommunication.createTrackFuga(formDataTrack, dataTrack.ownerEmail, onUploadProgress, dataTrack.albumFugaId, dispatch);
   if (trackFromThirdWebApi === "ERROR") return "ERROR";
 
   dataTrack.whenCreatedTS = new Date().getTime();
@@ -97,13 +98,8 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
     let attachTrackToAlbumResponse = await BackendCommunication.attachTrackToAlbumFuga(dataTrack, dispatch);
     if (attachTrackToAlbumResponse === "ERROR") return "ERROR";
 
-    console.log("Cree track: ", dataTrack, "CON RESULT: ", result);
-    console.log("ATTACH TRAK OK: ", attachTrackToAlbumResponse);
     results.push(result);
   }
-
-  // let attachingTracksToAlbumResponse = await BackendCommunication.attachingTracksToAlbumFuga(tracksData, dispatch);
-  // if (attachingTracksToAlbumResponse === "ERROR") return "ERROR";
 
   dispatch({
     type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,

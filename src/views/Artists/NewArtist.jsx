@@ -4,11 +4,11 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import { TextField, Grid, Typography, Button } from "@mui/material";
+import { TextField, Grid, Typography } from "@mui/material";
 
 import SimpleReactValidator from "simple-react-validator";
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   createArtistRedux, saveAddingArtistName, saveAddingArtistBiography,
   saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId, saveAddingArtistImagenUrlAndReference, updateAddingArtistRedux, artistsAttachFugaIdToArtistDoc
@@ -28,6 +28,7 @@ import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
 import SuccessDialog from "components/Dialogs/SuccessDialog";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { userIsAdmin } from "utils/users.utils";
+import { userCanAddMoreArtists } from '../../utils/artists.utils';
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
@@ -59,8 +60,8 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("No es obligatoria la imagen");
-  // const [imageReference, setImageReference] = useState('');
-  const cannotAddArtists = !editing && (plan === "charly-garcia" && artistsFromStore.length > 1);
+
+  const cannotAddArtists = !userCanAddMoreArtists(editing, plan, artistsFromStore.length);
 
   const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(cannotAddArtists);
   const [openLoader, setOpenLoader] = useState(false);
@@ -162,6 +163,10 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const changeAppleId = event => {
     if (editing && !appleIdEdited) setAppleIdEdited(true);
     dispatch(saveAddingArtistAppleId(event.target.value));
+  }
+
+  const handleCloseMaxArtistWarning = () => {
+    setOpenMaxArtistsDialog(false);
   }
 
   const imageInput = <ImageInput key={"artist-photo"} imagenUrl={artistDataToShow.imagenUrl} onClickAddImage={onClickAddImageArtist} textButton="Imagen"
@@ -291,7 +296,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                 </CardFooter>
 
               </Card>
-              : <InfoDialog isOpen={openMaxArtistsDialog} handleClose={() => setOpenMaxArtistsDialog(false)}
+              : <InfoDialog isOpen={openMaxArtistsDialog} handleClose={handleCloseMaxArtistWarning}
                 title={"No puedes agregar más Artistas"} contentTexts={maxArtistsText} />
             }
           </Grid>

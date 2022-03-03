@@ -189,18 +189,14 @@ export const attachTrackToAlbumFuga = async (trackData, dispatch) => {
   return "SUCCESS";
 }
 
-export const attachingTracksToAlbumFuga = async (tracksData, dispatch) => {
-
-  for (const trackData of tracksData) {
-    const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${trackData.albumFugaId}/tracks/${trackData.fugaId}`));
-    if (errorAttachingTrack) {
-      dispatch(createBackendError(errorAttachingTrack));
-      writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
-      return "ERROR";
-    }
-    console.log("RESULT:", result);
+export const createUPCToSuccessAlbumFuga = async (albumFugaId, dispatch) => {
+  const [errorCreatingUPC, responseUPC] = await to(axios.post(`${targetUrl}albums/${albumFugaId}/barcode`));
+  if (errorCreatingUPC) {
+    dispatch(createBackendError(errorCreatingUPC));
+    writeCloudLog("Error creating UPC to album in fuga", albumFugaId, errorCreatingUPC, "error");
+    return "ERROR";
   }
-  return "SUCCESS";
+  return responseUPC.data.response;
 }
 
 // export const rearrengePositionsFuga = async (tracksData, dispatch) => {
@@ -221,11 +217,11 @@ export const attachingTracksToAlbumFuga = async (tracksData, dispatch) => {
 // ======================================TRACKS=============================================\\
 
 // ESTA LLEGANDO EL FORMDATA TRACK VACIO.
-export const createTrackFuga = async (formDataTrack, onUploadProgress, albumFugaId, dispatch) => {
+export const createTrackFuga = async (formDataTrack, ownerEmail, onUploadProgress, albumFugaId, dispatch) => {
   let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
-    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
+    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}, ownerEmail: ${ownerEmail}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
     return "ERROR";
   }
 

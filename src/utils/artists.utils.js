@@ -1,4 +1,5 @@
 import { combineArraysWithNoDuplicates, cloneDeepLimited } from '../utils';
+import { planesLaFlota } from '../variables/varias';
 
 export const getAllOtherArtistsFromAlbumAndTrack = (artistFromLaFlota, allOtherArtistsAlbum, allArtistsTrack) => {
   let allOtherArtistsFromAlbum = allOtherArtistsAlbum.filter(a => a.name !== "");
@@ -45,7 +46,7 @@ export const ifNoPrimaryChangeIt = artists => {
   if (artists.length > 0) {
     artistPrimary = artists.find(artist => artist.primary === true);
     if (!artistPrimary) artists[0].primary = true;
-  } 
+  }
   return artists;
 }
 
@@ -72,4 +73,15 @@ export const getAllArtistsOfTrack = (artists, artistInvited, artistRecentlyCreat
     };
   });
   return artistsArrayToUpload;
+}
+
+export const userCanAddMoreArtists = (editing, plan, cantArtists) => {
+  console.log("PARAMSL ", editing, plan, cantArtists)
+  if (editing) return true;
+  let planConRestricciones = planesLaFlota.find(p => plan === p.id);
+  console.log("PLAN CON RES: ", planConRestricciones);
+  if (!planConRestricciones) return true;
+
+  if (planConRestricciones.maxArtists <= cantArtists) return false;
+  return true;
 }

@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {
-  Button, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Typography, Grid
+  Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Grid
 } from '@mui/material';
 
 const UserDialog = (props) => {
 
-  const { userData, isOpen, handleClose, title, contentTexts } = props;
+  const { userData, isOpen, handleClose, title } = props;
 
   return (
     <Dialog

@@ -60,6 +60,7 @@ export const NewTrackDialog = (props) => {
 
   const handleCreateTrack = async () => {
     trackData.position = tracksDataTable.length + 1;
+    trackData.collaborators = trackData.collaborators.map(coll => { return { ...coll, name: coll.name.trim() } });
     dispatch(createTrackLocalRedux(trackData, currentUserId));
     setTracksDataTable([...tracksDataTable, [
       `${trackData.position}`,

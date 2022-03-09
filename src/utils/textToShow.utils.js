@@ -15,7 +15,10 @@ export const invalidDateContentText = [<Danger>La fecha debe ser menor a la actu
 <Danger>Por favor, vuelve a seleccionar la fecha indicadada.</Danger>]
 
 export const noTracksWarningTitle = "No puedes crear un lanzamiento sin canciones:";
-export const noTracksWarningText = [<Danger>Por favor, ingresa en la tabla las canciones del lanzamiento.</Danger>]
+export const noTracksWarningText = [<Danger>Por favor, ingresa en la tabla las canciones del lanzamiento.</Danger>];
+
+export const noCoverTitle = "Falta el Arte de Tapa. Si aún asi la vez, cárgala nuevamente";
+export const noCoverWarningText = [<Danger>Por favor, vuelve a seleccionar un Arte de Tapa.</Danger>];
 
 export const featuringArtistTooltip = [
   "Indica si el Artista será Principal o Featuring.",
@@ -58,7 +61,7 @@ export const lanzamientoColaborativoTooltip = [
 
 export const albumCoverHelperText = [
   "El arte de tapa debe ser una imagen de alta calidad.", < br />,
-  "El archivo debe ser JPG de colores RGB de mínimo 1400 * 1400px y siempre debe ser CUADRADA", < br />,
+  "El archivo debe ser JPG de colores RGB de mínimo 1400 * 1400px y un máximo de 8000px * 8000px y siempre debe ser CUADRADA", < br />,
   "(si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
 ]
 
@@ -87,8 +90,8 @@ export const bienvenidoDialogText = [
 ];
 
 export const imageConstraintsMessage = [
-  "La imagen debe tener una resolucion mínima de 1400x1400 píxeles",
-  "y una resolución máxima de 8000x8000 píxeles y un tamaño máximo de 20mb"
+  "La imagen debe ser CUADRADA y debe tener una resolucion mínima de 1400*1400 píxeles",
+  " y una resolución máxima de 8000x8000 píxeles con un tamaño máximo de 20mb"
 ]
 
 export const textLowQualityAudio = [

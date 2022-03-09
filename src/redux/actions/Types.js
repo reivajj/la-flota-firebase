@@ -39,6 +39,7 @@ export const LABEL_DELETE_WITH_ID = "label_delete_with_id";
 
 //Albums Types
 export const ADD_ALBUMS = "add_albums";
+export const ALBUMS_EDIT_BY_ID = "albums_edit_by_id";
 export const ALBUMS_SIGN_OUT = "albums_sign_out";
 export const ALBUMS_UPDATE_ADDING_ALBUM = "albums_update_adding_album";
 export const ALBUMS_CLEAN_ADDING_ALBUM = "albums_clean_adding_album";

@@ -27,7 +27,7 @@ const MyArtists = () => {
   const misArtistasProfiles = () => {
     return filteredArtistsIfNeeded.length > 0
       ? filteredArtistsIfNeeded.map((artista, index) =>
-        <Grid item xs={3} key={index}>
+        <Grid item xs={12} sm={6} lg={3} key={index}>
           <ArtistCard key={index} dataArtist={artista} index={index} />
         </Grid>
       )

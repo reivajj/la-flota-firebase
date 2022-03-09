@@ -66,3 +66,10 @@ export const validateUPC = upcCode => {
   if (Number(upcCode) && upcCode.length === 13) return true;
   else return false;
 }
+
+export const getFormatByCantOfTracks = cantTracks => {
+  if (cantTracks === 1) return "SINGLE";
+  if (cantTracks > 1 && cantTracks < 6) return "EP";
+  if (cantTracks >= 6) return "ALBUM";
+  return "NO_TRACKS";
+}

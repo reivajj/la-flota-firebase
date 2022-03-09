@@ -51,27 +51,24 @@ const AlbumCard = ({ dataAlbum }) => {
   </Link>
 
   return (
-    <Grid container justifyContent="center">
-
+    <>
       <Card sx={cardElementStyle}>
 
-        <CardContent>
-          <Grid item xs={12}>
+        <CardContent sx={{ height: "50%" }}>
+          <Grid item xs={12} sx={{ height: "100%" }}>
             {dataAlbum.imagenUrl && (
-              <Grid >
-                <Image
-                  style={imageStyle}
-                  alt="album-image"
-                  duration={30}
-                  src={dataAlbum.imagenUrl}
-                />
-              </Grid>
+              <Image
+                style={imageStyle}
+                alt="album-image"
+                duration={30}
+                src={dataAlbum.imagenUrl}
+              />
             )}
           </Grid>
         </CardContent>
 
-        <CardContent style={{ padding: '6px' }}>
-          <Grid item xs={12} sx={{ textAlign: "center" }}>
+        <CardContent style={{ padding: '6px', height: '25%' }}>
+          <Grid container textAlign="center" justifyContent="center">
 
             <Grid item xs={12} textAlign="-moz-center">
               <Typography noWrap sx={cardTitleBlackStyles}>{dataAlbum.title}</Typography>
@@ -102,7 +99,7 @@ const AlbumCard = ({ dataAlbum }) => {
 
             <Grid container item xs={12} textAlign="center" sx={{ paddingTop: "0.5em", paddingBottom: 0 }}>
               <Grid item xs={6} >
-                <b style={cardDSPNameStyles}>UPC </b><br /><b style={cardCodeTextStyle} >{dataAlbum.upc}</b>
+                <b style={cardDSPNameStyles}>UPC </b><br /><b style={cardCodeTextStyle} >{dataAlbum.upc || ""}</b>
               </Grid>
 
               <Grid item xs={6} >
@@ -113,9 +110,9 @@ const AlbumCard = ({ dataAlbum }) => {
           </Grid>
         </CardContent>
 
-        <CardActions sx={{ justifyContent: "center", marginTop: "2%" }}>
+        <CardActions sx={{ justifyContent: "center", marginTop: "4%", height: '20%' }}>
 
-          <Grid container spacing={2} justifyContent="center">
+          <Grid container spacing={2} justifyContent="center" paddingBottom={1}>
 
             <Grid item xs={8}>
               <Button
@@ -144,17 +141,17 @@ const AlbumCard = ({ dataAlbum }) => {
         title={"Eliminar Lanzamiento"} textName={dataAlbum.title} textContent={deleteAlbumDialogText}
         deleteAction={handleDelete} deleteButtonText={buttonText} openLoader={openLoader} buttonState={buttonState}
       />
-    </Grid >
+    </>
   );
 }
 
 export default AlbumCard;
 
-const imageStyle = { borderRadius: "30px", marginTop: "20px", width: "15em", height: "15em" };
-const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "22em", height: "38em" };
+const imageStyle = { borderRadius: "30px", marginTop: "7%", width: "100%", height: "100%" };
+const cardElementStyle = { borderRadius: "30px", marginTop: "7%", width: "95%", height: "100%" };
 const cardSubtitleBlackStyles = { color: "rgba(0,0,0,0.8)", margin: "0", fontSize: "20px", marginTop: "1em", marginBottom: "0" };
 const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
-const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
+const dividerStyle = { width: "90%", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
 const linkToArtistStyles = { fontSize: "18px" }
 const linkToLabelStyles = { fontSize: "16px" }
 const cardDSPNameStyles = { color: "rgba(0,0,0,0.9)", margin: "0", fontWeight: 600, fontSize: "16px", marginTop: "1em", marginBottom: "0" };

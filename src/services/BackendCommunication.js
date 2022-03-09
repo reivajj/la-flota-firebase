@@ -179,42 +179,49 @@ export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
   return "SUCCESS";
 }
 
-export const attachingTracksToAlbumFuga = async (tracksData, albumId, dispatch) => {
-
-  for (const trackData of tracksData) {
-    const [errorAttachingTrack, result] = await to(axios.put(`${targetUrl}albums/${albumId}/tracks/${trackData.fugaId}`));
-    if (errorAttachingTrack) {
-      dispatch(createBackendError(errorAttachingTrack));
-      writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId }, errorAttachingTrack, "error");
-      return "ERROR";
-    }
-    console.log("RESULT:", result);
+export const attachTrackToAlbumFuga = async (trackData, dispatch) => {
+  const [errorAttachingTrack] = await to(axios.put(`${targetUrl}albums/${trackData.albumFugaId}/tracks/${trackData.fugaId}`));
+  if (errorAttachingTrack) {
+    dispatch(createBackendError(errorAttachingTrack));
+    writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
+    return "ERROR";
   }
   return "SUCCESS";
 }
 
-export const rearrengePositionsFuga = async (tracksData, albumId, dispatch) => {
-  let traksIdsAndPositions = [];
-  tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
-
-  let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
-    { rearrengeInstructions: traksIdsAndPositions }));
-  if (errorRearrengingPositions) {
-    dispatch(createBackendError(errorRearrengingPositions));
-    writeCloudLog("Error rearrenging album positions in fuga", { tracksData, albumId }, errorRearrengingPositions, "error");
+export const createUPCToSuccessAlbumFuga = async (albumFugaId, dispatch) => {
+  const [errorCreatingUPC, responseUPC] = await to(axios.post(`${targetUrl}albums/${albumFugaId}/barcode`));
+  if (errorCreatingUPC) {
+    dispatch(createBackendError(errorCreatingUPC));
+    writeCloudLog("Error creating UPC to album in fuga", albumFugaId, errorCreatingUPC, "error");
     return "ERROR";
   }
-  return result;
+  return responseUPC.data.response;
 }
+
+// export const rearrengePositionsFuga = async (tracksData, dispatch) => {
+//   let traksIdsAndPositions = [];
+//   let albumId = tracksData.length > 0 ? tracksData[0].albumFugaId : "";
+//   tracksData.forEach(trackData => traksIdsAndPositions.push({ trackId: trackData.fugaId, newPosition: trackData.position }));
+
+//   let [errorRearrengingPositions, result] = await to(axios.put(`${targetUrl}albums/${albumId}/rearrenge`,
+//     { rearrengeInstructions: traksIdsAndPositions }));
+//   if (errorRearrengingPositions) {
+//     dispatch(createBackendError(errorRearrengingPositions));
+//     writeCloudLog("Error rearrenging album positions in fuga", { tracksData, albumId }, errorRearrengingPositions, "error");
+//     return "ERROR";
+//   }
+//   return result;
+// }
 
 // ======================================TRACKS=============================================\\
 
 // ESTA LLEGANDO EL FORMDATA TRACK VACIO.
-export const createTrackFuga = async (formDataTrack, onUploadProgress, albumFugaId, dispatch) => {
+export const createTrackFuga = async (formDataTrack, ownerEmail, onUploadProgress, albumFugaId, dispatch) => {
   let [errorUploadingTrackInThirdWebApi, trackFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/`, formDataTrack, { onUploadProgress }));
   if (errorUploadingTrackInThirdWebApi) {
     dispatch(createBackendError(errorUploadingTrackInThirdWebApi));
-    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
+    writeCloudLog(`Error creating track in fuga with album fugaId ${albumFugaId}, ownerEmail: ${ownerEmail}`, copyFormDataToJSON(formDataTrack), errorUploadingTrackInThirdWebApi, "error");
     return "ERROR";
   }
 

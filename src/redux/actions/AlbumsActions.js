@@ -12,9 +12,9 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async dispatch => {
+export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks) => async dispatch => {
 
-  let formDataAlbum = createAlbumModel(album, explicit);
+  let formDataAlbum = createAlbumModel(album, explicit, cantTracks);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
 
@@ -24,10 +24,9 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit) => async d
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
   album.fugaId = albumFromThirdWebApi.data.response.albumId; album.state = "PENDING";
-  if (!album.upc) album.upc = albumFromThirdWebApi.data.response.upc;
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
-  
+
   let albumToUploadToFS = { ...album, cover: "" };
 
   writeCloudLog(`creating album ${albumToUploadToFS.name} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
@@ -71,6 +70,23 @@ export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
   }
 
   return liveLinksResponse;
+}
+
+export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
+  if (dataAlbumFuga.upc) return "ALREADY_HAS_UPC";
+  let responseUPC = await BackendCommunication.createUPCToSuccessAlbumFuga(dataAlbumFuga.fugaId, dispatch);
+  if (responseUPC === "ERROR") return "ERROR";
+  console.log("RESPONSE UPC: ", responseUPC);
+
+  dataAlbumFuga.upc = responseUPC;
+
+  await FirestoreServices.updateElementFS(dataAlbumFuga, { upc: responseUPC }, dataAlbumFuga.id, "albums", dispatch);
+
+  console.log("DATA ALBUM FUGA: ", dataAlbumFuga);
+  dispatch({
+    type: ReducerTypes.ALBUMS_EDIT_BY_ID,
+    payload: dataAlbumFuga
+  });
 }
 
 export const albumCleanUpdatingAlbum = () => {

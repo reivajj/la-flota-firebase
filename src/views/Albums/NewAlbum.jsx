@@ -22,7 +22,7 @@ import { Save, AddCircleOutline } from '@mui/icons-material/';
 import {
   albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper,
   preSaleCheckBoxHelper, releaseDateInfoTooltip, titleInvalidOldReleaseDate, invalidDateContentText,
-  titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText, imageConstraintsMessage
+  titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText, imageConstraintsMessage, noCoverTitle, noCoverWarningText
 } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
@@ -30,7 +30,7 @@ import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
 import ImageInput from "components/Input/ImageInput";
 import { createOtherArtistsRedux } from '../../redux/actions/ArtistsInvitedActions';
-import { updateAddingAlbumImageUrlAndCoverRedux } from '../../redux/actions/AlbumsActions';
+import { updateAddingAlbumImageUrlAndCoverRedux, createUPCToSuccessAlbumRedux } from '../../redux/actions/AlbumsActions';
 import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
 import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
 import { createCollaboratorsRedux } from "redux/actions/CollaboratorsActions";
@@ -138,7 +138,10 @@ const NewAlbum = ({ editing }) => {
       setOpenInvalidDateDialog({ open: true, beginner: "pre-order", title: titleInvalidPreCompraDate, text: invalidDateContentText });
       return;
     }
-    if (validator.current.allValid() && currentAlbumData.cover) createAlbum();
+    if (!currentAlbumData.cover.size) {
+      setOpenInvalidDateDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText })
+    }
+    if (validator.current.allValid()) createAlbum();
     else {
       validator.current.showMessages();
       forceUpdate();
@@ -149,7 +152,7 @@ const NewAlbum = ({ editing }) => {
     setOpenLoader(true);
     let albumDataFromFuga = ""; let responseTracksFromFuga = ""; let internalState = "";
     const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
-    console.log("ALL FINAL ARTIST: ", allOtherArtistsNotRepeatedFromTracksAndAlbum);
+
     const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum
       , currentUserId, currentUserEmail, artistInvited)))
     if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
@@ -159,8 +162,9 @@ const NewAlbum = ({ editing }) => {
     else internalState = "artists-created"; setCreatingAlbumState("artists-created");
 
     if (internalState === "artists-created") {
+      const cantTracks = myTracks.length;
       const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
-      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum)));
+      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum, cantTracks)));
       if (albumDataFromFuga === "ERROR") {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;
@@ -180,7 +184,7 @@ const NewAlbum = ({ editing }) => {
 
     if (internalState === "tracks-created") {
       const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
-        currentUserId, currentUserEmail, oldCollaborators)))
+        currentUserId, currentUserEmail)))
       if (tracksCollaboratorsResponse === "ERROR") {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       }
@@ -188,6 +192,7 @@ const NewAlbum = ({ editing }) => {
     }
 
     if (internalState === "collaborators-created" || internalState === "tracks-created") {
+      await toWithOutError(dispatch(createUPCToSuccessAlbumRedux(albumDataFromFuga)));
       setButtonState("success");
       setCreatingAlbumState("success");
     }
@@ -200,7 +205,7 @@ const NewAlbum = ({ editing }) => {
     let img = new Image()
     img.src = window.URL.createObjectURL(event.target.files[0])
     img.onload = async () => {
-      if (img.width >= 1400 && img.height >= 1400 && img.width <= 8000 && img.height <= 8000) {
+      if (img.width >= 1400 && img.height >= 1400 && img.width <= 8000 && img.height <= 8000 && img.width === img.height) {
         setMessageForCover("");
         let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
         if (errorAddingFile) {

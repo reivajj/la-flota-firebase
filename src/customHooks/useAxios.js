@@ -34,7 +34,7 @@ export const useFetch = (url) => {
 				dispatch({ type: 'FETCHED', payload: data });
 			} else {
 				try {
-					const response = await axios.get(url);
+					const response = await axios.get(`${url}?timestamp=${new Date().getTime()}`);
 					const data = response.data.response;
 					cache.current[url] = data;
 					if (cancelRequest) return;

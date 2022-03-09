@@ -221,17 +221,17 @@ export const updateStatsOfUserDoc = async (targetUserId, targetStat, amount, dis
 }
 
 // Elements es: ARTIST, TRACK, ALBUMS.
-export const updateElementFS = async (oldArtistData, newElementFields, elementId, collection, dispatch) => {
+export const updateElementFS = async (oldData, newElementFields, elementId, collection, dispatch) => {
   const elementDbRef = doc(db, collection, elementId);
-
+  console.log("UPDATE FIRESTORE: ", { oldData, newElementFields, elementId, collection });
   let [errorUpdatingElementInCollection] = await to(updateDoc(elementDbRef, { ...newElementFields }));
   if (errorUpdatingElementInCollection) {
     dispatch(createFireStoreError(`Error actualizando elemento`, errorUpdatingElementInCollection));
-    writeCloudLog("FS Error creating elements", { oldArtistData, newElementFields, elementId, collection }, errorUpdatingElementInCollection, "error");
+    writeCloudLog("FS Error creating elements", { oldData, newElementFields, elementId, collection }, errorUpdatingElementInCollection, "error");
     return "ERROR";
   }
 
-  await addActivityFS(collection, oldArtistData.ownerId, { ...oldArtistData, ...newElementFields }, "update", dispatch);
+  await addActivityFS(collection, oldData.ownerId, { ...oldData, ...newElementFields }, "update", dispatch);
 }
 
 export const userByEmailInFS = async (email, dispatch) => {
@@ -274,6 +274,7 @@ export const createUserDocs = async (newUserData, dispatch) => {
 }
 
 export const getAmountOfIsrcCodesToUseFS = async (amountOfIsrcs, dispatch) => {
+  if (amountOfIsrcs === 0) return [];
   const batch = writeBatch(db);
 
   const isrcsDbRef = query(collection(db, "isrcs"), where("used", "==", false), orderBy("isrc", "asc"), limit(amountOfIsrcs));

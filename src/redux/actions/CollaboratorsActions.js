@@ -1,7 +1,7 @@
 import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
-import { toWithOutError } from 'utils';
+import { toWithOutError, copyFormDataToJSON } from 'utils';
 import { createPersonsModel } from 'services/CreateModels';
 import { v4 as uuidv4 } from 'uuid';
 import { writeCloudLog } from '../../services/LoggingService';
@@ -21,29 +21,22 @@ export const collaboratorsSignOut = () => {
   }
 }
 
-export const createCollaboratorRedux = (collaborator, userId, oldCollaborators, allCollaboratorsRecentyAdded) => async dispatch => {
+export const createCollaboratorRedux = (collaborator, userId, ownerEmail) => async dispatch => {
 
-  writeCloudLog("creating collaborator to send to fuga", collaborator, { notError: "not error" }, "info");
+  writeCloudLog(`creating collaborator to send to fuga, ownerEmail: ${ownerEmail}`, collaborator, { notError: "not error" }, "info");
   // Siempre debo crear el COLLABORATOR. Es unico por role y track.
   if (!collaborator.person) return "ERROR COLABORADOR ID FALTANTE";
   let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, dispatch);
   if (collaboratorFromBackend === "ERROR") return "ERROR";
 
-  // Si la PERSON que es el colaborador, ya existia en FS, no la vuelvo a crear.
-  let collaboratorToCreateExisted = oldCollaborators.find(oldC => oldC.name === collaborator.name);
-  if (collaboratorToCreateExisted && collaboratorToCreateExisted.name === collaborator.name) return "SUCCESS";
-
-  // Si la PERSON con otro role, ya la agregue a FS.
-  let collaboratRecentlyAdded = allCollaboratorsRecentyAdded.find(recentlyC => (recentlyC.name === collaborator.name) && recentlyC.added);
-  console.log("RECENTLY ADDED ALL: ", allCollaboratorsRecentyAdded, "/ Was recently added: ", collaboratRecentlyAdded);
-  if (collaboratRecentlyAdded) return "SUCCESS";
-
   collaborator.added = true;
+  collaborator.ownerEmail = ownerEmail;
   collaborator.whenCreatedTS = new Date().getTime();
   collaborator.lastUpdateTS = collaborator.whenCreatedTS;
-  delete collaborator.role; delete collaborator.fugaId; delete collaborator.trackFugaId;
 
   console.log("COLLABORATOR NEW: ", collaborator);
+
+  writeCloudLog(`creating collaborator post fuga to FS, ownerEmail: ${ownerEmail}`, collaborator, { notError: "not error" }, "info");
 
   await FirestoreServices.createElementFS(collaborator, collaborator.id, userId, "artistsCollaborators", "totalCollaborators", 1, dispatch);
 
@@ -66,13 +59,13 @@ const getAllPeopleToCreateFromUploadingTracks = uploadedTracks => {
 }
 
 const getPersonIdFromPeople = (peopleWithId, personName) => {
-  let result = peopleWithId.find(person => person.name === personName);
+  console.log("PEOPLE PRE GETS: ", peopleWithId);
+  let peopleWiIdNotNull = peopleWithId.filter(person => person !== null);
+  let result = peopleWiIdNotNull.find(person => person.name.toLowerCase() === personName.toLowerCase());
   if (result && result.id) return result.id;
 }
 
 const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWithId, ownerId, ownerEmail) => {
-  console.log("PERSONS FROM BE: ", peopleWithId);
-  console.log("COLL FROM TRACKS : ", uploadedTracks);
   let collaboratorsForEachTrack = [];
   uploadedTracks.forEach(track => {
     track.collaborators.forEach(coll => {
@@ -89,33 +82,30 @@ const getAllCollaboratorsToAttachFromUploadingTracks = (uploadedTracks, peopleWi
   return collaboratorsForEachTrack;
 }
 
-export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail, oldCollaborators) => async dispatch => {
+export const createCollaboratorsRedux = (tracksCreated, ownerId, ownerEmail) => async dispatch => {
 
+  writeCloudLog(`creating people to send to fuga pre model, ownerEmail: ${ownerEmail}`, tracksCreated.map(t => t.collaborators), { notError: "not error" }, "info");
+  
   const peopleToCreateFormData = createPersonsModel(getAllPeopleToCreateFromUploadingTracks(tracksCreated));
-  writeCloudLog("creating people to send to fuga", peopleToCreateFormData, { notError: "not error" }, "info");
-  console.log("PEOPLE A CREAR: ", peopleToCreateFormData);
+
+  writeCloudLog(`creating people to send to fuga post model, ownerEmail: ${ownerEmail}`, copyFormDataToJSON(peopleToCreateFormData), { notError: "not error" }, "info");
+
   let peopleFromBackend = await BackendCommunication.createPersonsFuga(peopleToCreateFormData, dispatch);
   if (peopleFromBackend === "ERROR") return "ERROR";
 
-  writeCloudLog("creating people post fuga pre collaborators", peopleToCreateFormData, { notError: "not error" }, "info");
+  writeCloudLog(`creating people post fuga pre collaborators, ownerEmail: ${ownerEmail}`, copyFormDataToJSON(peopleToCreateFormData), { notError: "not error" }, "info");
 
   let allCollaboratorsNotEmptyTracks = getAllCollaboratorsToAttachFromUploadingTracks(tracksCreated, peopleFromBackend, ownerId, ownerEmail);
-  const createOtherCollaboratorsOneByOne = allCollaboratorsNotEmptyTracks.map(async (dataCollaborator, _, allDataCollsUpdating) => {
-    let collaboratorCreatedResult = await toWithOutError(
-      dispatch(createCollaboratorRedux(dataCollaborator, ownerId, oldCollaborators, allDataCollsUpdating))
-    );
-    if (collaboratorCreatedResult === "ERROR") return "ERROR";
-    return collaboratorCreatedResult;
-  });
+  writeCloudLog(`all collaborators to attach post people fuga, ownerEmail: ${ownerEmail}`, allCollaboratorsNotEmptyTracks, { notError: "not error" }, "info");
 
-  let responseCreatingAllCollaborators = await toWithOutError(Promise.all(createOtherCollaboratorsOneByOne));
-  if (responseCreatingAllCollaborators === "ERROR" || responseCreatingAllCollaborators.includes("ERROR")) {
-    console.log("ERROR EN EL PROMISE ALL :", responseCreatingAllCollaborators);
-    return "ERROR";
+  let responseCreatingAllCollaborators = [];
+  for (const dataCollaborator of allCollaboratorsNotEmptyTracks) {
+    let collaboratorCreatedResult = await toWithOutError(dispatch(createCollaboratorRedux(dataCollaborator, ownerId, ownerEmail)));
+    if (collaboratorCreatedResult === "ERROR") return "ERROR";
+    responseCreatingAllCollaborators.push(collaboratorCreatedResult);
   }
 
   console.log("Success creando los collaborators en el album: ", responseCreatingAllCollaborators);
-  console.log("Los collaborators despues de agregar todo: ", allCollaboratorsNotEmptyTracks);
 
   return "SUCCESS";
 }

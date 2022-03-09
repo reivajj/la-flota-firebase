@@ -46,29 +46,24 @@ const ArtistCard = ({ dataArtist, index }) => {
   }
 
   return (
-    <Grid container justifyContent="center">
-
+    <>
       <Card sx={cardElementStyle}>
 
-        <CardContent>
-          <Grid item xs={12}>
+        <CardContent sx={{ height: "55%" }}>
+          <Grid item xs={12} sx={{ height: "100%" }}>
             {dataArtist.imagenUrl
-              ?
-              <Grid >
-                <Image
-                  style={imageStyle}
-                  alt="artist-image"
-                  duration={30}
-                  src={dataArtist.imagenUrl}
-                />
-              </Grid>
-              : <Grid item xs={12}>
-                <ArtistAddedIcon sx={artistAddedIconStyle} asIconButton={false} />
-              </Grid>}
+              ? <Image
+                style={imageStyle}
+                alt="artist-image"
+                duration={30}
+                src={dataArtist.imagenUrl}
+              />
+              : <ArtistAddedIcon sx={artistAddedIconStyle} asIconButton={false} />
+            }
           </Grid>
         </CardContent>
 
-        <CardContent style={{ padding: '6px' }}>
+        <CardContent style={{ padding: '6px', height: '25%' }}>
           <Grid container sx={{ textAlign: "center" }} padding={2}>
 
             <Grid item xs={12} textAlign="-moz-center">
@@ -97,7 +92,7 @@ const ArtistCard = ({ dataArtist, index }) => {
           </Grid>
         </CardContent>
 
-        <CardActions sx={{ justifyContent: "center" }}>
+        <CardActions sx={{ justifyContent: "center", height: '12%' }}>
 
           <Grid container spacing={1} justifyContent="center">
 
@@ -136,17 +131,17 @@ const ArtistCard = ({ dataArtist, index }) => {
         title={"Eliminar Artista"} textName={dataArtist.name} textContent={deleteArtistDialogText}
         deleteAction={handleDelete} deleteButtonText={buttonText} openLoader={openLoader} buttonState={buttonState}
       />
-    </Grid>
+    </>
   );
 }
 
 export default ArtistCard;
 
-const imageStyle = { borderRadius: "30px", marginTop: "20px", width: "15em", height: "15em" };
-const cardElementStyle = { borderRadius: "30px", marginTop: "20px", width: "95%", height: "35em" };
+const imageStyle = { borderRadius: "30px", marginTop: "7%", width: "100%", height: "100%" };
+const cardElementStyle = { borderRadius: "30px", marginTop: "7%", width: "95%", height: "95%" };
 const cardTitleBlackStyles = { color: "rgba(0,0,0,1)", fontWeight: "300px", fontSize: "30px", marginBottom: "3px" };
-const dividerStyle = { width: "18em", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
-const artistAddedIconStyle = { width: "340px", paddingRight: "4%", height: "286px", marginTop: "-25px" };
+const dividerStyle = { width: "90%", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
+const artistAddedIconStyle = { borderRadius: "30px", marginTop: "7%", width: "100%", height: "100%" };
 const cardDSPNameStyles = { color: "rgba(0,0,0,0.9)", margin: "0", fontWeight: 600, fontSize: "14px", marginTop: "1em", marginBottom: "0" };
 const cardCodeTextStyle = { color: "rgba(0,0,0,0.5)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "14px", marginTop: "1em", marginBottom: "0" };
 const cardBioValueStyle = { color: "rgba(0,0,0,0.5)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "14px", marginTop: "1em", marginBottom: "0" };

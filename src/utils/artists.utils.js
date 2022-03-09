@@ -76,12 +76,9 @@ export const getAllArtistsOfTrack = (artists, artistInvited, artistRecentlyCreat
 }
 
 export const userCanAddMoreArtists = (editing, plan, cantArtists) => {
-  console.log("PARAMSL ", editing, plan, cantArtists)
   if (editing) return true;
   let planConRestricciones = planesLaFlota.find(p => plan === p.id);
-  console.log("PLAN CON RES: ", planConRestricciones);
   if (!planConRestricciones) return true;
-
   if (planConRestricciones.maxArtists <= cantArtists) return false;
   return true;
 }

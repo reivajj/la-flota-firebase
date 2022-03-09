@@ -26,7 +26,7 @@ const MyAlbums = () => {
   const myAlbumsProfiles = () => {
     return filteredAlbumsIfNeeded.length > 0
       ? filteredAlbumsIfNeeded.map((label, index) =>
-        <Grid item xs={3} key={index} sx={{ margintTop: "2%" }}>
+        <Grid item xs={12} sm={6} lg={3} key={index} paddingBottom={2}>
           <AlbumCard key={index} dataAlbum={label} index={index} />
         </Grid>
       )
@@ -48,9 +48,13 @@ const MyAlbums = () => {
           Nuevo Lanzamiento
         </Button>
       </Grid>
-      {
-        myAlbums
-      }
+
+      <Grid container item>
+        {
+          myAlbums
+        }
+      </Grid>
+
       <Grid item xs={12}>
         {myAlbums.length === 0 &&
           <h4 style={noAlbumsTitleBlackStyles}>{noTienesLanzamientos}</h4>}

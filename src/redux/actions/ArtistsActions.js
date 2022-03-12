@@ -177,6 +177,14 @@ export const deleteArtistRedux = (dataArtist, artistId, artistFugaId, userId) =>
   return "SUCCESS";
 }
 
+export const getArtistByFieldRedux = (field, fieldValue) => async dispatch => {
+  let artistsByField = await FirestoreServices.getElementsByField('artists', field, fieldValue, dispatch, 20);
+  if (artistsByField.length > 0) dispatch(artistsAddStore(artistsByField));
+  else return "ERROR";
+  return artistsByField;
+}
+
+
 export const saveAddingArtistName = artistTempName => {
   return {
     type: ReducerTypes.ADDING_ARTIST_NAME,

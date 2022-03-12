@@ -33,6 +33,7 @@ export const artistsWithUniqueName = allOtherArtists => {
 
 export const getFilteredArtistByUrl = (params, artists) => {
   if (params.view === "artist") return artists.filter(artist => artist.id === params.id);
+  if (params.view === "allOfUser") return artists.filter(artist => artist.ownerId === params.id);
   return artists;
 }
 

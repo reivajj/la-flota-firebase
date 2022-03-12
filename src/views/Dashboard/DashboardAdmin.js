@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Typography, Button } from '@mui/material';
+import { Grid, Typography, Button, CircularProgress, Backdrop } from '@mui/material';
 import TableWithHeader from "../../components/Table/TableWithHeader";
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getArtistPropsForDataTable } from "utils/artists.utils";
 import { toWithOutError } from 'utils';
 import { getAlbumsPropsForAdminDataTable } from "utils/tables.utils";
-import { usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
+import { getSearchedUserRedux, getUserIdByUPCRedux, getUsersByFieldRedux, usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
 import UserDialog from '../Users/UserDialog';
 import { getEmailIfNotHaveUser, getUsersPropsForDataTable, sortUsersByField } from '../../utils/users.utils';
 import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
 import { getElementsAdminQueryFS } from "services/FirestoreServices";
 import { sortAlbumsByField } from '../../utils/albums.utils';
-import { albumsAddStore } from "redux/actions/AlbumsActions";
+import { albumsAddStore, getAlbumsByFieldRedux, getAlbumByUPCRedux } from "redux/actions/AlbumsActions";
 import { userIsAdmin } from 'utils/users.utils';
 import { sortArtistsByField } from '../../utils/artists.utils';
-import { artistsAddStore } from '../../redux/actions/ArtistsActions';
+import { artistsAddStore, getArtistByFieldRedux } from '../../redux/actions/ArtistsActions';
 import SearchNavbar from '../../components/Navbars/SearchNavbar';
+import InfoDialog from '../../components/Dialogs/InfoDialog';
 
 const DashboardAdmin = () => {
 
@@ -29,15 +30,36 @@ const DashboardAdmin = () => {
   const users = useSelector(store => store.users);
   const rol = currentUserData.rol;
 
-  let sortedAlbums = sortAlbumsByField(albums, "lastUpdateTS");
-  let sortedArtists = sortArtistsByField(artists, "lastUpdateTS");
-  let sortedUsers = sortUsersByField(users, "lastUpdateTS");
+  // COSAS DEL BUSCADOR
+  const [openLoaderDashboard, setOpenLoaderDashboard] = useState(false);
+  const [openEmptySearch, setOpenEmptySearch] = useState(false);
+  const [openErrorSearch, setOpenErrorSearch] = useState(false);
 
-  const [userSelected, setUserSelected] = useState(false);
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
-  // const [setStatusAlbumsSnapshot, statusAlbumsSnapshot] = useState("idle");
-  // const [setDataAlbumsSnapshot, dataAlbumsSnapshot] = useState("idle");
+  const [searchAction, setSearchAction] = useState({ field: 'none', value: "" });
+  const [usersFiltered, setUsersFiltered] = useState(users);
+  const [artistsFiltered, setArtistsFiltered] = useState(artists);
+  const [albumsFiltered, setAlbumsFiltered] = useState(albums);
+
+  useEffect(() => {
+    if (searchAction.recently) {
+      setUsersFiltered(users.filter(user => user[`${searchAction.user.field}`] === searchAction.user.value))
+      setArtistsFiltered(artists.filter(artist => artist[`${searchAction.artist.field}`] === searchAction.artist.value))
+      setAlbumsFiltered(albums.filter(album => album[`${searchAction.album.field}`] === searchAction.album.value))
+    }
+    else {
+      setUsersFiltered(users);
+      setArtistsFiltered(artists);
+      setAlbumsFiltered(albums);
+    }
+  }, [users, albums, artists, searchAction]);
+
+  let sortedAlbums = sortAlbumsByField(albumsFiltered, "lastUpdateTS");
+  let sortedArtists = sortArtistsByField(artistsFiltered, "lastUpdateTS");
+  let sortedUsers = sortUsersByField(usersFiltered, "lastUpdateTS");
+
+  const [userSelected, setUserSelected] = useState(false);
 
   const stateAlbumSnap = useFirestoreQuery(getElementsAdminQueryFS("albums", 20, sortedAlbums[0]?.lastUpdateTS || 0));
   const stateArtistsSnap = useFirestoreQuery(getElementsAdminQueryFS("artists", 20, sortedArtists[0]?.lastUpdateTS || 0));
@@ -71,7 +93,7 @@ const DashboardAdmin = () => {
     buttonText: `${albums.length > 5 ? "Ver Más" : "Ir a Lanzamientos"}`, handleButtonClick: handleGoToAlbums, backgroundColor: "lavender", tableWidth: "100%",
   }
 
-  const artistsTableElements = getArtistPropsForDataTable(artists) || [];
+  const artistsTableElements = getArtistPropsForDataTable(sortedArtists) || [];
   const artistsTableHeaders = ["Nombre", "Spotify Uri", "Apple ID"];
   const handleGoToArtists = () => navigate("/admin/artists");
   const propsToArtistsTable = {
@@ -79,7 +101,7 @@ const DashboardAdmin = () => {
     buttonText: `${sortedArtists.length > 5 ? "Ver Más" : "Ir a Artistas"}`, handleButtonClick: handleGoToArtists, backgroundColor: "thistle", tableWidth: "90%",
   }
 
-  const usersTableElements = getUsersPropsForDataTable(users) || [];
+  const usersTableElements = getUsersPropsForDataTable(sortedUsers) || [];
   const usersTableHeaders = userIsAdmin(rol) ? ["Email", "Password", "Nombre", "Plan", "WP Id"] : ["Email", "Nombre"];
   const handleGoToUsers = () => navigate("/admin/users");
   const propsToUsersTable = {
@@ -87,20 +109,56 @@ const DashboardAdmin = () => {
     buttonText: `${sortedUsers.length > 5 ? "Ver Más" : "Ir a Usuarios"}`, handleButtonClick: handleGoToUsers, backgroundColor: "lavender", tableWidth: "100%",
   }
 
-  const onSearchEmailHandler = email => {
-    console.log("SEARCHING BY EMAIL: ", email);
+  const cleanSearchResults = () => {
+    setSearchAction({ user: { field: 'none', value: "" }, artist: { field: 'none', value: "" }, album: { field: 'none', value: "" }, recently: false });
+    setEmailSearchValue("");
+    setUpcSearchValue("");
   }
 
-  const onSearchUPCHandler = upc => {
-    console.log("SEARCHING BY UPC: ", upc);
+  const onSearchEmailHandler = async email => {
+    setOpenLoaderDashboard(true);
+    let userFinded = users.find(userFromStore => userFromStore.email === email);
+    if (!userFinded) {
+      userFinded = await toWithOutError(dispatch(getSearchedUserRedux(email)));
+      if (userFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
+    }
+
+    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', userFinded.id)));
+    await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerId', userFinded.id)));
+    setSearchAction({
+      user: { field: 'email', value: email }, artist: { field: 'ownerId', value: userFinded.id },
+      album: { field: 'ownerId', value: userFinded.id }, recently: true
+    });
+    setOpenLoaderDashboard(false);
+  }
+
+  const onSearchUPCHandler = async upc => {
+    setOpenLoaderDashboard(true);
+    let albumFinded = albums.find(albumFromStore => albumFromStore.upc === upc);
+    if (!albumFinded) {
+      [albumFinded] = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
+      if (albumFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
+    }
+    console.log("ALBUM FINDED: ", albumFinded);
+    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded.ownerId)));
+    await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded.ownerId, 1)));
+    setSearchAction({
+      user: { field: 'id', value: albumFinded.ownerId }, artist: { field: 'id', value: albumFinded.artistId },
+      album: { field: 'upc', value: upc }, recently: true
+    });
+    setOpenLoaderDashboard(false);
   }
 
   const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue};
+  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
 
-  return rol.indexOf('admin') >= 0
+  return userIsAdmin(rol)
     ? (
       <Grid container spacing={8}>
+
+        <Backdrop open={openLoaderDashboard}>
+          <CircularProgress />
+        </Backdrop>
 
         {userSelected && <UserDialog userData={userSelected} isOpen={Boolean(userSelected.id)} title={`${getEmailIfNotHaveUser(userSelected)}`}
           handleClose={handleCloseUserDialog} contentTexts={["Proximamente datos del usuario"]} />}
@@ -111,26 +169,36 @@ const DashboardAdmin = () => {
 
         <Grid container item spacing={8} sx={{ justifyContent: "center" }}>
 
-          <Grid item xs={10}>
-            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps]} />
-          </Grid>
+          <InfoDialog isOpen={openEmptySearch} handleClose={() => setOpenEmptySearch(false)}
+            title={"La búsqueda no arrojó resultados"} contentTexts={[]} />
+
+          <InfoDialog isOpen={openErrorSearch} handleClose={() => setOpenErrorSearch(false)}
+            title={"Hubo un error al realizar la búsqueda."} contentTexts={["Por favor, intente nuevamente."]} />
 
           <Grid item xs={10}>
-            <TableWithHeader {...propsToAlbumsTable} />
+            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps]} cleanSearchResults={cleanSearchResults} />
           </Grid>
 
-          <Grid item xs={8}>
-            <TableWithHeader {...propsToArtistsTable} />
-          </Grid>
+          {!openLoaderDashboard &&
+            <>
+              <Grid item xs={10}>
+                <TableWithHeader {...propsToAlbumsTable} />
+              </Grid>
 
-          <Grid item xs={10}>
-            <TableWithHeader {...propsToUsersTable} />
-          </Grid>
+              <Grid item xs={8}>
+                <TableWithHeader {...propsToArtistsTable} />
+              </Grid>
+
+              <Grid item xs={10}>
+                <TableWithHeader {...propsToUsersTable} />
+              </Grid>
+            </>
+          }
 
         </Grid>
 
       </Grid>
-    ) : null;
+    ) : <p>No tienes los permisos suficientes para ver ésta página</p>;
 }
 
 export default DashboardAdmin;

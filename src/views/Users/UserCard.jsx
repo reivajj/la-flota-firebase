@@ -10,22 +10,36 @@ import { userIsAdmin } from 'utils/users.utils';
 import NewUserDialog from './NewUserDialog';
 // import AvatarUser from '../Icons/Avatar';
 import ArtistAddedIcon from '../Icons/ArtistAddedIcon';
+import { toWithOutError } from 'utils';
+import { usersGetAlbumsOfUserByIdRedux } from "redux/actions/UsersActions";
+import { usersGetArtistsOfUserByIdRedux } from '../../redux/actions/UsersActions';
 
 
-const UserCard = ({ dataUser, isOpenEditDialog, setOpenEditDialog, setOpenNotAdminWarning }) => {
-  // const dispatch = useDispatch();
+const UserCard = (props) => {
+  let { dataUser, isOpenEditDialog, setOpenEditDialog, setOpenNotAdminWarning, setOpenLoaderMyUsers, setOpenEmptySearch, setOpenErrorSearch } = props;
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector(store => store.userData);
 
   const handleEditUser = () => {
     if (!userIsAdmin(currentUser.rol)) setOpenNotAdminWarning(true);
-    else {
-      console.log("DATA USER en CARD: ", dataUser);
-      setOpenEditDialog({ open: true, action: 'edit', userId: dataUser.id });
-    }
+    else setOpenEditDialog({ open: true, action: 'edit', userId: dataUser.id });
   }
-  const handleGoToUserAlbums = () => navigate(`/admin/albums?view=allOfUser&id=${dataUser.id}`);
-  const handleGoToUserArtists = () => navigate(`/admin/artists?view=allOfUser&id=${dataUser.id}`);
+
+  const handleGoToUserElements = async typeOfCollection => {
+    setOpenLoaderMyUsers(true);
+    // Chequear si todos los albums que tiene ya estan en el STORE (user.cantAlbums) para no hacer una query al pedo.
+    // Mostrar los errores con un DIALOG.
+    let userResult = [];
+    if (typeOfCollection === "albums") userResult = await toWithOutError(dispatch(usersGetAlbumsOfUserByIdRedux(dataUser.id)));
+    if (typeOfCollection === "artists") userResult = await toWithOutError(dispatch(usersGetArtistsOfUserByIdRedux(dataUser.id)));
+    if (typeOfCollection === "labels") userResult = await toWithOutError(dispatch(usersGetAlbumsOfUserByIdRedux(dataUser.id)));
+    console.log("USER RESILT", userResult);
+    if (userResult === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
+    if (userResult === "EMPTY_SEARCH") { setOpenLoaderMyUsers(false); setOpenEmptySearch(true); return "EMPTY_SEARCH"; }
+    navigate(`/admin/${typeOfCollection}?view=allOfUser&id=${dataUser.id}`);
+  }
 
   const handleGoToUserLabels = () => {
     console.log("LABELS");
@@ -105,7 +119,7 @@ const UserCard = ({ dataUser, isOpenEditDialog, setOpenEditDialog, setOpenNotAdm
                   sx={{ width: "90%" }}
                   variant="contained"
                   color="secondary"
-                  onClick={handleGoToUserAlbums}
+                  onClick={() => handleGoToUserElements("albums")}
                 >
                   Lanzamientos
                 </Button>
@@ -116,7 +130,7 @@ const UserCard = ({ dataUser, isOpenEditDialog, setOpenEditDialog, setOpenNotAdm
                   sx={{ width: "90%" }}
                   variant="contained"
                   color="secondary"
-                  onClick={handleGoToUserArtists}
+                  onClick={() => handleGoToUserElements("artists")}
                 >
                   Artistas
                 </Button>

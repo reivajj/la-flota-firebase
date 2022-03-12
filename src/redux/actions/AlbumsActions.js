@@ -74,7 +74,7 @@ export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
 
 export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
   if (dataAlbumFuga.upc) return "ALREADY_HAS_UPC";
-  let responseUPC = await BackendCommunication.createUPCToSuccessAlbumFuga(dataAlbumFuga.fugaId, dispatch);
+  let responseUPC = await BackendCommunication.createUPCToSuccessAlbumFuga(dataAlbumFuga.fugaId, dataAlbumFuga.ownerEmail, dispatch);
   if (responseUPC === "ERROR") return "ERROR";
   console.log("RESPONSE UPC: ", responseUPC);
 
@@ -86,6 +86,13 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
     type: ReducerTypes.ALBUMS_EDIT_BY_ID,
     payload: dataAlbumFuga
   });
+}
+
+export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
+  let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, 20);
+  if (albumsByField !== "ERROR" && albumsByField.length > 0) dispatch(albumsAddStore(albumsByField));
+  else return "ERROR";
+  return albumsByField;
 }
 
 export const albumCleanUpdatingAlbum = () => {

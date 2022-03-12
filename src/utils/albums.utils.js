@@ -6,6 +6,7 @@ import { fugaAlbumsState } from '../variables/fuga';
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
   if (params.view === "allOfLabel") return albums.filter(album => album.label_name === params.label_name);
+  if (params.view === "allOfUser") return albums.filter(album => album.ownerId === params.id);
   return albums;
 }
 

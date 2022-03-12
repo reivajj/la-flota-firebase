@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 // core components
 // import Button from "components/CustomButtons/Button.js";
-import { Grid, Button, Typography } from '@mui/material';
-import { useNavigate } from "react-router";
+import { Grid, Button, Typography, Backdrop, CircularProgress } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InfoDialog from 'components/Dialogs/InfoDialog';
@@ -11,18 +10,22 @@ import { userIsAdmin } from 'utils/users.utils';
 import UserCard from './UserCard';
 import NewUserDialog from "./NewUserDialog";
 import SearchNavbar from '../../components/Navbars/SearchNavbar';
-import { getUserDataByEmailInFS } from '../../services/FirestoreServices';
 import { toWithOutError } from 'utils';
-import { getSearchedUserRedux } from '../../redux/actions/UsersActions';
+import { getSearchedUserRedux, getUsersByFieldRedux } from '../../redux/actions/UsersActions';
+import { getAlbumsByFieldRedux } from "redux/actions/AlbumsActions";
 
 const MyUsers = () => {
 
   const dispatch = useDispatch();
   const usersFromStore = useSelector(store => store.users);
+  const albumsFromStore = useSelector(store => store.albums.albums);
   const currentUser = useSelector(store => store.userData);
 
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
   const [openNewUserDialog, setOpenNewUserDialog] = useState({ open: false, action: "none", userId: 'new' });
+  const [openLoaderMyUsers, setOpenLoaderMyUsers] = useState(false);
+  const [openEmptySearch, setOpenEmptySearch] = useState(false);
+  const [openErrorSearch, setOpenErrorSearch] = useState(false);
 
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
@@ -43,7 +46,8 @@ const MyUsers = () => {
         <Grid item xs={12} sm={6} lg={3} key={index}>
           <UserCard key={index} dataUser={user} index={index}
             isOpenEditDialog={openNewUserDialog} setOpenEditDialog={setOpenNewUserDialog}
-            setOpenNotAdminWarning={setOpenNotAdminWarning} />
+            setOpenNotAdminWarning={setOpenNotAdminWarning} setOpenLoaderMyUsers={setOpenLoaderMyUsers}
+            setOpenEmptySearch={setOpenEmptySearch} setOpenErrorSearch={setOpenErrorSearch} />
         </Grid>
       )
       : []
@@ -64,57 +68,76 @@ const MyUsers = () => {
   }
 
   const onSearchEmailHandler = async email => {
-    console.log("SEARCHING BY EMAIL: ", email);
+    setOpenLoaderMyUsers(true);
     let checkIfExistsInStore = usersFromStore.find(userFromStore => userFromStore.email === email);
-    if (checkIfExistsInStore?.email === email) {
-      setSearchAction({ field: 'email', value: email });
-      return;
+    if (!checkIfExistsInStore) {
+      let userResult = await toWithOutError(dispatch(getSearchedUserRedux(email)));
+      if (userResult === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
     }
-
-    let userResult = await toWithOutError(dispatch(getSearchedUserRedux(email)));
-    console.log("RESULT: ", userResult);
     setSearchAction({ field: 'email', value: email });
+    setOpenLoaderMyUsers(false);
   }
 
-  const onSearchUPCHandler = upc => {
-    console.log("SEARCHING BY UPC: ", upc);
+  const onSearchUPCHandler = async upc => {
+    setOpenLoaderMyUsers(true);
+    let albumFromUPC = albumsFromStore.find(albumFromStore => albumFromStore.upc === upc);
+    if (!albumFromUPC) {
+      [albumFromUPC] = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
+      if (albumFromUPC === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
+    }
+
+    let gettingUsersResults = await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFromUPC.ownerId, 1)));
+    if (gettingUsersResults === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
+    setSearchAction({ field: 'id', value: albumFromUPC.ownerId });
+    setOpenLoaderMyUsers(false);
   }
 
   const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
   const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
 
-  return (
-    <Grid container spacing={2} sx={{ textAlign: "center" }}>
+  return userIsAdmin(currentUser.rol)
+    ? (
+      <Grid container spacing={2} sx={{ textAlign: "center" }}>
 
-      <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
-        title={"Necesitas permisos de Administrador"} contentTexts={needAdminPermissionsText} />
+        <Backdrop open={openLoaderMyUsers}>
+          <CircularProgress />
+        </Backdrop>
 
-      <NewUserDialog isOpen={openNewUserDialog} handleCloseDialog={() => setOpenNewUserDialog({ open: false, action: "none", userId: 'new' })}
-        userSelected={defaultUserData} />
+        <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
+          title={"Necesitas permisos de Administrador"} contentTexts={needAdminPermissionsText} />
 
-      <Grid item xs={12}>
-        <Typography sx={artistsTitleStyles}>Usuarios</Typography>
+        <InfoDialog isOpen={openEmptySearch} handleClose={() => setOpenEmptySearch(false)}
+          title={"La búsqueda no arrojó resultados"} contentTexts={[]} />
 
-        <Grid item xs={12} padding={2} >
-          <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps]} cleanSearchResults={cleanSearchResults} />
+        <InfoDialog isOpen={openErrorSearch} handleClose={() => setOpenErrorSearch(false)}
+          title={"Hubo un error al realizar la búsqueda."} contentTexts={["Por favor, intente nuevamente."]} />
+
+        <NewUserDialog isOpen={openNewUserDialog} handleCloseDialog={() => setOpenNewUserDialog({ open: false, action: "none", userId: 'new' })}
+          userSelected={defaultUserData} />
+
+        <Grid item xs={12}>
+          <Typography sx={artistsTitleStyles}>Usuarios</Typography>
+
+          <Grid item xs={12} padding={2} >
+            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps]} cleanSearchResults={cleanSearchResults} />
+          </Grid>
+
+          <Button variant="contained" color="secondary" onClick={agregarUsuario} endIcon={<PersonAddIcon />}>
+            Agregar Usuario
+          </Button>
+
         </Grid>
-
-        <Button variant="contained" color="secondary" onClick={agregarUsuario} endIcon={<PersonAddIcon />}>
-          Agregar Usuario
-        </Button>
-
+        <Grid container item >
+          {
+            misUsuarios
+          }
+        </Grid>
+        <Grid item xs={12}>
+          {misUsuarios.length === 0 &&
+            <h4 style={cardTitleBlack}>{searchAction.field !== 'none' ? "La búsqueda no arrojo resultados" : "No tienes Usuarios"}</h4>}
+        </Grid>
       </Grid>
-      <Grid container item >
-        {
-          misUsuarios
-        }
-      </Grid>
-      <Grid item xs={12}>
-        {misUsuarios.length === 0 &&
-          <h4 style={cardTitleBlack}>{searchAction.field !== 'none' ? "La búsqueda no arrojo resultados" : "No tienes Usuarios"}</h4>}
-      </Grid>
-    </Grid>
-  );
+    ) : <p>No tienes los permisos suficientes para ver ésta página</p>;
 }
 
 export default MyUsers;

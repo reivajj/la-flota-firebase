@@ -5,7 +5,7 @@ export const getEmailIfNotHaveUser = userData => userData.nombre ? `${userData.n
 export const userIsAdmin = rol => rol.indexOf('admin') >= 0;
 
 export const getPlanNameFromId = planId => {
-  return planesLaFlota.find(plan => plan.id === planId)?.name || "Desconocido"
+  return planesLaFlota.find(plan => plan.id === planId)?.name || "Charly García"
 }
 
 export const getPlanIdFromName = planName => {

@@ -1,7 +1,8 @@
 export const planesLaFlota = [
   { id: "charly-garcia", name: "Charly García", maxArtists: 1 },
   { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez : Dos en la ciudad", maxArtists: 2 },
-  { id: "spinettalandia-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5 }
+  { id: "spinettalandia-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5 },
+  { id: "jardin-de-gente-10", name: "Jardín de Gente · 10 Artistas", maxArtists: 10 },
 ]
 
 export const subscriptionsStatusLaFlota = [
@@ -12,7 +13,7 @@ export const subscriptionsStatusLaFlota = [
 ]
 
 export const colorFromSubIdState = {
-  CANCELADA: "rgb(111, 2, 2)",
+  CANCELADA: "rgb(224, 9, 9)",
   EN_ESPERA: "rgb(231, 190, 66)",
   ACTIVA: "rgb(10, 109, 15)",
   PENDIENTE: "rgb(231, 190, 66)",

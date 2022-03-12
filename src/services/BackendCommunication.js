@@ -183,17 +183,18 @@ export const attachTrackToAlbumFuga = async (trackData, dispatch) => {
   const [errorAttachingTrack] = await to(axios.put(`${targetUrl}albums/${trackData.albumFugaId}/tracks/${trackData.fugaId}`));
   if (errorAttachingTrack) {
     dispatch(createBackendError(errorAttachingTrack));
-    writeCloudLog("Error attaching tracks to album in fuga", { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
+    writeCloudLog(`Error attaching tracks to album in fuga, ownerEmail: ${trackData.ownerEmail}`
+      , { trackData, albumId: trackData.albumFugaId }, errorAttachingTrack, "error");
     return "ERROR";
   }
   return "SUCCESS";
 }
 
-export const createUPCToSuccessAlbumFuga = async (albumFugaId, dispatch) => {
+export const createUPCToSuccessAlbumFuga = async (albumFugaId, ownerEmail, dispatch) => {
   const [errorCreatingUPC, responseUPC] = await to(axios.post(`${targetUrl}albums/${albumFugaId}/barcode`));
   if (errorCreatingUPC) {
     dispatch(createBackendError(errorCreatingUPC));
-    writeCloudLog("Error creating UPC to album in fuga", albumFugaId, errorCreatingUPC, "error");
+    writeCloudLog(`Error creating UPC to album in fuga, ownerEmail: ${ownerEmail}`, albumFugaId, errorCreatingUPC, "error");
     return "ERROR";
   }
   return responseUPC.data.response;
@@ -290,7 +291,8 @@ export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => 
 }
 
 export const editUserDataAndCredentialsFS = async (newUserData, dispatch) => {
-  let [errorChangingUserDataAndCreds, updateResponse] = await to(axios.put(`${localUrl}firebase/changePasswordByEmail/${newUserData.email}`));
+  let [errorChangingUserDataAndCreds, updateResponse] = await to(axios.put(`${targetUrl}firebase/changePasswordByEmail/${newUserData.email}`,
+    { password: newUserData.password }));
   if (errorChangingUserDataAndCreds) {
     dispatch(createBackendError(errorChangingUserDataAndCreds));
     writeCloudLog(`Error cambiando las credenciales del Usuario ${newUserData.email}`, newUserData, errorChangingUserDataAndCreds, "error");

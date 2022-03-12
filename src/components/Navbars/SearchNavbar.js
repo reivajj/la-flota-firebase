@@ -4,6 +4,7 @@ import { AppBar, IconButton, Box, Toolbar, Typography, InputBase } from '@mui/ma
 import SearchIcon from '@mui/icons-material/Search';
 import { mainColor } from '../../variables/colors';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
+import useWindowDimensions from '../../customHooks/useWindowDimensions';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -40,27 +41,28 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     transition: theme.transitions.create('width'),
     width: '100%',
     [theme.breakpoints.up('md')]: {
-      width: '20ch',
+      width: '25ch',
     },
   },
 }));
 
 const SearchNavbar = (props) => {
   const { searchArrayProps, cleanSearchResults } = props;
+  const { width } = useWindowDimensions();
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ borderRadius: '2em', backgroundColor: mainColor }}>
         <Toolbar>
 
-          <Typography
+          {width > 1200 && <Typography
             variant="h6"
             noWrap
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
           >
             Buscador
-          </Typography>
+          </Typography>}
 
           {searchArrayProps.map(searchProp =>
             <Search>

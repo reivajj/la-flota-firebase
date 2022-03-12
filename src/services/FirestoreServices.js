@@ -115,6 +115,28 @@ export const getElements = async (userId, typeOfElement, dispatch, limitNumber) 
   return elementsFromUser;
 }
 
+// Acepta USERS tambien.
+export const getElementsByField = async (typeOfElement, searchField, fieldValue, dispatch, limitNumber) => {
+  const elementsDbFromUserRef = query(collection(db, typeOfElement), where(searchField, "==", fieldValue),
+    orderBy(typeOfElement !== "users" ? "lastUpdateTS" : "email", "desc"), limit(limitNumber));
+
+  let [errorGettingElementsFromUser, elementsFromUserSnapshot] = await to(getDocs(elementsDbFromUserRef));
+  if (errorGettingElementsFromUser) {
+    dispatch(createFireStoreError(`Error obteniendo los elementos de la colección ${typeOfElement}.`, errorGettingElementsFromUser));
+    writeCloudLog(`FS Error getting elements by field: ${searchField} and value: ${fieldValue}`
+      , { fieldValue, searchField, typeOfElement }, errorGettingElementsFromUser, "error");
+    return "ERROR";
+  }
+  if (elementsFromUserSnapshot.empty) return "EMPTY";
+
+  let elementsFromUser = [];
+  elementsFromUserSnapshot.forEach(elementDoc => {
+    elementsFromUser.push(elementDoc.data());
+  });
+
+  return elementsFromUser;
+}
+
 export const getElementsAdminDev = async (userDataFromDB, userId, typeOfElement, dispatch, limitNumber) => {
   let elementsDbFromUserRef = {};
   let searchByField = typeOfElement === "users" ? "timestampWhenCreatedUserInFB" : "lastUpdateTS";

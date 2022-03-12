@@ -65,13 +65,12 @@ const NewUserDialog = ({ isOpen, handleCloseDialog, userSelected }) => {
 
     if (result === "SUCCESS") {
       setButtonState("success");
-      setOpenLoader(false);
       handleCloseDialog();
     }
     else {
       setButtonState("error");
       setButtonText("Error");
-      setOpenLoader(false);
+      handleCloseDialog();
     }
   }
 

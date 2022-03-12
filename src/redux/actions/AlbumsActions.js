@@ -82,7 +82,6 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
 
   await FirestoreServices.updateElementFS(dataAlbumFuga, { upc: responseUPC }, dataAlbumFuga.id, "albums", dispatch);
 
-  console.log("DATA ALBUM FUGA: ", dataAlbumFuga);
   dispatch({
     type: ReducerTypes.ALBUMS_EDIT_BY_ID,
     payload: dataAlbumFuga

@@ -171,7 +171,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const imageInput = <ImageInput key={"artist-photo"} imagenUrl={artistDataToShow.imagenUrl} onClickAddImage={onClickAddImageArtist} textButton="Imagen"
     progress={progress} message={message} helperText="La imagen del Artista debe ser una imagen de alta calidad.
-    La imagen debe ser cuadrada, JPG, colores RGB y de mínimo 1400*1400px"/>;
+    La imagen debe ser cuadrada, JPG, colores RGB, de mínimo 1400*1400px, un máximo de 6000px*6000px y a lo sumo 20mb"/>;
 
   const progressButton = <ProgressButton textButton={buttonText} loading={openLoader} buttonState={buttonState}
     onClickHandler={allFieldsValidCreateArtist} noneIcon={<SaveIcon sx={{ color: "rgba(255,255,255, 1)" }} />} noFab={false} />
@@ -214,7 +214,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         autoFocus
                         value={(editing && !ownerEmailEdited) ? artistDataToShow.ownerEmail || "" : currentArtistData.ownerEmail || ""}
                         onChange={changeArtistOwnerEmail}
-                        validatorProps={{ restrictions: 'max:100', message: "Debes ingresar un email.", validator: validator }}
+                        validatorProps={{ restrictions: 'email|max:100', message: "Debes ingresar un email.", validator: validator }}
                       />
                     </Grid>}
 

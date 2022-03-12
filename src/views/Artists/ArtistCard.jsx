@@ -104,7 +104,7 @@ const ArtistCard = ({ dataArtist, index }) => {
                   color="secondary"
                   onClick={handleGoToArtistAlbums}
                 >
-                  Albums
+                  Lanzamientos
                 </Button>
               </Grid>
 

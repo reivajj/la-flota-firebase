@@ -7,6 +7,7 @@ import { labelsAddStore } from './LabelsActions';
 import { artistsAddStore } from './ArtistsActions';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { activitiesAddStore, activitiesSignOut } from './ActivitiesActions';
+import { usersAddStore, usersSignOut } from './UsersActions';
 
 export const userDataAddInfoStore = userInfo => {
   return {
@@ -16,9 +17,10 @@ export const userDataAddInfoStore = userInfo => {
 }
 
 // ACTION CREATORS
-export const userDataSignIn = (userInfo, albums, artists, labels, invitedArtists, collaborators, activities) => async dispatch => {
+export const userDataSignIn = (userInfo, albums, users, artists, labels, invitedArtists, collaborators, activities) => async dispatch => {
   dispatch(userDataAddInfoStore(userInfo));
   dispatch(artistsAddStore(Array.isArray(artists) ? artists : []));
+  dispatch(usersAddStore(Array.isArray(users) ? users : []));
   dispatch(albumsAddStore(Array.isArray(albums) ? albums : []));
   dispatch(labelsAddStore(Array.isArray(labels) ? labels : []));
   dispatch(addArtistsInvited(Array.isArray(invitedArtists) ? invitedArtists : []));
@@ -50,6 +52,7 @@ export const userDataSignOut = () => async dispatch => {
 
   dispatch(invitedArtistSignOut());
   dispatch(collaboratorsSignOut());
+  dispatch(usersSignOut());
   dispatch(activitiesSignOut());
 };
 

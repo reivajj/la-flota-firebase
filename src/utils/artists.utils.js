@@ -1,6 +1,13 @@
 import { combineArraysWithNoDuplicates, cloneDeepLimited } from '../utils';
 import { planesLaFlota } from '../variables/varias';
 
+export const sortArtistsByField = (artists, field) => {
+  return artists.sort((aA, aB) => {
+    if (aA[field] > aB[field]) return -1;
+    else return 1;
+  })
+}
+
 export const getAllOtherArtistsFromAlbumAndTrack = (artistFromLaFlota, allOtherArtistsAlbum, allArtistsTrack) => {
   let allOtherArtistsFromAlbum = allOtherArtistsAlbum.filter(a => a.name !== "");
   let allArtistsFromTrack = allArtistsTrack.filter(tA => tA.name !== artistFromLaFlota.name);

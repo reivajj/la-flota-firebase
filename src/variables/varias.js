@@ -4,6 +4,20 @@ export const planesLaFlota = [
   { id: "spinettalandia-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5 }
 ]
 
+export const subscriptionsStatusLaFlota = [
+  { id: "PENDIENTE", name: "Pendiente de pago" },
+  { id: "ACTIVA", name: "Activa" },
+  { id: "CANCELADA", name: "Cancelada" },
+  { id: "EN_ESPERA", name: "En espera" }
+]
+
+export const colorFromSubIdState = {
+  CANCELADA: "rgb(111, 2, 2)",
+  EN_ESPERA: "rgb(231, 190, 66)",
+  ACTIVA: "rgb(10, 109, 15)",
+  PENDIENTE: "rgb(231, 190, 66)",
+}
+
 export const languages = [
   "Spanish", "English", "None", "Afrikaans", "Arabic", "Bulgarian", "Cantonese", "Catalan", "Chinese", "Croatian", "Czech", "Danish", "Dutch", "Estonian", "Finnish", "French",
   "German", "Greek", "Hebrew", "Hindi", "Hungarian", "Icelandic", "Indonesian", "Italian", "Japanese", "Kazakh", "Korean", "Lao", "Latvian", "Lithuanian",

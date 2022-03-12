@@ -73,3 +73,10 @@ export const getFormatByCantOfTracks = cantTracks => {
   if (cantTracks >= 6) return "ALBUM";
   return "NO_TRACKS";
 }
+
+export const sortAlbumsByField = (albums, field) => {
+  return albums.sort((aA, aB) => {
+    if (aA[field] > aB[field]) return -1;
+    else return 1;
+  })
+}

@@ -38,8 +38,6 @@ const useFirestoreQuery = (query) => {
   // This is nicer than requiring hook consumer to always memoize query with useMemo.
   const queryCached = useMemoCompare(query, (prevQuery) => {
     // Use built-in Firestore isEqual method to determine if "equal"
-    console.log("Old query: ", prevQuery);
-    console.log("new: ", query);
     return prevQuery && query  //&& query  prevQuery;
   });
 
@@ -57,7 +55,6 @@ const useFirestoreQuery = (query) => {
     // Will unsubscribe on cleanup since this returns an unsubscribe function
     return onSnapshot(queryCached,
       (response) => {
-        console.log("CALLING AGAIN THE QUERY")
         // Get data for collection or doc
         const data = response.docs
           ? getCollectionData(response)

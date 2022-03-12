@@ -32,6 +32,8 @@ export const maxArtistsText = [
   </Link>,
 ]
 
+export const needAdminPermissionsText = ["No puedes realizar esta acción, no tienes permisos de Administrador."]
+
 export const infoSpotifyUri = [
   "Ingresa el código URi de Spotify.", <br />,
   "Ejemplo: spotify:artist:1JTD8FzXyY8Pk3lX1FIkpG", <br />,
@@ -61,7 +63,7 @@ export const lanzamientoColaborativoTooltip = [
 
 export const albumCoverHelperText = [
   "El arte de tapa debe ser una imagen de alta calidad.", < br />,
-  "El archivo debe ser JPG de colores RGB de mínimo 1400 * 1400px y un máximo de 8000px * 8000px y siempre debe ser CUADRADA", < br />,
+  "El archivo debe ser JPG de colores RGB de mínimo 3000 * 3000px y un máximo de 6000px * 6000px y siempre debe ser CUADRADA", < br />,
   "(si necesitás ayuda consultá a tu diseñador o avisanos y te recomendamos diseñadores que trabajan con nosotros)."
 ]
 
@@ -90,8 +92,8 @@ export const bienvenidoDialogText = [
 ];
 
 export const imageConstraintsMessage = [
-  "La imagen debe ser CUADRADA y debe tener una resolucion mínima de 1400*1400 píxeles",
-  " y una resolución máxima de 8000x8000 píxeles con un tamaño máximo de 20mb"
+  "La imagen debe ser CUADRADA y debe tener una resolucion mínima de 3000*3000 píxeles",
+  " y una resolución máxima de 6000x6000 píxeles con un tamaño máximo de 20mb"
 ]
 
 export const textLowQualityAudio = [

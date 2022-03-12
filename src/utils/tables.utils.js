@@ -20,6 +20,13 @@ export const moreInfoActionRender = (userId, handleMorInfo) => {
   </IconButton>
 }
 
+export const moreInfoAlbumRender = albumId => {
+  let targetOriginUrl = window.location.origin === "http://localhost:3001" ? "http://localhost:3001" : "https://app.laflota.com.ar";
+  return <IconButton href={`${targetOriginUrl}/admin/albums/${albumId}`} aria-label="Ir al elemento" target="_blank">
+    <AddCircle />
+  </IconButton>
+}
+
 export const deleteAction = (track, handleDeleteTrack) => {
   return (
     <Grid item xs={6}>
@@ -71,7 +78,7 @@ export const getAlbumsPropsForAdminDataTable = (albums, handleOpenUserDialog, ha
   albums.forEach(album => {
     const stateInfoStyle = { color: getStateColor(album.state ? album.state : ""), fontSize: "1em", fontWeight: 400 };
     albumDataTable.push([
-      moreInfoActionRender(album.id, handleGoToAlbum),
+      moreInfoAlbumRender(album.id, handleGoToAlbum),
       album.title,
       album.nombreArtist,
       <Typography sx={stateInfoStyle}>Ir al album para ver el Estado.</Typography>,

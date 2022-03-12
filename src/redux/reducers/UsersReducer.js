@@ -2,7 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 
 const filterUsersWithSameIdThanNewOne = (oldUsers, addedUsers) => {
   if (!addedUsers) return oldUsers;
-  return addedUsers.filter(user => !oldUsers.map(oldUser => oldUser.id).includes(user.id))
+  return oldUsers.filter(user => !addedUsers.map(addedUser => addedUser.id).includes(user.id))
 }
 
 const editAndAddUser = (oldUsers, editedFieldsFromUser) => {
@@ -18,8 +18,8 @@ const UsersReducer = (state = initialState, action) => {
   switch (action.type) {
 
     case ReducerTypes.USERS_ADD:
-      const newUsers = filterUsersWithSameIdThanNewOne(state, action.payload);
-      return [...state, ...newUsers]
+      const oldUsers = filterUsersWithSameIdThanNewOne(state, action.payload);
+      return [...oldUsers, ...action.payload]
 
     case ReducerTypes.USERS_EDIT_BY_ID:
       return editAndAddUser(state, action.payload);

@@ -205,7 +205,7 @@ const NewAlbum = ({ editing }) => {
     let img = new Image()
     img.src = window.URL.createObjectURL(event.target.files[0])
     img.onload = async () => {
-      if (img.width >= 1400 && img.height >= 1400 && img.width <= 8000 && img.height <= 8000 && img.width === img.height) {
+      if (img.width >= 3000 && img.height >= 3000 && img.width <= 6000 && img.height <= 6000 && img.width === img.height) {
         setMessageForCover("");
         let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
         if (errorAddingFile) {

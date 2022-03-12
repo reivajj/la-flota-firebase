@@ -20,6 +20,7 @@ import NewAlbum from 'views/Albums/NewAlbum';
 import UserProfile from 'views/UserProfile/UserProfile';
 import AlbumTotalInfo from './views/Albums/AlbumTotalInfo';
 import DashboardAdmin from './views/Dashboard/DashboardAdmin';
+import MyUsers from './views/Users/MyUsers';
 
 const Rutas = () => {
 
@@ -54,6 +55,8 @@ const Rutas = () => {
           <Route path="albums" element={<MyAlbums />} />
           <Route path="albums/:albumId" element={<AlbumTotalInfo />} />
           <Route path="new-album" element={<NewAlbum editing={false} />} />
+
+          <Route path="users" element={<MyUsers />} />
 
           <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
 

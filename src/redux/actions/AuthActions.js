@@ -41,16 +41,17 @@ const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) 
 }
 
 const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch) => {
-  const limit = 100;
+  const limit = 50;
   let userUidUser = "";
   const albums = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "albums", dispatch, limit);
+  const users = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "users", dispatch, 3);
   const artists = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "artists", dispatch, limit);
   const labels = await FirestoreServices.getElementsAdminDev(userDataFromDB, userUidUser, "labels", dispatch, limit);
   const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, 3);
   const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
   const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, 3);
 
-  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, users, artists, labels, invitedArtists, collaborators, activities));
 }
 
 

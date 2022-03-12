@@ -1,4 +1,4 @@
-import { Dashboard, Person, Notifications } from "@mui/icons-material";
+import { Dashboard, Person, PeopleAlt, Album, CollectionsBookmark } from "@mui/icons-material";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/DashboardBasicUser.js";
 import MyAlbums from "views/Albums/MyAlbums";
@@ -6,6 +6,7 @@ import MyArtists from "views/Artists/MyArtists";
 import MyLabels from 'views/Labels/MyLabels';
 import UserProfile from "views/UserProfile/UserProfile";
 import DashboardAdmin from './views/Dashboard/DashboardAdmin';
+import MyUsers from './views/Users/MyUsers';
 
 const dashboardRoutes = [
   {
@@ -32,15 +33,22 @@ const dashboardRoutes = [
   {
     path: "/labels",
     name: "Sellos",
-    icon: Person,
+    icon: CollectionsBookmark,
     component: MyLabels,
     layout: "/admin"
   },
   {
     path: "/albums",
     name: "Lanzamientos",
-    icon: Notifications,
+    icon: Album,
     component: MyAlbums,
+    layout: "/admin"
+  },
+  {
+    path: "/users",
+    name: "Usuarios",
+    icon: PeopleAlt,
+    component: MyUsers,
     layout: "/admin"
   },
   {

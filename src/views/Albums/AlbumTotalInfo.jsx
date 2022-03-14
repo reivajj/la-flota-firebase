@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image } from 'mui-image';
 import { useParams } from 'react-router-dom';
 // core components
@@ -20,6 +20,7 @@ import { Link as LinkIcon } from '@mui/icons-material';
 import LiveLinksDialog from './LiveLinksDialog';
 import { toWithOutError } from 'utils';
 import { albumGetLiveLinkRedux } from "redux/actions/AlbumsActions";
+import InfoDialog from '../../components/Dialogs/InfoDialog';
 
 const AlbumTotalInfo = () => {
 
@@ -31,6 +32,7 @@ const AlbumTotalInfo = () => {
   const [openLiveLinksDialog, setOpenLiveLinksDialog] = useState("idle");
   const [liveLinksInfo, setLiveLinksInfo] = useState([]);
   const [openLoaderLinks, setOpenLoaderLinks] = useState(false);
+  const [openErrorSearch, setOpenErrorSearch] = useState(false);
 
   const url = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
   const { status, data, error } = useFetch(url);
@@ -39,6 +41,12 @@ const AlbumTotalInfo = () => {
 
   console.log("data album: ", dataAlbum);
   status === "fetched" && console.log("data albumFuga: ", data);
+
+  useEffect(() => {
+    if (status === "error") { setOpenLoaderLinks(false); setOpenErrorSearch(true) }
+    if (status === "fetching") setOpenLoaderLinks(true);
+    if (status === "fetched") setOpenLoaderLinks(false);
+  }, [status])
 
   const handleOpenLiveLinks = async () => {
     setOpenLoaderLinks(true);
@@ -82,6 +90,9 @@ const AlbumTotalInfo = () => {
       <Backdrop open={openLoaderLinks}>
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      <InfoDialog isOpen={openErrorSearch} handleClose={() => setOpenErrorSearch(false)}
+        title={"Hubo un error al realizar la búsqueda."} contentTexts={["Por favor, intente nuevamente."]} />
 
       <LiveLinksDialog isOpen={openLiveLinksDialog !== "idle"} handleClose={() => setOpenLiveLinksDialog("idle")}
         liveLinksInfo={liveLinksInfo} />

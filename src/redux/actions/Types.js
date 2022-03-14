@@ -31,6 +31,8 @@ export const ARTIST_DELETE_WITH_ID = "artist_delete_with_id";
 export const EDIT_ARTIST_WITH_ID = "edit_artist_with_id";
 export const ADDING_ARTIST_SPOTIFY_URI = "adding_artist_spotify_uri";
 export const ADDING_ARTIST_APPLE_ID = "adding_artist_apple_id";
+export const ADDING_ARTIST_FUGA_ID = "adding_artist_fuga_id";
+export const ADDING_ARTIST_EMAIL = "adding_artist_email";
 
 // Labels Types
 export const ADD_LABELS = "add_labels";

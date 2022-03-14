@@ -30,7 +30,7 @@ const ArtistsReducer = (state = initialState, action) => {
       return { addingArtist: initialState.addingArtist, artists: editAndAddArtist(state.artists, action.payload) }
 
     case ReducerTypes.ADDING_ARTIST_UPDATE:
-      return { ...state, addingArtist: action.payload }  
+      return { ...state, addingArtist: action.payload }
 
     case ReducerTypes.ARTIST_DELETE_WITH_ID:
       return { ...state, artists: state.artists.filter(artist => artist.id !== action.payload) };
@@ -40,6 +40,12 @@ const ArtistsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ADDING_ARTIST_NAME:
       return { ...state, addingArtist: { ...state.addingArtist, name: action.payload } }
+
+    case ReducerTypes.ADDING_ARTIST_FUGA_ID:
+      return { ...state, addingArtist: { ...state.addingArtist, fugaId: action.payload } }
+
+    case ReducerTypes.ADDING_ARTIST_EMAIL:
+      return { ...state, addingArtist: { ...state.addingArtist, ownerEmail: action.payload } }
 
     case ReducerTypes.ADDING_ARTIST_BIO:
       return { ...state, addingArtist: { ...state.addingArtist, biography: action.payload } }

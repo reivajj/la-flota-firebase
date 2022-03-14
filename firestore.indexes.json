@@ -15,6 +15,20 @@
       ]
     },
     {
+      "collectionGroup": "albums",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "upc",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastUpdateTS",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "artists",
       "queryScope": "COLLECTION",
       "fields": [
@@ -76,6 +90,48 @@
       "fields": [
         {
           "fieldPath": "ownerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastUpdateTS",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "email",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastUpdateTS",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "email",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id",
           "order": "ASCENDING"
         },
         {

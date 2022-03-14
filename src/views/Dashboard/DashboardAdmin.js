@@ -136,21 +136,22 @@ const DashboardAdmin = () => {
     setOpenLoaderDashboard(true);
     let albumFinded = albums.find(albumFromStore => albumFromStore.upc === upc);
     if (!albumFinded) {
-      [albumFinded] = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
+      albumFinded = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
       if (albumFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
+      if (albumFinded === "EMPTY") { setOpenLoaderDashboard(false); setOpenEmptySearch(true); return "EMPTY"; }
     }
     console.log("ALBUM FINDED: ", albumFinded);
-    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded.ownerId)));
-    await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded.ownerId, 1)));
+    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded[0].ownerId)));
+    await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded[0].ownerId, 1)));
     setSearchAction({
-      user: { field: 'id', value: albumFinded.ownerId }, artist: { field: 'id', value: albumFinded.artistId },
+      user: { field: 'id', value: albumFinded[0].ownerId }, artist: { field: 'id', value: albumFinded[0].artistId },
       album: { field: 'upc', value: upc }, recently: true
     });
     setOpenLoaderDashboard(false);
   }
 
-  const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
+  const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
+  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
 
   return userIsAdmin(rol)
     ? (

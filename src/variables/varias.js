@@ -1,8 +1,10 @@
 export const planesLaFlota = [
-  { id: "charly-garcia", name: "Charly García", maxArtists: 1 },
-  { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez : Dos en la ciudad", maxArtists: 2 },
-  { id: "spinettalandia-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5 },
-  { id: "jardin-de-gente-10", name: "Jardín de Gente · 10 Artistas", maxArtists: 10 },
+  { id: "charly-garcia", name: "Charly García · No soy un extraño", maxArtists: 1 },
+  { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez · Dos en la ciudad", maxArtists: 2 },
+  { id: "gustavo-cerati:te-para-tres", name: "Gustavo Cerati · Té para tres", maxArtists: 3 },
+  { id: "jardin-de-gente-5", name: "Jardín de Gente · 5 Artistas", maxArtists: 5 },
+  { id: "spinettalandia-10", name: "Spinettalandia · 10 Artistas", maxArtists: 10 },
+
 ]
 
 export const subscriptionsStatusLaFlota = [

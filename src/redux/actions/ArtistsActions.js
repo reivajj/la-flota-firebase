@@ -227,6 +227,20 @@ export const saveAddingArtistAppleId = artistTempAppleId => {
   }
 }
 
+export const saveAddingArtistFugaId = artistTempAppleId => {
+  return {
+    type: ReducerTypes.ADDING_ARTIST_FUGA_ID,
+    payload: artistTempAppleId
+  }
+}
+
+export const saveAddingArtistOwnerEmail = artistTempAppleId => {
+  return {
+    type: ReducerTypes.ADDING_ARTIST_EMAIL,
+    payload: artistTempAppleId
+  }
+}
+
 export const updateAddingArtistRedux = newAddingArtist => {
   return {
     type: ReducerTypes.ADDING_ARTIST_UPDATE,

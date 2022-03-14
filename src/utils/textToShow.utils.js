@@ -93,7 +93,7 @@ export const bienvenidoDialogText = [
 
 export const imageConstraintsMessage = [
   "La imagen debe ser CUADRADA y debe tener una resolucion mínima de 3000*3000 píxeles",
-  " y una resolución máxima de 6000x6000 píxeles con un tamaño máximo de 20mb"
+  " y una resolución máxima de 6000*6000 píxeles con un tamaño máximo de 20mb"
 ]
 
 export const textLowQualityAudio = [

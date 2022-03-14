@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   createArtistRedux, saveAddingArtistName, saveAddingArtistBiography,
-  saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId, saveAddingArtistImagenUrlAndReference, updateAddingArtistRedux, artistsAttachFugaIdToArtistDoc
+  saveAddingArtistId, updateArtistRedux, saveAddingArtistSpotifyUri, saveAddingArtistAppleId, saveAddingArtistImagenUrlAndReference, updateAddingArtistRedux, artistsAttachFugaIdToArtistDoc, saveAddingArtistFugaId, saveAddingArtistOwnerEmail
 } from '../../redux/actions/ArtistsActions';
 import { to, toWithOutError } from '../../utils';
 
@@ -78,6 +78,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   // const [spotifyUriInvalid, setSpotifyUriInvalid] = useState(false);
 
   const allFieldsValidCreateArtist = () => {
+    console.log(validator.current)
     if (validator.current.allValid()) {
       createArtist();
     } else {
@@ -140,13 +141,13 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const changeArtistOwnerEmail = event => {
     if (editing && !ownerEmailEdited) setOwnerEmailEdited(true);
-    dispatch(updateAddingArtistRedux({ ...artistDataToShow, ownerEmail: event.target.value }));
+    dispatch(saveAddingArtistOwnerEmail(event.target.value));
   }
 
-  const changeArtistFugaId = event => {
-    if (editing && !fugaIdEdited) setFugaIdEdited(true);
-    dispatch(updateAddingArtistRedux({ ...artistDataToShow, fugaId: event.target.value }));
-  }
+  // const changeArtistFugaId = event => {
+  //   if (editing && !fugaIdEdited) setFugaIdEdited(true);
+  //   dispatch(saveAddingArtistFugaId(event.target.value));
+  // }
 
   const changeArtistBio = event => {
     if (editing && !biographyEdited) setBiographyEdited(true);
@@ -211,25 +212,23 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         required
                         fullWidth
                         label="Email del dueño del Artista"
-                        autoFocus
                         value={(editing && !ownerEmailEdited) ? artistDataToShow.ownerEmail || "" : currentArtistData.ownerEmail || ""}
                         onChange={changeArtistOwnerEmail}
                         validatorProps={{ restrictions: 'email|max:100', message: "Debes ingresar un email.", validator: validator }}
                       />
                     </Grid>}
 
-                    {userIsAdmin(rol) && <Grid item xs={12}>
+                    {/* {userIsAdmin(rol) && <Grid item xs={12}>
                       <TextFieldWithInfo
                         name="fugaId"
                         required
                         fullWidth
                         label="Fuga Id del Artista"
-                        autoFocus
                         value={(editing && !fugaIdEdited) ? artistDataToShow.fugaId || "" : currentArtistData.fugaId || ""}
                         onChange={changeArtistFugaId}
-                        validatorProps={{ restrictions: 'max:50', message: ".", validator: validator }}
+                        validatorProps={{ restrictions: 'max:50', message: "Hay un problema con el FUGA ID.", validator: validator }}
                       />
-                    </Grid>}
+                    </Grid>} */}
 
                     <Grid item xs={12}>
                       <TextFieldWithInfo

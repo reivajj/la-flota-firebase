@@ -31,11 +31,18 @@ const Sidebar = props => {
 
   const { color, logo, image, logoText, routes } = props;
 
+  const showLink = (path) => {
+    const isAdmin = currentUser.rol.indexOf('admin') >= 0;
+    if (path === '/dashboard' && isAdmin) return false;
+    if (path === '/dashboard-admin' && !isAdmin) return false;
+    if (path === '/users' && !isAdmin) return false;
+    return true;
+  }
+
   var links = (
     <List className={classes.list}>
       {routes.map((prop, key) => {
-        const isAdmin = currentUser.rol.indexOf('admin') >= 0;
-        const showLink = prop.path === '/dashboard' ? !isAdmin : prop.path === '/dashboard-admin' ? isAdmin : true; 
+
         var activePro = " ";
         var listItemClasses;
         if (prop.path === "/upgrade-to-pro") {
@@ -53,7 +60,7 @@ const Sidebar = props => {
           [" " + classes.whiteFont]: activeRoute(prop.layout + prop.path)
         });
 
-        return showLink ? (
+        return showLink(prop.path) ? (
           <NavLink
             to={prop.layout + prop.path}
             className={activePro + classes.item}

@@ -9,6 +9,7 @@ import * as FirestoreServices from "../../services/FirestoreServices";
 import { logLoginAnalyticEvent } from '../../services/GoogleAnalytics';
 import { checkEmailAndPasswordInWpDB } from "services/BackendCommunication";
 import { deleteCurrentAuthUser } from 'services/AuthServices';
+import { editUserDataAndCredentialsFS } from '../../services/BackendCommunication';
 
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
@@ -37,7 +38,7 @@ const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) 
   const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
   const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, limit);
 
-  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, artists, labels, invitedArtists, collaborators, activities));
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, [], artists, labels, invitedArtists, collaborators, activities));
 }
 
 const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch) => {
@@ -96,6 +97,12 @@ export const signInFromGoogle = userInfoFromGoogle => async dispatch => {
   }
 }
 
+// export const editAuthUserInFBAndLogIn = async (email, password, dispatch) => {
+//   let updatingUserCredsInFB = await editUserDataAndCredentialsFS({ email, password }, dispatch);
+//   if (updatingUserCredsInFB === "ERROR") dispatch(loginErrorStore({ error: "", errorMsg: "Error al buscar al Usuario. Intente nuevamente." }));
+//   return "SUCCESS";
+// }
+
 export const signInDoubleSystem = ({ email, password }) => async dispatch => {
   const userEmailExistInFB = await FirestoreServices.userByEmailInFS(email, dispatch);
   if (userEmailExistInFB) await signIn({ email, password, fromSignUp: false }, dispatch);
@@ -114,6 +121,11 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
     // Si vengo del SignUp quiere decir que ya estoy logueado
     let [errorSignInFirebase] = await to(signInWithEmailAndPassword(auth, email, password));
     if (errorSignInFirebase) {
+      // const emailAndPasswordIsCorrect = await checkEmailAndPasswordInWpDB(email, password, dispatch);
+      // if (emailAndPasswordIsCorrect.existEmail && emailAndPasswordIsCorrect.passwordCheck) {
+      //   await editAuthUserInFBAndLogIn(email, password, dispatch);
+      // }
+      // else dispatch(loginErrorStore({ error: emailAndPasswordIsCorrect, errorMsg: "Email o Contraseña incorrectos." }));
       dispatch(loginErrorStore({ error: errorSignInFirebase, errorMsg: "Contraseña incorrecta" }));
       return "ERROR";
     }

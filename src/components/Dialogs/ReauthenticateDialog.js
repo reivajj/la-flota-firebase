@@ -36,8 +36,8 @@ const ReauthenticateDialog = ({ isOpen, setIsOpen }) => {
   }
 
   const updatePassword = async newPassword => {
-    const resultUpdatePassword = await authUpdatePassword(newPassword);
-    if (resultUpdatePassword) {
+    const resultUpdatePassword = await authUpdatePassword(newPassword, dispatch);
+    if (resultUpdatePassword !== "ERROR") {
       console.log("Password actualizado");
       setIsOpen(false);
     }

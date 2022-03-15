@@ -1,6 +1,7 @@
 import firebaseApp from 'firebaseConfig/firebase.js';
 import { getAuth, reauthenticateWithCredential, updatePassword, updateEmail, signInWithPopup, GoogleAuthProvider, deleteUser } from "firebase/auth";
 import { to } from 'utils';
+import { loginErrorStore } from 'redux/actions/AuthActions';
 
 const auth = getAuth(firebaseApp);
 const provider = new GoogleAuthProvider();
@@ -29,14 +30,14 @@ export const authUpdateEmail = async (newEmail) => {
   return true;
 }
 
-export const authUpdatePassword = async (newPassword) => {
+export const authUpdatePassword = async (newPassword, dispatch) => {
   let [errorUpdatingPassword, successUpdatingPassword] = await to(updatePassword(auth.currentUser, newPassword));
   if (errorUpdatingPassword) {
-    console.log("Error updating password: ", errorUpdatingPassword);
-    return false;
+    dispatch(loginErrorStore({ errorMsg: "Hubo un problema al realizar el SignIn. Intente nuevamente.", error: errorUpdatingPassword }));
+    return "ERROR";
   }
   console.log("Success updating password: ", successUpdatingPassword);
-  return true;
+  return "SUCCESS";
 }
 
 export const signInWithGoogle = async () => {

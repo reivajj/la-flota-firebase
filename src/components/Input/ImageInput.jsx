@@ -16,7 +16,7 @@ const ImageInput = ({ imagenUrl, onClickAddImage, helperText, textButton, progre
           buttonState={progress < 100 ? "none" : "success"}
           onClickHandler={onClickAddImage}
           progress={progress}
-          fileType={"image/*"}
+          fileType={"image/jpeg"}
           helperText={helperText}
         />
 

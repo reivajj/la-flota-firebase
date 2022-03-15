@@ -190,7 +190,6 @@ export const createElementFS = async (element, elementId, userId, collection, fi
 
 export const updateElementFS = async (oldData, newElementFields, elementId, collection, dispatch) => {
   const elementDbRef = doc(db, collection, elementId);
-  console.log("UPDATE FIRESTORE: ", { oldData, newElementFields, elementId, collection });
   let [errorUpdatingElementInCollection] = await to(updateDoc(elementDbRef, {
     ...newElementFields,
     lastUpdateTS: new Date().getTime()

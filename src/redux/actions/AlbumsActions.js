@@ -76,7 +76,6 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
   if (dataAlbumFuga.upc) return "ALREADY_HAS_UPC";
   let responseUPC = await BackendCommunication.createUPCToSuccessAlbumFuga(dataAlbumFuga.fugaId, dataAlbumFuga.ownerEmail, dispatch);
   if (responseUPC === "ERROR") return "ERROR";
-  console.log("RESPONSE UPC: ", responseUPC);
 
   dataAlbumFuga.upc = responseUPC;
 

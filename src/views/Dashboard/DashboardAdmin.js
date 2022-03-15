@@ -140,11 +140,12 @@ const DashboardAdmin = () => {
       if (albumFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
       if (albumFinded === "EMPTY") { setOpenLoaderDashboard(false); setOpenEmptySearch(true); return "EMPTY"; }
     }
-    console.log("ALBUM FINDED: ", albumFinded);
-    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded[0].ownerId)));
-    await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded[0].ownerId, 1)));
+    
+    albumFinded = Array.isArray(albumFinded) ? albumFinded[0] : albumFinded;
+    await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded.ownerId)));
+    await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded.ownerId, 1)));
     setSearchAction({
-      user: { field: 'id', value: albumFinded[0].ownerId }, artist: { field: 'id', value: albumFinded[0].artistId },
+      user: { field: 'id', value: albumFinded.ownerId }, artist: { field: 'id', value: albumFinded.artistId },
       album: { field: 'upc', value: upc }, recently: true
     });
     setOpenLoaderDashboard(false);

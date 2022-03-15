@@ -87,9 +87,10 @@ const MyUsers = () => {
       if (albumFromUPC === "EMPTY") { setOpenLoaderMyUsers(false); setOpenEmptySearch(true); return "EMPTY"; }
     }
 
-    let gettingUsersResults = await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFromUPC[0].ownerId, 1)));
+    albumFromUPC = Array.isArray(albumFromUPC) ? albumFromUPC[0] : albumFromUPC;
+    let gettingUsersResults = await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFromUPC.ownerId, 1)));
     if (gettingUsersResults === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
-    setSearchAction({ field: 'id', value: albumFromUPC[0].ownerId });
+    setSearchAction({ field: 'id', value: albumFromUPC.ownerId });
     setOpenLoaderMyUsers(false);
   }
 

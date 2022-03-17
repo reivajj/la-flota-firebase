@@ -13,6 +13,7 @@ import SearchNavbar from '../../components/Navbars/SearchNavbar';
 import { toWithOutError } from 'utils';
 import { getSearchedUserRedux, getUsersByFieldRedux } from '../../redux/actions/UsersActions';
 import { getAlbumsByFieldRedux } from "redux/actions/AlbumsActions";
+import { userIsRRSS } from '../../utils/users.utils';
 
 const MyUsers = () => {
 
@@ -97,7 +98,7 @@ const MyUsers = () => {
   const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
   const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
 
-  return userIsAdmin(currentUser.rol)
+  return userIsAdmin(currentUser.rol) && !userIsRRSS(currentUser.rol)
     ? (
       <Grid container spacing={2} sx={{ textAlign: "center" }}>
 

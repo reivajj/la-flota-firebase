@@ -31,8 +31,34 @@ export const languages = [
 export const provincias = [
   { value: "RN", provincia: "Rio Negro" },
   { value: "BA", provincia: "Buenos Aires" },
-  { value: "CABA", provincia: "Ciudad Autonoma de Buenos Aires" }
+  { value: "CABA", provincia: "Ciudad Autonoma de Buenos Aires" },
+  { value: "SJ", provincia: "San Juan" },
+  { value: "TdF", provincia: "Tierra del Fuego" },
+  { value: "SC", provincia: "Santa Cruz" },
+  { value: "SF", provincia: "Santa Fe" },
+  { value: "LR", provincia: "La Rioja" },
+  { value: "J", provincia: "Jujuy" },
+  { value: "S", provincia: "Salta" },
+  { value: "M", provincia: "Misiones" },
+  { value: "C", provincia: "Corrientes" },
+  { value: "Ch", provincia: "Chaco" },
+  { value: "Cb", provincia: "Córdoba" },
+  { value: "F", provincia: "Formosa" },
+  { value: "T", provincia: "Tucumán" },
+  { value: "SdE", provincia: "Santiago del Estero" },
+  { value: "MZ", provincia: "Mendoza" },
+  { value: "ER", provincia: "Entre Rios" },
+  { value: "CT", provincia: "Chubut" },
+  { value: "N", provincia: "Neuquén" },
+  { value: "LP", provincia: "La Pampa" },
+  { value: "Ca", provincia: "Catamarca" },
+  { value: "SL", provincia: "San Luis"}
 ];
+export const provinciasSorted = provincias.sort((pA, pB) => {
+  if (pA.provincia < pB.provincia) return -1;
+  else return 1;
+})
+
 
 export const ourAlbumStateWithEquivalence = {
   PENDING: "Pendiente de revisión",

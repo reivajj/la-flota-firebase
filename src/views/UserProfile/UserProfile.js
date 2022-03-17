@@ -10,7 +10,7 @@ import SimpleReactValidator from 'simple-react-validator';
 import { unstable_createMuiStrictModeTheme as createTheme } from '@mui/material';
 import ReauthenticateDialog from "../../components/Dialogs/ReauthenticateDialog";
 
-import { provincias } from "variables/varias";
+import { provinciasSorted } from "variables/varias";
 import { allFugaGenres } from "variables/genres";
 
 import Card from "components/Card/Card.js";
@@ -65,7 +65,7 @@ const UserProfile = () => {
   const [openChangeCredentialsDialog, setOpenChangeCredentialsDialog] = useState(false);
   const [openLoader, setOpenLoader] = useState(false);
 
-  let provinciaDelUsuarioActual = userData.provincia ? provincias.filter(provincia => provincia.value === userData.provincia)[0].value : "";
+  let provinciaDelUsuarioActual = userData.provincia ? provinciasSorted.filter(provincia => provincia.value === userData.provincia)[0].value : "";
 
   let defaultData = {
     nombre: userData.nombre || "",
@@ -179,7 +179,7 @@ const UserProfile = () => {
                     value={nombre}
                     onBlur={() => simpleValidator.current.showMessageFor('nombre')}
                     onChange={setForm} />
-                  {simpleValidator.current.message('nombre', nombre, 'required', {
+                  {simpleValidator.current.message('nombre', nombre, 'max:100', {
                     className: 'text-danger',
                     messages: { default: "Indica tu nombre." },
                     element: (message) => errorFormat(message)
@@ -196,7 +196,7 @@ const UserProfile = () => {
                     value={apellido}
                     onBlur={() => simpleValidator.current.showMessageFor('apellido')}
                     onChange={setForm} />
-                  {simpleValidator.current.message('apellido', apellido, 'required', {
+                  {simpleValidator.current.message('apellido', apellido, 'max:100', {
                     className: 'text-danger',
                     messages: { default: "Indica un apellido." },
                     element: (message) => errorFormat(message)
@@ -216,7 +216,7 @@ const UserProfile = () => {
                     value={provincia}
                     onChange={setForm}
                   >
-                    {provincias.map((option) => (
+                    {provinciasSorted.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.provincia}
                       </MenuItem>

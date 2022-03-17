@@ -73,10 +73,10 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
 
           <Grid item sx={gridNameStyle} key={index + "nameGrid=coll"} textAlign="left">
             <TextFieldWithInfo
-              name={!isComposeOrLyricist(index) ? `Nombre Colaborador ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
+              name={!isComposeOrLyricist(index) ? `Colaborador/a/x ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Compositor/a/x (uno por campo)" : "Liricista (uno por campo)"}
               required
               sx={textFiedNameStyle}
-              label={!isComposeOrLyricist(index) ? `Nombre Colaborador ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Nombre Compositor" : "Nombre Liricista"}
+              label={!isComposeOrLyricist(index) ? `Colaborador/a/x ${index - 1 > 0 ? index - 1 : 1}` : index === 0 ? "Compositor/a/x (uno por campo)" : "Liricista (uno por campo)"}
               value={collaborator.name}
               onChange={event => handleAddNameToCollaborator(event.target.value, index)}
               helperText={getHelperCollaboratorText(index)}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Typography, Button, CircularProgress, Backdrop } from '@mui/material';
+import { Grid, Typography, CircularProgress, Backdrop } from '@mui/material';
 import TableWithHeader from "../../components/Table/TableWithHeader";
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -8,7 +8,7 @@ import { toWithOutError } from 'utils';
 import { getAlbumsPropsForAdminDataTable } from "utils/tables.utils";
 import { getSearchedUserRedux, getUserIdByUPCRedux, getUsersByFieldRedux, usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
 import UserDialog from '../Users/UserDialog';
-import { getEmailIfNotHaveUser, getUsersPropsForDataTable, sortUsersByField } from '../../utils/users.utils';
+import { getEmailIfNotHaveUser, getUsersPropsForDataTable, sortUsersByField, userIsRRSS } from '../../utils/users.utils';
 import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
 import { getElementsAdminQueryFS } from "services/FirestoreServices";
 import { sortAlbumsByField } from '../../utils/albums.utils';
@@ -140,7 +140,7 @@ const DashboardAdmin = () => {
       if (albumFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
       if (albumFinded === "EMPTY") { setOpenLoaderDashboard(false); setOpenEmptySearch(true); return "EMPTY"; }
     }
-    
+
     albumFinded = Array.isArray(albumFinded) ? albumFinded[0] : albumFinded;
     await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', albumFinded.ownerId)));
     await toWithOutError(dispatch(getUsersByFieldRedux('id', albumFinded.ownerId, 1)));
@@ -163,7 +163,7 @@ const DashboardAdmin = () => {
         </Backdrop>
 
         {userSelected && <UserDialog userData={userSelected} isOpen={Boolean(userSelected.id)} title={`${getEmailIfNotHaveUser(userSelected)}`}
-          handleClose={handleCloseUserDialog} contentTexts={["Proximamente datos del usuario"]} />}
+          handleClose={handleCloseUserDialog} contentTexts={["Proximamente datos del usuario"]} rolAdmin={rol} />}
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
           <Typography sx={{ fontSize: "2.5em", fontWeigth: 500 }}>Has entrado al panel como usuario Admin</Typography>
@@ -191,15 +191,15 @@ const DashboardAdmin = () => {
                 <TableWithHeader {...propsToArtistsTable} />
               </Grid>
 
-              <Grid item xs={10}>
+              {!userIsRRSS(rol) && <Grid item xs={10}>
                 <TableWithHeader {...propsToUsersTable} />
-              </Grid>
+              </Grid>}
             </>
           }
 
         </Grid>
 
-      </Grid>
+      </Grid >
     ) : <p>No tienes los permisos suficientes para ver ésta página</p>;
 }
 

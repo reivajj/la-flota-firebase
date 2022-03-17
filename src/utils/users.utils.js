@@ -3,6 +3,8 @@ import { planesLaFlota, subscriptionsStatusLaFlota, colorFromSubIdState } from '
 export const getEmailIfNotHaveUser = userData => userData.nombre ? `${userData.nombre} ${userData.apellido}` : `${userData.email}`;
 
 export const userIsAdmin = rol => rol.indexOf('admin') >= 0;
+export const userIsRRSS = rol => rol.indexOf('rrss') >= 0;
+
 
 export const getPlanNameFromId = planId => {
   return planesLaFlota.find(plan => plan.id === planId)?.name || "Charly García"

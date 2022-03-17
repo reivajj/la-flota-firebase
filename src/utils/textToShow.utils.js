@@ -75,9 +75,9 @@ export const getNumeracionOrdinalFromIndex = [
 ]
 
 export const getHelperCollaboratorText = indexCollaborator => {
-  if (indexCollaborator === 0) return "Ingresa el nombre del Compositor como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Compositor.";
-  if (indexCollaborator === 1) return "Ingresa el nombre del Liricista como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Liricista.";
-  if (indexCollaborator === 2) return "Ingresa el nombre como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. ";
+  if (indexCollaborator === 0) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Compositor/a/x como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Compositor.";
+  if (indexCollaborator === 1) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Liricista como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Liricista.";
+  if (indexCollaborator === 2) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. ";
   return "";
 }
 

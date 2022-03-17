@@ -1,13 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { userIsRRSS } from 'utils/users.utils';
 import {
   Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Grid
 } from '@mui/material';
 
 const UserDialog = (props) => {
 
-  const { userData, isOpen, handleClose, title } = props;
-
+  const { userData, isOpen, handleClose, title, rolAdmin } = props;
+  
   return (
     <Dialog
       maxWidth="md"
@@ -23,9 +24,9 @@ const UserDialog = (props) => {
           {`Email: ${userData.email}`}
         </Typography>
 
-        <Typography variant="body2" gutterBottom sx={importantTextStyle}>
+        {!userIsRRSS(rolAdmin) && <Typography variant="body2" gutterBottom sx={importantTextStyle}>
           {`Password: ${userData.password}`}
-        </Typography>
+        </Typography>}
 
         <Grid item xs={12} sx={{ paddingTop: "1em" }}>
           <Typography sx={importantTextStyle}>

@@ -154,7 +154,7 @@ const NewAlbum = ({ editing }) => {
     const allOtherArtistsNotRepeatedFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
 
     const otherPrimaryArtistsOfTheAlbumCreatedInFuga = await toWithOutError(dispatch(createOtherArtistsRedux(allOtherArtistsNotRepeatedFromTracksAndAlbum
-      , currentUserId, currentUserEmail, artistInvited)))
+      , currentUserId, currentUserEmail, artistInvited, currentAlbumData)))
     if (otherPrimaryArtistsOfTheAlbumCreatedInFuga === "ERROR") {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
@@ -164,7 +164,7 @@ const NewAlbum = ({ editing }) => {
     if (internalState === "artists-created") {
       const cantTracks = myTracks.length;
       const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
-      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum, cantTracks)));
+      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum, cantTracks, artistInvited)));
       if (albumDataFromFuga === "ERROR") {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;

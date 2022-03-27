@@ -31,7 +31,7 @@ const AddCollaboratorsForm = ({ setTrackData, trackData, validator }) => {
   let isLyricist = index => index === 1 && trackData.audio_locale_name !== "Instrumental";
   
   const deleteLyricistCollaborator = () => {
-    validator.current.fields[`Nombre Liricista`] = true;
+    validator.current.fields[`Liricista (uno por campo)`] = true;
     setTrackData({ ...trackData, collaborators: trackData.collaborators.filter(coll => !coll.roles.includes("LYRICIST")) })
   }
 

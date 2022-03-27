@@ -16,14 +16,20 @@ export const createArtistModel = (dataArtist, editing) => {
 
 const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
-export const createAlbumModel = (dataAlbum, explicit, cantTracks) => {
+export const createAlbumModel = (dataAlbum, explicit, cantTracks, artistsInvitedStore) => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
   let originalReleaseDate = dataAlbum.oldRelease ? `${dataAlbum.originalYear}-${dataAlbum.originalMonth}-${dataAlbum.originalDayOfMonth}` : saleAndReleaseDate;
   let preOrderDate = `${dataAlbum.preOrderYear}-${dataAlbum.preOrderMonth}-${dataAlbum.preOrderDayOfMonth}`;
 
   let artistsArray = [{ primary: true, id: dataAlbum.artistFugaId }];
-  dataAlbum.allOtherArtists.forEach(otherArtist => artistsArray.push({ primary: otherArtist.primary, id: otherArtist.fugaId }));
+  dataAlbum.allOtherArtists.forEach(otherArtist => {
+    if (otherArtist.fugaId) artistsArray.push({ primary: otherArtist.primary || false, id: otherArtist.fugaId });
+    else {
+      let artistFromStore = artistsInvitedStore.find(artistInvited => artistInvited.name === otherArtist.name);
+      if (artistFromStore && artistFromStore.fugaId) artistsArray.push({ primary: otherArtist.primary || false, id: artistFromStore.fugaId });
+    }
+  });
 
   formDataAlbum.append("name", dataAlbum.title);
   formDataAlbum.append("label", dataAlbum.labelFugaId);

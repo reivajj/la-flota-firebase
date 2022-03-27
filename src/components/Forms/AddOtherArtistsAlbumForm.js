@@ -30,7 +30,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
   const currentAddingAlbum = useSelector(store => store.albums.addingAlbum);
 
   const addOneArtistSkeleton = () => {
-    if (currentAddingAlbum.allOtherArtists.length >= 4) return;
+    if (currentAddingAlbum.allOtherArtists.length >= 10) return;
     let artist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] }));
   }

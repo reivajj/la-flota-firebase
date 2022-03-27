@@ -12,13 +12,13 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks) => async dispatch => {
+export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks, artistsInvitedStore) => async dispatch => {
 
-  let formDataAlbum = createAlbumModel(album, explicit, cantTracks);
+  let formDataAlbum = createAlbumModel(album, explicit, cantTracks, artistsInvitedStore);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
 
-  writeCloudLog(`creating album ${album.name} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
+  writeCloudLog(`creating album ${album.title} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
 
   let albumFromThirdWebApi = await BackendCommunication.createAlbumFuga(formDataAlbum, ownerEmail, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
@@ -29,7 +29,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
 
   let albumToUploadToFS = { ...album, cover: "" };
 
-  writeCloudLog(`creating album ${albumToUploadToFS.name} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
+  writeCloudLog(`creating album ${albumToUploadToFS.title} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
 
   await FirestoreServices.createElementFS(albumToUploadToFS, albumToUploadToFS.id, userId, "albums", "totalAlbums", 1, dispatch);
 

@@ -2,7 +2,7 @@ import * as ReducerTypes from 'redux/actions/Types';
 
 const filterArtistsWithSameIdThanNewOne = (oldArtists, addedArtists) => {
   if (!addedArtists) return oldArtists;
-  return addedArtists.filter(artist => !oldArtists.map(oldArtist => oldArtist.id).includes(artist.id))
+  return oldArtists.filter(artist => !addedArtists.map(addedArtist => addedArtist.id).includes(artist.id));
 }
 
 const editAndAddArtist = (oldArtists, editedFieldsFromArtist) => {
@@ -18,8 +18,8 @@ const ArtistsInvitedReducer = (state = initialState, action) => {
   switch (action.type) {
 
     case ReducerTypes.INVITED_ARTISTS_ADD:
-      const newArtistsInvited = filterArtistsWithSameIdThanNewOne(state, action.payload);
-      return [...state, ...newArtistsInvited]
+      const oldUniqueArtistsInvited = filterArtistsWithSameIdThanNewOne(state, action.payload);
+      return [...oldUniqueArtistsInvited, ...action.payload]
 
     case ReducerTypes.INVITED_ARTIST_EDIT_WITH_ID:
       return editAndAddArtist(state, action.payload);

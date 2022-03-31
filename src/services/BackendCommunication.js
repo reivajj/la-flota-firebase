@@ -3,6 +3,7 @@ import { copyFormDataToJSON, to } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 import { loginErrorStore } from 'redux/actions/AuthActions';
 import { writeCloudLog } from './LoggingService';
+import { logReleaseDeliveryAnalyticEvent } from './GoogleAnalytics';
 
 const webUrl = "https://dashboard2.laflota.com.ar/filemanagerapp/api/";
 export const localUrl = "http://localhost:5000/filemanagerapp/api/";
@@ -198,6 +199,42 @@ export const createUPCToSuccessAlbumFuga = async (albumFugaId, ownerEmail, dispa
     return "ERROR";
   }
   return responseUPC.data.response;
+}
+
+export const publishAlbumFuga = async (albumData, dispatch) => {
+  const [errorPublishingAlbum, responsePublishing] = await to(axios.post(`${targetUrl}albums/${albumData.fugaId}/publish`));
+  console.log("ALBUM DATA IN PUBLISH FUGA: ", albumData);
+  if (errorPublishingAlbum) {
+    dispatch(createBackendError(errorPublishingAlbum));
+    writeCloudLog(`Error publishing album with name: ${albumData.title} and UPC: ${albumData.upc}
+    , in fuga, ownerEmail: ${albumData.ownerEmail}`, albumData, errorPublishingAlbum, "error");
+    return "ERROR";
+  }
+  return responsePublishing.data.response;
+}
+
+export const deliverAlbumFuga = async (albumData, dispatch) => {
+  let dspsIds = [];
+  albumData.dsps.forEach(dspInfo => dspsIds.push({ dsp: dspInfo.dspId }));
+  console.log("ALBUM DATA IN DELIVER FUGA: ", albumData);
+  const [errorAddingDspsAlbum] = await to(axios.put(`${targetUrl}albums/${albumData.fugaId}/delivery_instructions/edit`, dspsIds));
+  if (errorAddingDspsAlbum) {
+    dispatch(createBackendError(errorAddingDspsAlbum));
+    writeCloudLog(`Error adding DSPs of album with name: ${albumData.title} and UPC: ${albumData.upc}
+    , in fuga, ownerEmail: ${albumData.ownerEmail}`, albumData, errorAddingDspsAlbum, "error");
+    return "ERROR";
+  }
+
+  const [errorMakingDelivery] = await to(axios.post(`${targetUrl}albums/${albumData.fugaId}/delivery_instructions/deliver`, dspsIds));
+  if (errorAddingDspsAlbum) {
+    dispatch(createBackendError(errorMakingDelivery));
+    writeCloudLog(`Error making delivery of album with name: ${albumData.title} and UPC: ${albumData.upc}
+    , in fuga, ownerEmail: ${albumData.ownerEmail}`, albumData, errorMakingDelivery, "error");
+    return "ERROR";
+  }
+
+  logReleaseDeliveryAnalyticEvent(albumData);
+  return "SUCCESS";
 }
 
 // export const rearrengePositionsFuga = async (tracksData, dispatch) => {

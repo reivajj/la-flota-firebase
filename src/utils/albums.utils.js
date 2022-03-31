@@ -2,6 +2,7 @@
 // import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
 import { colorFromFugaState, ourAlbumStateWithEquivalence } from '../variables/varias';
 import { fugaAlbumsState } from '../variables/fuga';
+import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliveredSuccessTitle, errorDeliveredTitle, publishedSuccessTitle } from './textToShow.utils';
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
@@ -9,6 +10,8 @@ export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfUser") return albums.filter(album => album.ownerId === params.id);
   return albums;
 }
+
+export const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const getTitleLanzamientos = (params, labels, artists) => {
   if (!Object.keys(params).length) return "Lanzamientos";
@@ -75,9 +78,29 @@ export const getFormatByCantOfTracks = cantTracks => {
   return "NO_TRACKS";
 }
 
+export const getOurFormatByCantOfTracks = cantTracks => {
+  if (cantTracks === 1) return "Single";
+  if (cantTracks > 1 && cantTracks < 6) return "EP";
+  if (cantTracks >= 6) return "Álbum";
+  return "Single";
+}
+
 export const sortAlbumsByField = (albums, field) => {
   return albums.sort((aA, aB) => {
     if (aA[field] > aB[field]) return -1;
     else return 1;
   })
+}
+
+// DELIVERY
+export const getDeliveredTitleDialog = deliveryState => {
+  if (deliveryState === 'published') return publishedSuccessTitle;
+  if (deliveryState === 'delivered') return deliveredSuccessTitle;
+  return errorDeliveredTitle;
+}
+
+export const getDeliveredContentTextDialog = deliveryState => {
+  if (deliveryState === 'published') return publishedSuccessText;
+  if (deliveryState === 'delivered') return deliveredSuccessText;
+  return errorDeliveredText;
 }

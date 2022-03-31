@@ -105,3 +105,19 @@ export const textFloatingPointAudio = [
   "Archivos Floating point WAV no son soportados.",
   "Debe tener formato WAV, stereo, de 16, 24, o 32 bits y con un Sample Rate entre 44.1 y 192 kHz"
 ]
+
+export const publishedSuccessTitle = 'Tu Lanzamiento ya se encuentra Aprobado y listo para ser entregado a las DSPs';
+export const deliveredSuccessTitle = 'Tu Lanzamiento ya está en camino a las DSPs';
+export const errorDeliveredTitle = 'Hubo un error al Publicar el Lanzamiento';
+
+export const publishedSuccessText = ['Tu lanzamiento se ha publicado correctamente, pronto estará en camino a las DSPs'];
+export const deliveredSuccessText = ['Tu lanzamiento ya se encuentra en camino a las DPSs, este proceso puede durar de 1 a 3 días aproximadamente'];
+export const errorDeliveredText = ["Tu lanzamiento ya se encuentra en etapa de de revisión"];
+
+export const warningAppleDelivery = [
+  "Si quieres que tu música sea enviada a Apple Music,", <br />,
+  "el lanzamiento debe cumplir con ciertos requisitos,", <br />,
+  "y el tiempo de aprobación es mayor para esta DSP.", <br />,
+  <br />,
+  "Haz click para más información sobre los requisitos."
+]

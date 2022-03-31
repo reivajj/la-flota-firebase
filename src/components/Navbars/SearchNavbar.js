@@ -67,10 +67,12 @@ const SearchNavbar = (props) => {
           {searchArrayProps.map(searchProp =>
             <Search>
               <StyledInputBase
+                key={searchProp.name}
+                onKeyPress={(event) => searchProp.handleEnterKeyPress(event, searchProp)}
                 placeholder={searchProp.name}
                 value={searchProp.value}
                 onChange={(event) => { searchProp.setValue(event.target.value); }}
-                inputProps={{ 'aria-label': 'search-email' }}
+                inputProps={{ 'aria-label': searchProp.name }}
               />
               <IconButton onClick={() => searchProp.onSearchHandler(searchProp.value)} >{<SearchIcon sx={{ color: "white" }} />}</IconButton>
             </Search>

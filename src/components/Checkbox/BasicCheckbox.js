@@ -12,9 +12,9 @@ const BasicCheckbox = ({ checked, label, onChecked, color }) => {
 
   return (
     <FormControlLabel
-      control={<Checkbox checked={checked} onChange={onChecked} sx={color ? checkBoxStyle : {}} />}
+      control={<Checkbox key={label} checked={checked} onChange={onChecked} sx={color ? checkBoxStyle : {}} />}
       label={label}
-      sx={{ display: "inline", fontSize: "20px" }}
+      sx={{ display: "inline-flex", fontSize: "20px" }}
     />
   );
 }

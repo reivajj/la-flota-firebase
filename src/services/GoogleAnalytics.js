@@ -13,3 +13,12 @@ export const logLoginAnalyticEvent = userData => {
     email: userData.email
   });
 }
+
+export const logReleaseDeliveryAnalyticEvent = albumData => {
+  if (ourEmails.includes(albumData.title.indexOf("TEST") >= 0)) return;
+  logEvent(analytics, 'release_delivered', {
+    userId: albumData.ownerId,
+    email: albumData.ownerEmail,
+    albumTitle: albumData.title
+  })
+}

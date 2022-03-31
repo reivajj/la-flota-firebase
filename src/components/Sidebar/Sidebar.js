@@ -16,6 +16,7 @@ import styles from "assets/jss/material-dashboard-react/components/sidebarStyle.
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { userIsAdmin, userIsRRSS } from 'utils/users.utils';
+import { userIsDev } from 'utils/users.utils';
 
 const useStyles = makeStyles(styles);
 
@@ -37,6 +38,7 @@ const Sidebar = props => {
     if (path === '/dashboard' && isAdmin) return false;
     if (path === '/dashboard-admin' && !isAdmin) return false;
     if (path === '/users' && (!isAdmin || userIsRRSS(currentUser.rol))) return false;
+    if (path === '/test' && !userIsDev(currentUser.rol)) return false
     return true;
   }
 

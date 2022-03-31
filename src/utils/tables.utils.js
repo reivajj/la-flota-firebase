@@ -3,6 +3,7 @@ import { Grid, IconButton, CircularProgress, Fab, Typography } from '@mui/materi
 import { Delete, Edit, Check, AddCircle } from '@mui/icons-material/';
 import { getStateColor } from 'utils/albums.utils';
 import { secondsToMmSs } from './timeRelated.utils';
+import { getOurStateFromFugaState } from 'utils/albums.utils';
 
 export const trackUploadProgress = (progressTrack, buttonSuccessStyle) => {
   return (
@@ -76,13 +77,12 @@ export const getAlbumsPropsForUsersDataTable = albums => {
 export const getAlbumsPropsForAdminDataTable = (albums, handleOpenUserDialog, handleGoToAlbum) => {
   let albumDataTable = [];
   albums.forEach(album => {
-    const stateInfoStyle = { color: getStateColor(album.state ? album.state : ""), fontSize: "1em", fontWeight: 400 };
+    const stateInfoStyle = { color: getStateColor(album.state ? album.state : ""), fontSize: "1em", fontWeight: 600 };
     albumDataTable.push([
       moreInfoAlbumRender(album.id, handleGoToAlbum),
       album.title,
       album.nombreArtist,
-      <Typography sx={stateInfoStyle}>Ir al album para ver el Estado.</Typography>,
-      // <Typography sx={stateInfoStyle}>{album.state ? getOurStateFromFugaState(album.state) : "Ir al Album para ver el Estado"}</Typography>,
+      <Typography sx={stateInfoStyle}>{album.state ? getOurStateFromFugaState(album.state) : "Ir al Album para ver el Estado"}</Typography>,
       moreInfoActionRender(album.ownerId, handleOpenUserDialog),
       album.upc || "",
       album.format,

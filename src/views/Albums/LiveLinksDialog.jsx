@@ -5,7 +5,7 @@ import {
 import { Check } from '@mui/icons-material/';
 import { Image } from 'mui-image';
 import { buttonSuccessStyle } from '../../utils/commonStyles';
-import { dspIds } from "variables/fuga";
+import { dspIdsWithLiveLinks } from "variables/fuga";
 
 const LiveLinksDialog = (props) => {
 
@@ -25,9 +25,9 @@ const LiveLinksDialog = (props) => {
     console.log("Live links useEffect: ", liveLinksInfo);
     if (liveLinksInfo.length === 0) return;
 
-    let spotifyLink = liveLinksInfo.find(liveLink => liveLink.dsp.id === dspIds.spotify_dsp_id);
+    let spotifyLink = liveLinksInfo.find(liveLink => liveLink.dsp.id === dspIdsWithLiveLinks.spotify_dsp_id);
     if (spotifyLink) setSpotifyUrl(spotifyLink.url);
-    let appleLink = liveLinksInfo.find(liveLink => liveLink.dsp.id === dspIds.apple_dsp_id);
+    let appleLink = liveLinksInfo.find(liveLink => liveLink.dsp.id === dspIdsWithLiveLinks.apple_dsp_id);
     if (appleLink) setAppleUrl(appleLink.url);
   }, [liveLinksInfo])
 

@@ -8,7 +8,6 @@ const provider = new GoogleAuthProvider();
 auth.languageCode = 'sp';
 
 export const reauthenticateWithCredentialOk = async (currentEmail, currentPassword) => {
-  console.log("Credentials recibidas: ", { currentEmail, currentPassword });
   const credential = auth.EmailAuthProvider.credential(
     currentEmail, currentPassword
   );

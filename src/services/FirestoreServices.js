@@ -19,7 +19,7 @@ const collectionsWithActivities = ["artists", "albums", "labels", "users"];
 export const editUserDataWithOutCredentials = async (newUserData, dispatch) => {
   if (!newUserData.id) return "ERROR";
   const userDbRef = doc(db, "users", newUserData.id);
-  let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData }));
+  let [errorUpdatingUserInDB] = await to(updateDoc(userDbRef, { ...newUserData, lastUpdateTS: new Date().getTime() }));
   if (errorUpdatingUserInDB) {
     dispatch(createFireStoreError("Error updating user data info", errorUpdatingUserInDB));
     writeCloudLog("FS Error updating user without credentials", newUserData, errorUpdatingUserInDB, "error");
@@ -47,7 +47,10 @@ export const updateUserDocPostLoginFS = async (userId, userDoc, password, dispat
   userDocData.lastTimeSignedInString = lastTimeSignedInString;
   userDocData.lastTimeSignedIn = date.getTime();
 
-  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, { password, lastTimeSignedIn: date.getTime(), lastTimeSignedInString }));
+  let [errorUpdatingUserSignIn] = await to(updateDoc(userInDBRef, {
+    password, lastUpdateTS: date.getTime()
+    , lastTimeSignedIn: date.getTime(), lastTimeSignedInString
+  }));
   if (errorUpdatingUserSignIn) {
     dispatch(createFireStoreError("Error al actualizar al usuario. Intente nuevamente.", errorUpdatingUserSignIn));
     writeCloudLog("FS Error getting user doc post login", userId, errorUpdatingUserSignIn, "error");
@@ -139,15 +142,14 @@ export const getElementsByField = async (typeOfElement, searchField, fieldValue,
 
 export const getElementsAdminDev = async (userDataFromDB, userId, typeOfElement, dispatch, limitNumber) => {
   let elementsDbFromUserRef = {};
-  let searchByField = typeOfElement === "users" ? "timestampWhenCreatedUserInFB" : "lastUpdateTS";
 
   if (userDataFromDB.rol.indexOf("index") >= 0 && userId !== "") {
     console.log("ENTRANDO COMO USUARIO: ", userDataFromDB, "/ USER ID: ", userId);
     elementsDbFromUserRef = query(collection(db, typeOfElement), where("ownerId", "==", userId),
       orderBy("lastUpdateTS", "desc"), limit(limitNumber));
   }
-  else elementsDbFromUserRef = query(collection(db, typeOfElement), where(searchByField, ">", Date.now() - getCantDaysInMS(7)),
-    orderBy(searchByField, "desc"), limit(limitNumber));
+  else elementsDbFromUserRef = query(collection(db, typeOfElement), where("lastUpdateTS", ">", Date.now() - getCantDaysInMS(7)),
+    orderBy("lastUpdateTS", "desc"), limit(limitNumber));
 
   if (!collectionsWithActivities.includes(typeOfElement)) return;
 

@@ -1,4 +1,4 @@
-import { getFormatByCantOfTracks } from 'utils/albums.utils';
+import { formatEquivalence, getFormatByCantOfTracks } from 'utils/albums.utils';
 import { v4 as uuidv4 } from 'uuid';
 import { getAllArtistsOfTrack, ifNoPrimaryChangeIt } from '../utils/artists.utils';
 
@@ -13,8 +13,6 @@ export const createArtistModel = (dataArtist, editing) => {
   // if (dataArtist.photo) formDataArtist.append("photo", dataArtist.photo);
   return rawDataArtist;
 }
-
-const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const createAlbumModel = (dataAlbum, explicit, cantTracks, artistsInvitedStore) => {
   let formDataAlbum = new FormData();

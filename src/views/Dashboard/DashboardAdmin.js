@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getArtistPropsForDataTable } from "utils/artists.utils";
 import { toWithOutError } from 'utils';
 import { getAlbumsPropsForAdminDataTable } from "utils/tables.utils";
-import { getSearchedUserRedux, getUserIdByUPCRedux, getUsersByFieldRedux, usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
+import { getSearchedUserRedux, getUserIdByUPCRedux, getUsersByFieldRedux, usersAddStore, usersGetOneByIdRedux } from "../../redux/actions/UsersActions";
 import UserDialog from '../Users/UserDialog';
 import { getEmailIfNotHaveUser, getUsersPropsForDataTable, sortUsersByField, userIsRRSS } from '../../utils/users.utils';
 import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
@@ -61,8 +61,9 @@ const DashboardAdmin = () => {
 
   const [userSelected, setUserSelected] = useState(false);
 
-  const stateAlbumSnap = useFirestoreQuery(getElementsAdminQueryFS("albums", 20, sortedAlbums[0]?.lastUpdateTS || 0));
-  const stateArtistsSnap = useFirestoreQuery(getElementsAdminQueryFS("artists", 20, sortedArtists[0]?.lastUpdateTS || 0));
+  const stateAlbumSnap = useFirestoreQuery(getElementsAdminQueryFS("albums", 50, sortedAlbums[0]?.lastUpdateTS || 0));
+  const stateArtistsSnap = useFirestoreQuery(getElementsAdminQueryFS("artists", 50, sortedArtists[0]?.lastUpdateTS || 0));
+  const stateUsersSnap = useFirestoreQuery(getElementsAdminQueryFS("users", 50, sortedUsers[0]?.lastUpdateTS || 0))
 
   useEffect(() => {
     if (stateArtistsSnap.status === "loading") return "Loading...";
@@ -75,6 +76,12 @@ const DashboardAdmin = () => {
     if (stateAlbumSnap.status === "error") return `Error al cargar los ultimos Albums: ${stateAlbumSnap.error.message}`;
     if (stateAlbumSnap.status === "success" && stateAlbumSnap.data.length > 0) dispatch(albumsAddStore(stateAlbumSnap.data));
   }, [stateAlbumSnap])
+
+  useEffect(() => {
+    if (stateUsersSnap.status === "loading") return "Loading...";
+    if (stateUsersSnap.status === "error") return `Error al cargar los ultimos Albums: ${stateAlbumSnap.error.message}`;
+    if (stateUsersSnap.status === "success" && stateUsersSnap.data.length > 0) dispatch(usersAddStore(stateUsersSnap.data));
+  }, [stateUsersSnap])
 
   const handleCloseUserDialog = () => setUserSelected(false);
 
@@ -151,8 +158,15 @@ const DashboardAdmin = () => {
     setOpenLoaderDashboard(false);
   }
 
-  const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
+  const handleEnterKeyPress = (event, searchProps) => {
+    if (event.key === 'Enter') {
+      if (searchProps.name === "Email") onSearchEmailHandler(searchProps.value);
+      if (searchProps.name === "UPC") onSearchUPCHandler(searchProps.value);
+    }
+  }
+
+  const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
+  const upcSearchProps = { name: "UPC", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
 
   return userIsAdmin(rol)
     ? (

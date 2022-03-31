@@ -52,7 +52,7 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
         >
           {textButton}
         </Button>
-        {noFab && loading && <CircularProgress size={35} sx={buttonProgressSx || styles.buttonProgress} />}
+        {noFab && loading && <CircularProgress size={30} sx={buttonProgressSx || styles.buttonProgress} />}
       </Grid>
     </Grid>
   );
@@ -120,7 +120,7 @@ const styles = {
   buttonProgress: {
     color: green[500],
     position: 'absolute',
-    marginTop: '2px',
+    marginTop: '3px',
     marginLeft: '-7.5em',
     zIndex: 1,
   },

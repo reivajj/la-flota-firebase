@@ -34,10 +34,7 @@ const MyUsers = () => {
   const [usersFiltered, setUsersFiltered] = useState(usersFromStore);
 
   useEffect(() => {
-    if (searchAction.value !== "") {
-      console.log("SEARCH ACTION IN IF: ", searchAction);
-      setUsersFiltered(usersFromStore.filter(user => user[`${searchAction.field}`] === searchAction.value))
-    }
+    if (searchAction.value !== "") setUsersFiltered(usersFromStore.filter(user => user[`${searchAction.field}`] === searchAction.value));
     else setUsersFiltered(usersFromStore);
   }, [usersFromStore, searchAction]);
 
@@ -95,8 +92,15 @@ const MyUsers = () => {
     setOpenLoaderMyUsers(false);
   }
 
-  const emailSearchProps = { name: "Email", onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
+  const handleEnterKeyPress = (event, searchProps) => {
+    if (event.key === 'Enter') {
+      if (searchProps.name === "Email") onSearchEmailHandler(searchProps.value);
+      if (searchProps.name === "UPC") onSearchUPCHandler(searchProps.value);
+    }
+  }
+
+  const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
+  const upcSearchProps = { name: "UPC", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
 
   return userIsAdmin(currentUser.rol) && !userIsRRSS(currentUser.rol)
     ? (

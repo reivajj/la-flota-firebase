@@ -7,6 +7,7 @@ import MyLabels from 'views/Labels/MyLabels';
 import UserProfile from "views/UserProfile/UserProfile";
 import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 import MyUsers from './views/Users/MyUsers';
+import Test from './views/ViewTest/Test';
 
 const dashboardRoutes = [
   {
@@ -56,6 +57,13 @@ const dashboardRoutes = [
     name: "Perfil",
     icon: Person,
     component: UserProfile,
+    layout: "/admin"
+  },
+  {
+    path: "/test",
+    name: "Test",
+    icon: Person,
+    component: Test,
     layout: "/admin"
   },
 ];

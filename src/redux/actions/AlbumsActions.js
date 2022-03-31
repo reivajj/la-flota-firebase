@@ -3,6 +3,7 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel } from 'services/CreateModels';
 import { writeCloudLog } from '../../services/LoggingService';
+import { formatEquivalence, getFormatByCantOfTracks, getOurFormatByCantOfTracks } from 'utils/albums.utils';
 
 export const albumsAddStore = albums => {
   return {
@@ -17,6 +18,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
   let formDataAlbum = createAlbumModel(album, explicit, cantTracks, artistsInvitedStore);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
+  album.format = album.format || getOurFormatByCantOfTracks(cantTracks);
 
   writeCloudLog(`creating album ${album.title} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
 
@@ -27,7 +29,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
   album.whenCreatedTS = new Date().getTime();
   album.lastUpdateTS = album.whenCreatedTS;
 
-  let albumToUploadToFS = { ...album, cover: "" };
+  let albumToUploadToFS = { ...album, cover: { name: album.cover.name, size: album.cover.size } };
 
   writeCloudLog(`creating album ${albumToUploadToFS.title} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
 
@@ -35,37 +37,36 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
 
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,
-    payload: [albumToUploadToFS]
+    payload: [album]
   });
 
   return album;
 }
 
-export const deleteAlbumRedux = dataAlbum => async dispatch => {
-  let deleteResponse = await BackendCommunication.deleteAlbumFuga(dataAlbum.fugaId, dispatch);
+export const deleteAlbumRedux = albumData => async dispatch => {
+  let deleteResponse = await BackendCommunication.deleteAlbumFuga(albumData.fugaId, dispatch);
   if (deleteResponse === "ERROR") return "ERROR";
 
-  await FirestoreServices.deleteElementFS(dataAlbum, dataAlbum.id, dataAlbum.ownerId, "albums", "totalAlbums", -1, dispatch);
-  await FirestoreServices.deleteAllTracksFromAlbumIdFS(dataAlbum.id, dataAlbum.ownerId, dispatch);
+  await FirestoreServices.deleteElementFS(albumData, albumData.id, albumData.ownerId, "albums", "totalAlbums", -1, dispatch);
+  await FirestoreServices.deleteAllTracksFromAlbumIdFS(albumData.id, albumData.ownerId, dispatch);
 
   dispatch({
     type: ReducerTypes.ALBUMS_DELETE_BY_ID,
-    payload: dataAlbum.id
+    payload: albumData.id
   });
 
   return "SUCCESS";
 }
 
 
-export const albumGetLiveLinkRedux = dataAlbum => async dispatch => {
-  let liveLinksResponse = await BackendCommunication.getAlbumLiveLinksById(dataAlbum.fugaId, dispatch);
+export const albumGetLiveLinkRedux = albumData => async dispatch => {
+  let liveLinksResponse = await BackendCommunication.getAlbumLiveLinksById(albumData.fugaId, dispatch);
   if (liveLinksResponse === "ERROR") return "ERROR";
-  console.log("LIVE LINK IN ACTIONS: ", liveLinksResponse);
   if (liveLinksResponse.length > 0) {
-    dataAlbum.liveLink = liveLinksResponse;
+    albumData.liveLink = liveLinksResponse;
     dispatch({
       type: ReducerTypes.ADD_ALBUMS,
-      payload: [dataAlbum]
+      payload: [albumData]
     });
   }
 
@@ -88,11 +89,32 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
 }
 
 export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
-  let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, 20);
+  let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, 100);
   if (albumsByField === "EMPTY") return "EMPTY";
   if (Array.isArray(albumsByField) && albumsByField.length > 0) dispatch(albumsAddStore(albumsByField));
   else return "ERROR";
   return albumsByField;
+}
+
+// Asumo que el album cumple los requisitos para realizar el delivery.
+export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery) => async dispatch => {
+  albumData.dsps = dspsToDelivery;
+  let responsePublish = await BackendCommunication.publishAlbumFuga(albumData, dispatch);
+  if (responsePublish === "ERROR") return "ERROR";
+  albumData.state = "PUBLISHED";
+
+  let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, dispatch);
+  if (responseDelivery === "ERROR") return "ERROR";
+  albumData.state = "DELIVERED";
+
+  await FirestoreServices.updateElementFS(albumData, { state: albumData.state, dsps: albumData.dsps }, albumData.id, "albums", dispatch);
+
+  dispatch({
+    type: ReducerTypes.ALBUMS_EDIT_BY_ID,
+    payload: albumData
+  });
+
+  return "DELIVERED";
 }
 
 export const albumCleanUpdatingAlbum = () => {

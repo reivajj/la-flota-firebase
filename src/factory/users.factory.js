@@ -19,6 +19,7 @@ export const createUserDocItem = (userData, userInWp) => {
     dni: "",
     imagenUrl: "",
     timestampWhenCreatedUserInFB: Date.now(),
+    lastUpdateTS: Date.now(),
     rol: "user",
     plan: "charly-garcia",
     stats: {

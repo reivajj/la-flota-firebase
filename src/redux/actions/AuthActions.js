@@ -57,7 +57,7 @@ const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch
 
 
 const getAllDataFromDBToStore = async (userUid, userDataFromDB, dispatch) => {
-  if (userDataFromDB.rol === 'user') await getAllDataFromDBToStoreClient(userUid, userDataFromDB, dispatch);
+  if (userDataFromDB.rol.indexOf('user') >= 0) await getAllDataFromDBToStoreClient(userUid, userDataFromDB, dispatch);
   if (userDataFromDB.rol.indexOf('admin') >= 0) await getAllDataFromDBToStoreAdminDev(userUid, userDataFromDB, dispatch);
 }
 

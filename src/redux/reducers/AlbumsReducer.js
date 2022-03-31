@@ -1,19 +1,17 @@
 import * as ReducerTypes from 'redux/actions/Types';
 import { getActualYear } from 'utils/timeRelated.utils';
 
-const checkNewAlbums = (oldAlbums, albums) => {
-  return albums.filter(album => !oldAlbums.map(oldAlbum => oldAlbum.id).includes(album.id))
+const filterArtistsWithSameIdThanNewOne = (oldAlbums, addedAlbums) => {
+  if (!addedAlbums) return oldAlbums;
+  return oldAlbums.filter(oldAlbum => !addedAlbums.map(addedAlbum => addedAlbum.id).includes(oldAlbum.id))
 }
-
 const editOtherArtistName = ({ nameValue, otherArtistIndex }, allOtherArtistOld) => {
   allOtherArtistOld[otherArtistIndex].name = nameValue;
   return allOtherArtistOld;
 }
 
 const editOtherArtistIdentifier = ({ identifierValue, identifierField, otherArtistIndex }, allOtherArtistOld) => {
-  console.log("action paylaod que recibo: ", { identifierValue, identifierField, otherArtistIndex });
   allOtherArtistOld[otherArtistIndex][`${identifierField}`] = identifierValue;
-  console.log("ALL OTHER ARTISTS: ", allOtherArtistOld);
   return allOtherArtistOld;
 }
 
@@ -38,8 +36,8 @@ const AlbumsReducer = (state = initialState, action) => {
   switch (action.type) {
 
     case ReducerTypes.ADD_ALBUMS:
-      const newAlbums = checkNewAlbums(state.albums, action.payload)
-      return { ...state, albums: [...state.albums, ...newAlbums] };
+      const oldUniqueAlbums = filterArtistsWithSameIdThanNewOne(state.albums, action.payload)
+      return { ...state, albums: [...oldUniqueAlbums, ...action.payload] };
 
     case ReducerTypes.ALBUMS_EDIT_BY_ID:
       return { ...state, albums: [...state.albums.filter(album => album.id !== action.payload.id), action.payload] }

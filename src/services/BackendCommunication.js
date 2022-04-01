@@ -328,14 +328,13 @@ export const checkEmailAndPasswordInWpDB = async (email, password, dispatch) => 
 }
 
 export const editUserDataAndCredentialsFS = async (newUserData, dispatch) => {
-  let [errorChangingUserDataAndCreds, updateResponse] = await to(axios.put(`${targetUrl}firebase/changePasswordByEmail/${newUserData.email}`,
+  let [errorChangingUserDataAndCreds] = await to(axios.put(`${targetUrl}firebase/changePasswordByEmail/${newUserData.email}`,
     { password: newUserData.password }));
   if (errorChangingUserDataAndCreds) {
     dispatch(createBackendError(errorChangingUserDataAndCreds));
     writeCloudLog(`Error cambiando las credenciales del Usuario ${newUserData.email}`, newUserData, errorChangingUserDataAndCreds, "error");
     return "ERROR";
   }
-  console.log("RESPONSE: ", updateResponse);
   return "SUCCESS";
 }
 

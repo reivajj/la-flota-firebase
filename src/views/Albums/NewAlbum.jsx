@@ -49,6 +49,8 @@ import { getActualYear } from 'utils/timeRelated.utils';
 import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 import useScript from '../../customHooks/useScript';
+import DspsDialog from "views/DSP/DspsDialog";
+import { userIsDev } from "utils/users.utils";
 
 
 const NewAlbum = ({ editing }) => {
@@ -65,9 +67,9 @@ const NewAlbum = ({ editing }) => {
   const myLabels = useSelector(store => store.labels.labels);
   const myTracks = useSelector(store => store.tracks.uploadingTracks);
   const artistInvited = useSelector(store => store.artistsInvited);
-  const oldCollaborators = useSelector(store => store.collaborators)
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = "";
+  const rol = currentUserData.rol;
 
   useScript("https://cdn.jsdelivr.net/npm/wavefile");
 
@@ -94,14 +96,16 @@ const NewAlbum = ({ editing }) => {
   const [progress, setProgress] = useState(0);
   const [messageForCover, setMessageForCover] = useState("");
   const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
+
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
   const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
   const [openAddLabel, setOpenAddLabel] = useState(false);
-
   const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
   const [openLoader, setOpenLoader] = useState(false);
+  const [openSelectDSP, setOpenSelectDSP] = useState(false);
+
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
   const [buttonText, setButtonText] = useState("Finalizar");
@@ -118,8 +122,12 @@ const NewAlbum = ({ editing }) => {
     preOrder: currentAlbumData.preOrder, audio_locale_name: "",
   });
 
+  const handleSelectDSPs = () => {
+    setOpenSelectDSP(true);
+  }
+
   const coverLabelArtistAllValids = () => {
-    if (!currentAlbumData.cover) setMessageForCover("Debes seleccionar el Arte de Tapa");
+    if (!currentAlbumData.cover?.size) setMessageForCover("Debes seleccionar el Arte de Tapa");
     if (!currentAlbumData.nombreArtist) validator.current.showMessageFor('nombreArtist');
     if (!currentAlbumData.label_name) validator.current.showMessageFor('label_name');
     if (needArtistLabelCover) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
@@ -139,7 +147,8 @@ const NewAlbum = ({ editing }) => {
       return;
     }
     if (!currentAlbumData.cover.size) {
-      setOpenInvalidDateDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText })
+      setOpenInvalidDateDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText });
+      return;
     }
     if (validator.current.allValid()) createAlbum();
     else {
@@ -194,7 +203,7 @@ const NewAlbum = ({ editing }) => {
     if (internalState === "collaborators-created" || internalState === "tracks-created") {
       await toWithOutError(dispatch(createUPCToSuccessAlbumRedux(albumDataFromFuga)));
       setButtonState("success");
-      setCreatingAlbumState("success");
+      internalState === "collaborators-created" ? handleSelectDSPs() : setCreatingAlbumState("success");
     }
     setOpenLoader(false);
   }
@@ -324,6 +333,8 @@ const NewAlbum = ({ editing }) => {
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
+        <DspsDialog isOpen={openSelectDSP} handleClose={handleCloseSuccessUpload} albumId={currentAlbumData.id} />
+
         <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Seleccionalo, en vez de crear uno nuevo.`]]}
           handleClose={() => setSelloInStore(false)} successImageSource="/images/successArtists.jpg" />
 
@@ -347,7 +358,7 @@ const NewAlbum = ({ editing }) => {
           </CardHeader>
         </Grid>
 
-        <Grid container item xs={12} paddingTop={4} >
+        <Grid container item xs={12} paddingTop={4}>
 
           <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage}
             textButton={currentAlbumData.imagenUrl === "" ? "Arte de Tapa" : "Cambiar"} progress={progress} message={messageForCover}
@@ -684,7 +695,7 @@ const NewAlbum = ({ editing }) => {
       </Card >
 
     </Grid >
-  );
+  )
 }
 
 export default NewAlbum;

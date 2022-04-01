@@ -19,15 +19,15 @@ const MyAlbums = () => {
   const artists = useSelector(store => store.artists.artists);
   const labels = useSelector(store => store.labels.labels);
 
-  const filteredAlbumsIfNeeded = getFilteredAlbumsByUrl(params, albumsFromStore);
+  let filteredAlbumsIfNeeded = getFilteredAlbumsByUrl(params, albumsFromStore).filter(albumFiltered => albumFiltered.state !== "DELETED");
   const titleLanzamientos = getTitleLanzamientos(params, labels, artists);
   const noTienesLanzamientos = `No tienes ${titleLanzamientos}`;
 
   const myAlbumsProfiles = () => {
     return filteredAlbumsIfNeeded.length > 0
-      ? filteredAlbumsIfNeeded.map((label, index) =>
+      ? filteredAlbumsIfNeeded.map((album, index) =>
         <Grid item xs={12} sm={6} lg={3} key={index} paddingBottom={2}>
-          <AlbumCard key={index} dataAlbum={label} index={index} />
+          <AlbumCard key={index} dataAlbum={album} index={index} />
         </Grid>
       )
       : []

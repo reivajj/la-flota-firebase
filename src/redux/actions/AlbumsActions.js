@@ -82,6 +82,8 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
 
   await FirestoreServices.updateElementFS(dataAlbumFuga, { upc: responseUPC }, dataAlbumFuga.id, "albums", dispatch);
 
+  writeCloudLog(`created UPC to album ${dataAlbumFuga.title} y email: ${dataAlbumFuga.ownerEmail}`, { upc: dataAlbumFuga.upc }, { notError: "not error" }, "info");
+
   dispatch({
     type: ReducerTypes.ALBUMS_EDIT_BY_ID,
     payload: dataAlbumFuga
@@ -103,11 +105,15 @@ export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery) => asyn
   if (responsePublish === "ERROR") return "ERROR";
   albumData.state = "PUBLISHED";
 
+  writeCloudLog(`Album ${albumData.title} PUBLISHED with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
+
   let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, dispatch);
   if (responseDelivery === "ERROR") return "ERROR";
   albumData.state = "DELIVERED";
 
-  await FirestoreServices.updateElementFS(albumData, { state: albumData.state, dsps: albumData.dsps }, albumData.id, "albums", dispatch);
+  let resultUpdate = await FirestoreServices.updateElementFS(albumData, { state: albumData.state }, albumData.id, "albums", dispatch);
+
+  writeCloudLog(`Album ${albumData.title} DELIVERED with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
 
   dispatch({
     type: ReducerTypes.ALBUMS_EDIT_BY_ID,

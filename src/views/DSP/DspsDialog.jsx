@@ -5,7 +5,7 @@ import {
   Button, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Grid, Divider
 } from '@mui/material';
 import CheckboxGroup from "components/Checkbox/CheckboxGroup";
-import { dspsFuga, demoDspsFuga } from '../../variables/fuga';
+import { dspsFuga } from '../../variables/fuga';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
 import { toWithOutError } from 'utils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ import { getAlbumById, getDeliveredTitleDialog, getDeliveredContentTextDialog } 
 import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import { warningAppleDelivery } from "utils/textToShow.utils";
 
-const checkboxGroupInfo = demoDspsFuga.map(dspInfo => {
+const checkboxGroupInfo = dspsFuga.map(dspInfo => {
   return {
     ...dspInfo, checked: false, label: dspInfo.dspName,
     checkBoxHelper: dspInfo.dspName === "Apple Music" ? warningAppleDelivery : "",
@@ -57,8 +57,8 @@ const DspsDialog = (props) => {
   }
 
   let allCheckeds = checkedDsps.every(dsp => dsp.checked);
-  let labelCheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Selecciona todas las DSP's</p>
-  let labelUncheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Deselecciona todas las DSP's</p>
+  let labelCheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Selecciona todas las DSPs</p>
+  let labelUncheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Deselecciona todas las DSPs</p>
 
   let successDialogTitle = getDeliveredTitleDialog(deliveryState);
   let successDialogText = getDeliveredContentTextDialog(deliveryState);
@@ -76,12 +76,12 @@ const DspsDialog = (props) => {
         onClose={handleClose}>
 
         <DialogTitle id="title-info-dialog">
-          DSP's
+          DSPs
         </DialogTitle>
 
         <DialogContent>
           <DialogContentText>
-            Selecciona las DSP en las que quieres que tu música esté disponible.
+            Selecciona las DSPs en las que quieres que tu música esté disponible.
           </DialogContentText>
 
           <BasicCheckbox checked={allCheckeds} label={allCheckeds ? labelUncheckAll : labelCheckAll} onChecked={allCheckeds ? handleUncheckAllDsps : handleCheckAllDsps} />

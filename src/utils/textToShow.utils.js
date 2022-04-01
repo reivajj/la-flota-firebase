@@ -75,9 +75,9 @@ export const getNumeracionOrdinalFromIndex = [
 ]
 
 export const getHelperCollaboratorText = indexCollaborator => {
-  if (indexCollaborator === 0) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Compositor/a/x como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Compositor.";
-  if (indexCollaborator === 1) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Liricista como quieras que aparezca en las DSP's. Si o sí, tiene que haber al menos un Liricista.";
-  if (indexCollaborator === 2) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) como quieras que aparezca en las DSP's. Dejar vacío si no quieres agregarlo. ";
+  if (indexCollaborator === 0) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Compositor/a/x como quieras que aparezca en las DSPs. Si o sí, tiene que haber al menos un Compositor.";
+  if (indexCollaborator === 1) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) del Liricista como quieras que aparezca en las DSPs. Si o sí, tiene que haber al menos un Liricista.";
+  if (indexCollaborator === 2) return "Ingresa el nombre (solo uno, si quieres agregar más, haz click en el checkbox de abajo) como quieras que aparezca en las DSPs. Dejar vacío si no quieres agregarlo. ";
   return "";
 }
 
@@ -106,18 +106,18 @@ export const textFloatingPointAudio = [
   "Debe tener formato WAV, stereo, de 16, 24, o 32 bits y con un Sample Rate entre 44.1 y 192 kHz"
 ]
 
-export const publishedSuccessTitle = 'Tu Lanzamiento ya se encuentra Aprobado y listo para ser entregado a las DSPs';
-export const deliveredSuccessTitle = 'Tu Lanzamiento ya está en camino a las DSPs';
-export const errorDeliveredTitle = 'Hubo un error al Publicar el Lanzamiento';
+export const publishedSuccessTitle = 'Tu lanzamiento ya se encuentra aprobado y listo para ser entregado a las DSPs';
+export const deliveredSuccessTitle = 'Tu lanzamiento ya está en camino a las DSPs';
+export const errorDeliveredTitle = 'Hubo un error al publicar el lanzamiento';
 
 export const publishedSuccessText = ['Tu lanzamiento se ha publicado correctamente, pronto estará en camino a las DSPs'];
-export const deliveredSuccessText = ['Tu lanzamiento ya se encuentra en camino a las DPSs, este proceso puede durar de 1 a 3 días aproximadamente'];
+export const deliveredSuccessText = ['Tu lanzamiento ya se encuentra en camino a las DPSs, este proceso puede durar de 1 a 5 días hábiles'];
 export const errorDeliveredText = ["Tu lanzamiento ya se encuentra en etapa de de revisión"];
 
 export const warningAppleDelivery = [
   "Si quieres que tu música sea enviada a Apple Music,", <br />,
   "el lanzamiento debe cumplir con ciertos requisitos,", <br />,
-  "y el tiempo de aprobación es mayor para esta DSP.", <br />,
-  <br />,
-  "Haz click para más información sobre los requisitos."
+  "y el tiempo de aprobación si no cumple las normas puede ser mayor", <br />,
+  // <br />,
+  // "Haz click para más información sobre los requisitos."
 ]

@@ -97,11 +97,11 @@ export const signInFromGoogle = userInfoFromGoogle => async dispatch => {
   }
 }
 
-// export const editAuthUserInFBAndLogIn = async (email, password, dispatch) => {
-//   let updatingUserCredsInFB = await editUserDataAndCredentialsFS({ email, password }, dispatch);
-//   if (updatingUserCredsInFB === "ERROR") dispatch(loginErrorStore({ error: "", errorMsg: "Error al buscar al Usuario. Intente nuevamente." }));
-//   return "SUCCESS";
-// }
+export const editAuthUserInFBAndLogIn = async (email, password, dispatch) => {
+  let updatingUserCredsInFB = await editUserDataAndCredentialsFS({ email, password }, dispatch);
+  if (updatingUserCredsInFB === "ERROR") dispatch(loginErrorStore({ error: "", errorMsg: "Error al buscar al Usuario. Intente nuevamente." }));
+  await signIn({ email, password, fromSignUp: false }, dispatch);
+}
 
 export const signInDoubleSystem = ({ email, password }) => async dispatch => {
   const userEmailExistInFB = await FirestoreServices.userByEmailInFS(email, dispatch);
@@ -121,12 +121,9 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
     // Si vengo del SignUp quiere decir que ya estoy logueado
     let [errorSignInFirebase] = await to(signInWithEmailAndPassword(auth, email, password));
     if (errorSignInFirebase) {
-      // const emailAndPasswordIsCorrect = await checkEmailAndPasswordInWpDB(email, password, dispatch);
-      // if (emailAndPasswordIsCorrect.existEmail && emailAndPasswordIsCorrect.passwordCheck) {
-      //   await editAuthUserInFBAndLogIn(email, password, dispatch);
-      // }
-      // else dispatch(loginErrorStore({ error: emailAndPasswordIsCorrect, errorMsg: "Email o Contraseña incorrectos." }));
-      dispatch(loginErrorStore({ error: errorSignInFirebase, errorMsg: "Contraseña incorrecta" }));
+      const emailAndPasswordIsCorrect = await checkEmailAndPasswordInWpDB(email, password, dispatch);
+      if (emailAndPasswordIsCorrect.existEmail && emailAndPasswordIsCorrect.passwordCheck) await editAuthUserInFBAndLogIn(email, password, dispatch);
+      else dispatch(loginErrorStore({ error: emailAndPasswordIsCorrect, errorMsg: "Email o Contraseña incorrectos." }));
       return "ERROR";
     }
   }

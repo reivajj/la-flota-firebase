@@ -23,20 +23,15 @@ export const collaboratorsSignOut = () => {
 
 export const createCollaboratorRedux = (collaborator, userId, ownerEmail) => async dispatch => {
 
-  writeCloudLog(`creating collaborator to send to fuga, ownerEmail: ${ownerEmail}`, collaborator, { notError: "not error" }, "info");
   // Siempre debo crear el COLLABORATOR. Es unico por role y track.
   if (!collaborator.person) return "ERROR COLABORADOR ID FALTANTE";
-  let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, dispatch);
+  let collaboratorFromBackend = await BackendCommunication.createCollaboratorFuga(collaborator, ownerEmail, dispatch);
   if (collaboratorFromBackend === "ERROR") return "ERROR";
 
   collaborator.added = true;
   collaborator.ownerEmail = ownerEmail;
   collaborator.whenCreatedTS = new Date().getTime();
   collaborator.lastUpdateTS = collaborator.whenCreatedTS;
-
-  console.log("COLLABORATOR NEW: ", collaborator);
-
-  writeCloudLog(`creating collaborator post fuga to FS, ownerEmail: ${ownerEmail}`, collaborator, { notError: "not error" }, "info");
 
   await FirestoreServices.createElementFS(collaborator, collaborator.id, userId, "artistsCollaborators", "totalCollaborators", 1, dispatch);
 

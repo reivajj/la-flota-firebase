@@ -278,9 +278,9 @@ export const createPersonsFuga = async (rawDataPeople, dispatch) => {
   return personsWithId;
 }
 
-export const createCollaboratorFuga = async (collaborator, dispatch) => {
+export const createCollaboratorFuga = async (collaborator, ownerEmail, dispatch) => {
   if (!collaborator.person || collaborator.role.length === 0) {
-    writeCloudLog("Error creating collaborator in fuga", collaborator, "COLLABORATORS: EMPTY PERSON OR ROLES", "error");
+    writeCloudLog(`Error creating collaborator in fuga, with email: ${ownerEmail}`, collaborator, "COLLABORATORS: EMPTY PERSON OR ROLES", "error");
     return "ERROR";
   }
 

@@ -2,7 +2,10 @@
 // import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
 import { colorFromFugaState, ourAlbumStateWithEquivalence } from '../variables/varias';
 import { fugaAlbumsState } from '../variables/fuga';
-import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliveredSuccessTitle, errorDeliveredTitle, publishedSuccessTitle } from './textToShow.utils';
+import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliveredSuccessTitle, errorDeliveredTitle, publishedSuccessTitle, noTracksWarningText, titleInvalidOldReleaseDate, invalidDateContentText, noCoverWarningText, noDateWarningText, noDateRelease } from './textToShow.utils';
+import { noTracksWarningTitle } from './textToShow.utils';
+import { titleInvalidPreCompraDate } from './textToShow.utils';
+import { noCoverTitle } from './textToShow.utils';
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
@@ -45,6 +48,34 @@ export const checkOldReleaseDate = albumData => {
   let { dayOfMonth, month, year, oldRelease, originalYear, originalMonth, originalDayOfMonth } = albumData;
   if (oldRelease) return firstDateIsLower(originalDayOfMonth, originalMonth, originalYear, dayOfMonth, month, year);
   return true;
+}
+
+export const checkFieldsCreateAlbum = (currentAlbumData, myTracks, setOpenInvalidValueDialog, validator, showErrorAndScrollToTop) => {
+  if (!currentAlbumData.c_line || !currentAlbumData.p_line || !currentAlbumData.title || !currentAlbumData.genreName) {
+    showErrorAndScrollToTop(); return "NO_VALID"
+  };
+  if (!currentAlbumData.dayOfMonth || !currentAlbumData.month || !currentAlbumData.year) {
+    setOpenInvalidValueDialog({ open: true, beginner: "no-date", title: noDateRelease, text: noDateWarningText })
+  }
+  if (myTracks.length === 0) {
+    setOpenInvalidValueDialog({ open: true, beginner: "no-tracks", title: noTracksWarningTitle, text: noTracksWarningText });
+    return;
+  }
+  if (currentAlbumData.oldRelease ? !checkOldReleaseDate(currentAlbumData) : false) {
+    setOpenInvalidValueDialog({ open: true, beginner: "old-release", title: titleInvalidOldReleaseDate, text: invalidDateContentText });
+    return;
+  }
+  if (currentAlbumData.preOrder ? !checkPreOrderDate(currentAlbumData) : false) {
+    setOpenInvalidValueDialog({ open: true, beginner: "pre-order", title: titleInvalidPreCompraDate, text: invalidDateContentText });
+    return;
+  }
+  if (!currentAlbumData.cover.size) {
+    setOpenInvalidValueDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText });
+    return;
+  }
+  if (validator.current.allValid()) return "ALL_VALID";
+  else return "NO_VALID";
+
 }
 
 export const getArtistNameAndPrimaryOfAlbum = albumData => {

@@ -217,7 +217,7 @@ export const NewTrackDialog = (props) => {
                 value={trackData.title}
                 onChange={(event) => setTrackData({ ...trackData, title: event.target.value })}
                 helperText="Nombre exacto de la canción, respetando mayúsculas, minúsculas y acentos."
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título de la Canción.", validator }}
+                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el nombre de la Canción.", validator }}
               />
             </Grid>
 
@@ -227,7 +227,7 @@ export const NewTrackDialog = (props) => {
                 fullWidth
                 required
                 select
-                label="Idioma Principal del Lanzamiento"
+                label="Idioma del nombre de la Canción"
                 value={trackData.track_language_name}
                 onChange={handlerLanguageChoose}
                 selectItems={languagesFuga}

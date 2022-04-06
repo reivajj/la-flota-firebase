@@ -17,6 +17,9 @@ export const invalidDateContentText = [<Danger>La fecha debe ser menor a la actu
 export const noTracksWarningTitle = "No puedes crear un lanzamiento sin canciones:";
 export const noTracksWarningText = [<Danger>Por favor, ingresa en la tabla las canciones del lanzamiento.</Danger>];
 
+export const noDateRelease = "Falta seleccionar la fecha del lanzamiento:";
+export const noDateWarningText = [<Danger>Por favor, ingresa el día, mes y año del lanzamiento.</Danger>];
+
 export const noCoverTitle = "Falta el Arte de Tapa. Si aún asi la vez, cárgala nuevamente";
 export const noCoverWarningText = [<Danger>Por favor, vuelve a seleccionar un Arte de Tapa.</Danger>];
 

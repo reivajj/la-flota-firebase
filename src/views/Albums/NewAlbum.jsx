@@ -51,6 +51,7 @@ import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.ut
 import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
 import { userIsDev } from "utils/users.utils";
+import { checkFieldsCreateAlbum } from '../../utils/albums.utils';
 
 
 const NewAlbum = ({ editing }) => {
@@ -69,7 +70,9 @@ const NewAlbum = ({ editing }) => {
   const artistInvited = useSelector(store => store.artistsInvited);
   // aca deberia tener guardado la cantidad de albumes en el userDoc, y de artists, y labels.
   const cantAlbumsFromUser = "";
-  const rol = currentUserData.rol;
+
+  const topElementRef = useRef(null);
+  const scrollToTop = () => topElementRef.current.scrollIntoView();
 
   useScript("https://cdn.jsdelivr.net/npm/wavefile");
 
@@ -102,7 +105,7 @@ const NewAlbum = ({ editing }) => {
   const [openAddLabel, setOpenAddLabel] = useState(false);
   const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
-  const [openInvalidDateDialog, setOpenInvalidDateDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
+  const [openInvalidValueDialog, setOpenInvalidValueDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
   const [openLoader, setOpenLoader] = useState(false);
   const [openSelectDSP, setOpenSelectDSP] = useState(false);
 
@@ -132,25 +135,11 @@ const NewAlbum = ({ editing }) => {
     if (!currentAlbumData.label_name) validator.current.showMessageFor('label_name');
     if (needArtistLabelCover) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
   }
-  // Poner un msj de error correspondiente si no esta el COVER!
   const allFieldsValidCreateAlbum = () => {
-    if (myTracks.length === 0) {
-      setOpenInvalidDateDialog({ open: true, beginner: "no-tracks", title: noTracksWarningTitle, text: noTracksWarningText });
-      return;
-    }
-    if (currentAlbumData.oldRelease ? !checkOldReleaseDate(currentAlbumData) : false) {
-      setOpenInvalidDateDialog({ open: true, beginner: "old-release", title: titleInvalidOldReleaseDate, text: invalidDateContentText });
-      return;
-    }
-    if (currentAlbumData.preOrder ? !checkPreOrderDate(currentAlbumData) : false) {
-      setOpenInvalidDateDialog({ open: true, beginner: "pre-order", title: titleInvalidPreCompraDate, text: invalidDateContentText });
-      return;
-    }
-    if (!currentAlbumData.cover.size) {
-      setOpenInvalidDateDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText });
-      return;
-    }
-    if (validator.current.allValid()) createAlbum();
+    let validationResult = checkFieldsCreateAlbum(currentAlbumData, myTracks, setOpenInvalidValueDialog, validator, scrollToTop);
+    console.log("VALIDATION RESULT: ", validationResult);
+    console.log(validator.current)
+    if (validationResult === "ALL_VALID") createAlbum();
     else {
       validator.current.showMessages();
       forceUpdate();
@@ -341,8 +330,8 @@ const NewAlbum = ({ editing }) => {
         <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
           handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
 
-        <InfoDialog isOpen={openInvalidDateDialog.open} handleClose={() => setOpenInvalidDateDialog({ open: false, beginner: "", title: "", text: [""] })}
-          title={openInvalidDateDialog.title} contentTexts={openInvalidDateDialog.text} />
+        <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={() => setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] })}
+          title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
 
         <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
           title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
@@ -427,7 +416,7 @@ const NewAlbum = ({ editing }) => {
               />
             </Grid>
 
-            {showingNotBasicAlbumFields && <Grid item xs={6}>
+            {showingNotBasicAlbumFields && <Grid ref={topElementRef} item xs={6}>
               <TextFieldWithInfo
                 name="title"
                 sx={textFieldStyle}
@@ -472,10 +461,10 @@ const NewAlbum = ({ editing }) => {
 
         {showingNotBasicAlbumFields && <Grid container item xs={12}>
           <Grid container item xs={6}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextFieldWithInfo
                 name="c_year"
-                sx={textFieldStyleYears}
+                sx={textFieldStyle}
                 required
                 select
                 label="(C) Año de Copyright"
@@ -485,15 +474,14 @@ const NewAlbum = ({ editing }) => {
                 selectItems={yearsArray}
                 validatorProps={{
                   restrictions: 'required|numeric', message: "Debes seleccionar un año de Copyright del Lanzamiento.", validator,
-                  sx: { width: "60%" }
                 }}
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextFieldWithInfo
                 name="c_line"
-                sx={textFieldStyleText}
+                sx={textFieldStyle}
                 required
                 label="Copyright"
                 value={currentAlbumData.c_line}
@@ -502,16 +490,16 @@ const NewAlbum = ({ editing }) => {
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
                 validatorProps={{
                   restrictions: 'required|max:200', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
-                  validator, sx: { width: "60%" }
+                  validator
                 }}
               />
             </Grid>
           </Grid>
 
           <Grid container item xs={6}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextFieldWithInfo
-                sx={textFieldStyleYears}
+                sx={textFieldStyle}
                 name="p_year"
                 required
                 select
@@ -522,15 +510,15 @@ const NewAlbum = ({ editing }) => {
                 selectItems={yearsArray}
                 validatorProps={{
                   restrictions: 'required|numeric', message: "Debes seleccionar un año de Publishing del Lanzamiento.",
-                  validator, sx: { width: "60%" }
+                  validator
                 }}
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextFieldWithInfo
                 name="p_line"
-                sx={textFieldStyleText}
+                sx={textFieldStyle}
                 required
                 label="Publisher"
                 value={currentAlbumData.p_line}
@@ -539,7 +527,7 @@ const NewAlbum = ({ editing }) => {
             → Ej. 1: Fito Paez | Ej. 2: Sony Music"
                 validatorProps={{
                   restrictions: 'required|max:200', message: "Por favor indicá el publicador del lanzamiento.",
-                  validator, sx: { width: "60%" }
+                  validator
                 }}
               />
             </Grid>
@@ -701,8 +689,6 @@ const NewAlbum = ({ editing }) => {
 export default NewAlbum;
 
 const textFieldStyle = { width: "60%" };
-const textFieldStyleYears = { width: "58%", marginLeft: "38%" }
-const textFieldStyleText = { width: "58%", marginRight: "38%" }
 const textFieldLaFlotaArtistStyle = { width: "40%" };
 
 const cardTitleWhiteStyles = {

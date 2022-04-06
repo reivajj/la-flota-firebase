@@ -3,7 +3,7 @@ import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel } from 'services/CreateModels';
 import { writeCloudLog } from '../../services/LoggingService';
-import { formatEquivalence, getFormatByCantOfTracks, getOurFormatByCantOfTracks } from 'utils/albums.utils';
+import { getOurFormatByCantOfTracks } from 'utils/albums.utils';
 
 export const albumsAddStore = albums => {
   return {

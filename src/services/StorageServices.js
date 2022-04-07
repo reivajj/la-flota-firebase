@@ -8,7 +8,6 @@ const functions = getFunctions();
 
 export const manageAddImageToStorage = async (file, imageUuid, storageBucketName, maxSize, setMessage, setProgress) => {
   return new Promise((resolve, reject) => {
-    console.log("FILE:", file);
     if (file["size"] > maxSize) {
       setMessage(`El archivo debe ser menor que ${maxSize / (1024 * 1024)} MB`);
     } else {

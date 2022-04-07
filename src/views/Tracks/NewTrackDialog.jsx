@@ -26,6 +26,7 @@ import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog
 import { isValidFormatISRC, readAndCheckAudioFile } from "utils/tracks.utils";
 import { editAction, deleteAction } from '../../utils/tables.utils';
 import InfoDialog from '../../components/Dialogs/InfoDialog';
+import { spotifyUriIsValid, artistsWithUniqueName } from '../../utils/artists.utils';
 
 const newTrackArtistsInfo = "Éstos son los Artistas que mencionaste en el Lanzamiento. Ahora deberás seleccionar cuáles quieres que sean artistas Principales o Featuring de la Canción. O puedes eliminarlos para que no aparezcan en ésta canción (debe haber al menos un Artista Principal)."
 
@@ -39,6 +40,9 @@ export const NewTrackDialog = (props) => {
 
   const currentUserData = useSelector(store => store.userData);
   const currentUserId = useSelector(store => store.userData.id);
+
+  const topElementRef = useRef(null);
+  const scrollToTop = () => topElementRef.current ? topElementRef.current.scrollIntoView() : null;
 
   const [trackMissing, setTrackMissing] = useState(false);
   const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
@@ -77,6 +81,14 @@ export const NewTrackDialog = (props) => {
   }
 
   const allFieldsValidCreateTrack = () => {
+    let allOtherArtistsTrack = artistsWithUniqueName(trackData.allOtherArtists);
+    allOtherArtistsTrack = allOtherArtistsTrack.map(artist => { return { valid: spotifyUriIsValid(artist.spotify_uri), name: artist.name } });
+    let invalidArtistUri = allOtherArtistsTrack.find(artistValid => artistValid.valid === false);
+
+    if (invalidArtistUri) {
+      scrollToTop();
+      return;
+    }
     if (!isValidFormatISRC(trackData.isrc)) {
       setIsrcInvalid(true);
       return;
@@ -177,7 +189,7 @@ export const NewTrackDialog = (props) => {
           {newTrackArtistsInfo}
         </DialogContentText>
 
-        <Grid container spacing={2} style={{ textAlign: "center" }} >
+        <Grid ref={topElementRef} container spacing={2} style={{ textAlign: "center" }} >
 
           <Grid container item xs={12} spacing={2} sx={{ marginTop: "10px" }}>
             {trackData.artists.length > 0

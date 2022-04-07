@@ -42,7 +42,6 @@ import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import TextFieldWithAddElement from '../../components/TextField/TextFieldAddElement';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { createSubgenreRedux } from "redux/actions/UserDataActions";
-import { checkOldReleaseDate, checkPreOrderDate } from "utils/albums.utils";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { createLabelRedux } from "redux/actions/LabelsActions";
 import { getActualYear } from 'utils/timeRelated.utils';
@@ -50,7 +49,6 @@ import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
-import { userIsDev } from "utils/users.utils";
 import { checkFieldsCreateAlbum } from '../../utils/albums.utils';
 
 
@@ -72,7 +70,7 @@ const NewAlbum = ({ editing }) => {
   const cantAlbumsFromUser = "";
 
   const topElementRef = useRef(null);
-  const scrollToTop = () => topElementRef.current.scrollIntoView();
+  const scrollToTop = () => topElementRef.current ? topElementRef.current.scrollIntoView() : null;
 
   useScript("https://cdn.jsdelivr.net/npm/wavefile");
 
@@ -135,10 +133,9 @@ const NewAlbum = ({ editing }) => {
     if (!currentAlbumData.label_name) validator.current.showMessageFor('label_name');
     if (needArtistLabelCover) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
   }
+
   const allFieldsValidCreateAlbum = () => {
     let validationResult = checkFieldsCreateAlbum(currentAlbumData, myTracks, setOpenInvalidValueDialog, validator, scrollToTop);
-    console.log("VALIDATION RESULT: ", validationResult);
-    console.log(validator.current)
     if (validationResult === "ALL_VALID") createAlbum();
     else {
       validator.current.showMessages();
@@ -201,11 +198,18 @@ const NewAlbum = ({ editing }) => {
     updateAddingAlbumImageUrlAndCoverRedux({ imagenUrl: "", cover: "" });
     setMessageForCover("");
     let img = new Image()
-    img.src = window.URL.createObjectURL(event.target.files[0])
+    let imageFile = event.target.files[0];
+    if (imageFile.type !== "image/jpeg") {
+      setOpenInvalidValueDialog({
+        open: true, beginer: "not-jpg-image", title: "La imagen debe tener formato JPG/JPEG", text: ["Por favor, selecciona una imagen con ese formato."]
+      });
+      return;
+    }
+    img.src = window.URL.createObjectURL(imageFile)
     img.onload = async () => {
       if (img.width >= 3000 && img.height >= 3000 && img.width <= 6000 && img.height <= 6000 && img.width === img.height) {
         setMessageForCover("");
-        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(event.target.files[0], currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
+        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(imageFile, currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
         if (errorAddingFile) {
           setMessageForCover("Ha ocurrido un error, por favor, intente nuevamente. ");
           return;
@@ -318,6 +322,10 @@ const NewAlbum = ({ editing }) => {
     navigate('/admin/albums');
   }
 
+  const handleCloseInfoDialog = () => {
+    setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] });
+  }
+
   return (
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
@@ -330,7 +338,7 @@ const NewAlbum = ({ editing }) => {
         <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
           handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
 
-        <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={() => setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] })}
+        <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={handleCloseInfoDialog}
           title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
 
         <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
@@ -368,7 +376,7 @@ const NewAlbum = ({ editing }) => {
               </Button>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} ref={topElementRef}>
               <TextFieldWithInfo
                 name="nombreArtist"
                 sx={textFieldLaFlotaArtistStyle}
@@ -416,7 +424,7 @@ const NewAlbum = ({ editing }) => {
               />
             </Grid>
 
-            {showingNotBasicAlbumFields && <Grid ref={topElementRef} item xs={6}>
+            {showingNotBasicAlbumFields && <Grid item xs={6}>
               <TextFieldWithInfo
                 name="title"
                 sx={textFieldStyle}

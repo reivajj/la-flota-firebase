@@ -12,12 +12,16 @@ import ImageDialog from '../Dialogs/ImageDialog';
 import CheckboxWithInfo from "components/Checkbox/CheckboxWithInfo";
 import { featuringArtistTooltip, getNumeracionOrdinalFromIndex, infoSpotifyUri } from "utils/textToShow.utils";
 import { Delete } from '@mui/icons-material';
+import { spotifyUriIsValid } from '../../utils/artists.utils';
+import Danger from '../Typography/Danger';
+import { spotifyUriNotValidText } from '../../utils/textToShow.utils';
 
 
 const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, validator }) => {
 
   const [openTutorialDialog, setOpenTutorialDialog] = useState(false);
   const [openFeatTutorialDialog, setOpenFeatTutorialDialog] = useState(false);
+  const [spotifyUriInvalid, setSpotifyUriInvalid] = useState([]);
 
   const buttonColorStyle = {
     backgroundColor: buttonColor,
@@ -33,15 +37,25 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
     if (currentAddingAlbum.allOtherArtists.length >= 10) return;
     let artist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [...currentAddingAlbum.allOtherArtists, artist] }));
+    setSpotifyUriInvalid([...spotifyUriInvalid, false]);
   }
 
   const deleteAllOtherArtists = () => {
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: [] }));
+    setSpotifyUriInvalid([]);
   }
 
   const handleChangeArtistPrimary = (isPrimary, otherArtistIndex) => dispatch(updatePrimaryOtherArtistsAlbumRedux(isPrimary, otherArtistIndex));
   const handlerAddNameToOtherArtists = (nameValue, otherArtistIndex) => dispatch(updateNameOtherArtistsAlbumRedux(nameValue, otherArtistIndex));
-  const handleAddIdentifier = (identifierValue, identifierField, otherArtistIndex) => dispatch(updateIdentifierOtherArtistsAlbumRedux(identifierValue, identifierField, otherArtistIndex))
+
+  const handleAddIdentifier = (identifierValue, identifierField, otherArtistIndex) => {
+    dispatch(updateIdentifierOtherArtistsAlbumRedux(identifierValue, identifierField, otherArtistIndex))
+
+    if (identifierField === "spotify_uri") {
+      if (!spotifyUriIsValid(identifierValue)) setSpotifyUriInvalid(spotifyUriInvalid.map((uriValid, index) => otherArtistIndex === index ? true : uriValid));
+      else setSpotifyUriInvalid(spotifyUriInvalid.map((uriValid, index) => otherArtistIndex === index ? false : uriValid));
+    }
+  }
   const handleOnChangeCheckBox = (event) => {
     if (event.target.checked) addOneArtistSkeleton();
     else deleteAllOtherArtists();
@@ -50,6 +64,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
   const handleDeleteOtherArtist = otherArtistIndex => {
     const newOtherArtists = currentAddingAlbum.allOtherArtists.filter((_, index) => index !== otherArtistIndex);
     dispatch(updateAddingAlbumRedux({ ...currentAddingAlbum, allOtherArtists: newOtherArtists }));
+    setSpotifyUriInvalid(spotifyUriInvalid.filter((_, index) => otherArtistIndex !== index));
   }
 
 
@@ -82,7 +97,7 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
 
       {currentAddingAlbum.allOtherArtists.map((otherArtist, index) => (
 
-        < Grid container item xs={12} key={index + "bigGrid"} >
+        <Grid container item xs={12} key={index + "bigGrid"} >
 
           <Grid item sx={gridSwitcherStyle} key={index + "switch-primary"}>
             {index === 0
@@ -126,11 +141,8 @@ const AddOtherArtistsForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, but
               helperText={index === 0 ? infoSpotifyUri : ""}
               hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
               targetHref="_blank"
-              validatorProps={{
-                restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
-                message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
-              }}
             />
+            {spotifyUriInvalid[index] && <Danger key={index + 'spotify'}>{spotifyUriNotValidText}</Danger>}
           </Grid>
 
           <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
@@ -170,7 +182,7 @@ const textFiedNameStyle = { width: "93%" }
 const textFieldURIStyle = { width: "90%" }
 const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "35%" }
-const gridUriStyle = { width: "22.5%", textAlign: "left" };
+const gridNameStyle = { width: "29%" }
+const gridUriStyle = { width: "28.5%", textAlign: "left" };
 const gridAppleStyle = { width: "22.5%", textAlign: "left" };
 const gridDeleteStyle = { width: "5%", marginTop: "1.2%", color: "gray", textAlign: "initial" };

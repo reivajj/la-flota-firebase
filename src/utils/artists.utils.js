@@ -90,3 +90,8 @@ export const userCanAddMoreArtists = (editing, plan, cantArtists) => {
   if (planConRestricciones.maxArtists <= cantArtists) return false;
   return true;
 }
+
+export const spotifyUriIsValid = spotifyUri => {
+  if (spotifyUri.length === 0) return true;
+  return Boolean(spotifyUri.match(/^(spotify:artist:)([a-zA-Z0-9]+)$/)) && spotifyUri.length === 37;
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch } from 'react-redux';
 
 import { Grid, Tooltip, Button, IconButton } from '@mui/material';
@@ -10,11 +10,16 @@ import InfoSwitch from "components/Switch/InfoSwitch";
 import BasicSwitch from 'components/Switch/BasicSwitch';
 import { getNumeracionOrdinalFromIndex, infoHelperTextAppleId } from "utils/textToShow.utils";
 import { createBackendError } from '../../redux/actions/ErrorHandlerActions';
+import { spotifyUriIsValid } from '../../utils/artists.utils';
+import Danger from '../Typography/Danger';
+import { spotifyUriNotValidText } from '../../utils/textToShow.utils';
 
 const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor, buttonColor, setTrackData, trackData, validator }) => {
 
   const dispatch = useDispatch();
   const buttonColorStyle = { backgroundColor: buttonColor, '&:hover': { backgroundColor: buttonColor } };
+
+  const [spotifyUriInvalid, setSpotifyUriInvalid] = useState([]);
 
   const addOneArtistSkeleton = () => {
     if (trackData.artists.length + trackData.allOtherArtists.length > 20) {
@@ -23,6 +28,7 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
     };
     let otherArtist = { name: "", spotify_uri: "", apple_id: "", id: uuidv4(), primary: false };
     setTrackData({ ...trackData, allOtherArtists: [...trackData.allOtherArtists, otherArtist] });
+    setSpotifyUriInvalid([...spotifyUriInvalid, false]);
   }
 
   const getNewOtherArtists = (targetField, value, index) => {
@@ -34,9 +40,19 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
   const deleteAllOtherArtists = () => setTrackData({ ...trackData, allOtherArtists: [] });
   const handleChangeArtistPrimary = (isPrimary, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("primary", isPrimary, index) });
   const handlerAddNameToOtherArtists = (nameValue, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("name", nameValue, index) });
-  const handlerAddSpotifyUri = (spotify_uri, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("spotify_uri", spotify_uri, index) });
+
+  const handlerAddSpotifyUri = (spotify_uri, otherArtistIndex) => {
+    setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("spotify_uri", spotify_uri, otherArtistIndex) });
+    if (!spotifyUriIsValid(spotify_uri)) setSpotifyUriInvalid(spotifyUriInvalid.map((uriIsValid, index) => otherArtistIndex === index ? true : uriIsValid));
+    else setSpotifyUriInvalid(spotifyUriInvalid.map((uriIsValid, index) => otherArtistIndex === index ? false : uriIsValid));
+  }
+
   const handlerAddAppleID = (apple_id, index) => setTrackData({ ...trackData, allOtherArtists: getNewOtherArtists("apple_id", apple_id, index) });
-  const handleDeleteOtherArtist = aIndex => setTrackData({ ...trackData, allOtherArtists: trackData.allOtherArtists.filter((_, i) => i !== aIndex) });
+
+  const handleDeleteOtherArtist = aIndex => {
+    setTrackData({ ...trackData, allOtherArtists: trackData.allOtherArtists.filter((_, i) => i !== aIndex) });
+    setSpotifyUriInvalid(spotifyUriInvalid.filter((_, index) => aIndex !== index));
+  }
 
   const handleOnChangeCheckBox = (event) => {
     if (event.target.checked) addOneArtistSkeleton();
@@ -47,12 +63,6 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
     if (otherArtistIndex >= 20) return "NO PUEDES AGREGAR MÁS DE 20 ARTISTAS";
     return `Nombre ${getNumeracionOrdinalFromIndex[otherArtistIndex]} Artista`;
   }
-
-  // const getValidatorProps = indexOhterArtist => {
-  //   if (indexCollaborator === 0) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Compositor", validator };
-  //   if (indexCollaborator === 1) return { restrictions: 'required|max:50', message: "Debés indicar el nombre del Liricista", validator };
-  //   return null;
-  // }
 
   return (
     <>
@@ -112,11 +122,8 @@ const AddOtherArtistsTrackForm = ({ checkBoxLabel, checkBoxHelper, checkBoxColor
               value={otherArtist.spotify_uri}
               onChange={(event) => handlerAddSpotifyUri(event.target.value, index)}
               helperText={index === 0 ? "Ingresa el código URi de Spotify. " : ""}
-              validatorProps={{
-                restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
-                message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
-              }}
             />
+            {spotifyUriInvalid[index] && <Danger key={index + 'spotify'}>{spotifyUriNotValidText}</Danger>}
           </Grid>
 
           <Grid item sx={gridAppleStyle} key={index + "trackOtherappleIdGrid"}>
@@ -155,7 +162,7 @@ const textFiedNameStyle = { width: "93%" }
 const textFieldURIStyle = { width: "90%" }
 const textFieldAppleIDStyle = { width: "90%" }
 const gridSwitcherStyle = { width: "10%", marginTop: "1%" };
-const gridNameStyle = { width: "35%" }
-const gridUriStyle = { width: "22.5%", textAlign: "left" };
+const gridNameStyle = { width: "29%" }
+const gridUriStyle = { width: "28.5%", textAlign: "left" };
 const gridAppleStyle = { width: "22.5%", textAlign: "left" };
 const gridDeleteStyle = { width: "5%", marginTop: "1.4%", color: "gray" };

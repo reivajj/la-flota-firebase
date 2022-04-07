@@ -24,11 +24,12 @@ import { useForceUpdate } from 'utils';
 import ImageInput from 'components/Input/ImageInput';
 import { AddMoreArtistsInAlbumDialog } from 'components/Dialogs/AddMoreArtistsInAlbumDialog';
 import { infoSpotifyUri, maxArtistsText } from "utils/textToShow.utils";
-import { infoHelperTextAppleId } from '../../utils/textToShow.utils';
+import { infoHelperTextAppleId, spotifyUriNotValidText } from '../../utils/textToShow.utils';
 import SuccessDialog from "components/Dialogs/SuccessDialog";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { userIsAdmin } from "utils/users.utils";
-import { userCanAddMoreArtists } from '../../utils/artists.utils';
+import { userCanAddMoreArtists, spotifyUriIsValid } from '../../utils/artists.utils';
+import Danger from '../../components/Typography/Danger';
 
 const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
@@ -63,6 +64,7 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
 
   const cannotAddArtists = !userCanAddMoreArtists(editing, plan, artistsFromStore.length);
 
+  const [spotifyUriInvalid, setSpotifyUriInvalid] = useState(false);
   const [openMaxArtistsDialog, setOpenMaxArtistsDialog] = useState(cannotAddArtists);
   const [openLoader, setOpenLoader] = useState(false);
   const [buttonState, setButtonState] = useState("none");
@@ -159,6 +161,9 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
   const changeSpotifyUri = event => {
     if (editing && !spotifyUriEdited) setSpotifyUriEdited(true);
     dispatch(saveAddingArtistSpotifyUri(event.target.value));
+    
+    if (!spotifyUriIsValid(event.target.value)) setSpotifyUriInvalid(true);
+    else setSpotifyUriInvalid(false);
   }
 
   const changeAppleId = event => {
@@ -253,11 +258,12 @@ const NewArtist = ({ editing, isOpen, handleClose, view }) => {
                         helperText={infoSpotifyUri}
                         hrefInfo="https://www.laflota.com.ar/spotify-for-artists/"
                         targetHref="_blank"
-                        validatorProps={{
-                          restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
-                          message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
-                        }}
+                      // validatorProps={{
+                      //   restrictions: [{ regex: '^(spotify:artist:)([a-zA-Z0-9]+)$' }, { max: 37 }, { min: 37 }],
+                      //   message: "El formato del Spotify Uri es inválido. (Formato: spotify:artist:2ERtLJTrO8RXGMAEYOJeQc)", validator
+                      // }}
                       />
+                      {spotifyUriInvalid && <Danger>{spotifyUriNotValidText}</Danger>}
                     </Grid>
 
                     <Grid item xs={12}>

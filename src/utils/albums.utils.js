@@ -6,6 +6,11 @@ import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliver
 import { noTracksWarningTitle } from './textToShow.utils';
 import { titleInvalidPreCompraDate } from './textToShow.utils';
 import { noCoverTitle } from './textToShow.utils';
+import { artistsWithUniqueName } from './artists.utils';
+import { spotifyUriIsValid } from './artists.utils';
+import { spotifyUriNotValidText } from './textToShow.utils';
+
+export const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
@@ -13,8 +18,6 @@ export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfUser") return albums.filter(album => album.ownerId === params.id);
   return albums;
 }
-
-export const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
 export const getTitleLanzamientos = (params, labels, artists) => {
   if (!Object.keys(params).length) return "Lanzamientos";
@@ -51,6 +54,18 @@ export const checkOldReleaseDate = albumData => {
 }
 
 export const checkFieldsCreateAlbum = (currentAlbumData, myTracks, setOpenInvalidValueDialog, validator, showErrorAndScrollToTop) => {
+  let allOtherArtistsFromTracksAndAlbum = artistsWithUniqueName([...currentAlbumData.allOtherArtists, ...myTracks.map(track => track.allOtherArtists).flat()]);
+  allOtherArtistsFromTracksAndAlbum = allOtherArtistsFromTracksAndAlbum.map(artist => { return { valid: spotifyUriIsValid(artist.spotify_uri), name: artist.name } });
+  let invalidArtistUri = allOtherArtistsFromTracksAndAlbum.find(artistValid => artistValid.valid === false);
+
+  if (invalidArtistUri) {
+    setOpenInvalidValueDialog({
+      open: true, beginer: "invalid-uri", title: `El Spotify Uri del artista de nombre: ${invalidArtistUri.name}, es inválido.`, text: spotifyUriNotValidText
+    });
+    showErrorAndScrollToTop();
+    return;
+  }
+
   if (!currentAlbumData.c_line || !currentAlbumData.p_line || !currentAlbumData.title || !currentAlbumData.genreName) {
     showErrorAndScrollToTop(); return "NO_VALID"
   };

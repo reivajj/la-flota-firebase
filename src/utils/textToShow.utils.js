@@ -43,6 +43,19 @@ export const infoSpotifyUri = [
   "Haz click para más información."
 ];
 
+export const spotifyUriNotValidText = [
+  "El formato del Spotify Uri es inválido.", <br />,
+  "Formato: ", <b>spotify:artist:2ERtLJTrO8RXGMAEYOJeQc</b>, < br />,
+  "que contiene exactamente 37 caracteres. Dejar vacío si no lo conoces."
+]
+
+export const spotifyUriNotValidTextDialog = [
+  "El formato del Spotify Uri es inválido.",
+  <p>Formato: </p>, <b>spotify:artist:2ERtLJTrO8RXGMAEYOJeQc</b>,
+  "que contiene exactamente 37 caracteres.",
+  "Dejar vacío si no lo conoces."
+]
+
 export const infoHelperTextAppleId = [
   "Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo.", <br />,
   "Podes encontrarla en tu perfil en iTunes(son los últimos dígitos de la URL de tu perfil)."

@@ -4,14 +4,13 @@ import { userIsDev } from "utils/users.utils";
 import { Grid } from '@mui/material';
 
 import Uppy from '@uppy/core';
-import FileInput from '@uppy/file-input';
-import XHRUpload from '@uppy/xhr-upload';
+import Tus from '@uppy/tus';
 import { DragDrop } from '@uppy/react'
 
-import { localUrl } from '../../services/BackendCommunication';
-import ImageInput from '../../components/Input/ImageInput';
-import { to } from '../../utils';
-import axios from "../../../node_modules/axios/index";
+import { localUrl, webUrl } from '../../services/BackendCommunication';
+// import ImageInput from '../../components/Input/ImageInput';
+// import { to } from '../../utils';
+// import axios from "../../../node_modules/axios/index";
 
 const Test = ({ editing }) => {
 
@@ -19,11 +18,11 @@ const Test = ({ editing }) => {
   const [urlImage, setUrlImage] = useState("");
   const uppy = new Uppy({ debug: true, autoProceed: true })
 
-  uppy.use(XHRUpload, {
-    endpoint: `${localUrl}albums/uploadCover`,
-    formData: true,
-    fieldName: 'file',
-    method: 'post'
+  uppy.use(Tus, {
+    endpoint: `${localUrl}albums/tus-demo`,
+    // endpoint: 'https://tusd.tusdemo.net/files/',
+    chunkSize: 5 * 1000000,
+    retryDelays: null
   })
 
   // And display uploaded files

@@ -74,7 +74,7 @@ const AlbumTotalInfo = () => {
   // }
 
   const tracksDataTable = status === "fetched" ? getTracksDataTableFromFugaAssets(data.assets) : [];
-  const albumArtists = getArtistNameAndPrimaryOfAlbum(dataAlbum);
+  const albumArtists = status === "fetched" ? data.artists : [];
   // const handleEditAlbum = () => navigate(`/admin/edit-album/${dataAlbum.id}`);
   // const goToAlbumInfo = () => console.log("ALBUM INFO: ", dataAlbum);
   // const goToLabelAlbum = () => navigate(`/admin/labels?view=label&label_name=${dataAlbum.label_name}`);

@@ -86,9 +86,9 @@ export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, us
   for (const dataTrack of sortedTracks) {
     const results = [];
     const onUploadProgress = progress => {
-      const { loaded, total } = progress
-      const percentageProgress = Math.floor((loaded / total) * 100)
-      dispatch(setUploadProgress(dataTrack.position, percentageProgress))
+      const { loaded, total } = progress;
+      const percentageProgress = Math.floor((loaded / total) * 100);
+      dispatch(setUploadProgress(dataTrack.position, percentageProgress));
     }
 
     dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId; dataTrack.ownerEmail = ownerEmail;

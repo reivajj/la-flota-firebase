@@ -11,13 +11,14 @@ import UserDialog from '../Users/UserDialog';
 import { getEmailIfNotHaveUser, getUsersPropsForDataTable, sortUsersByField, userIsRRSS } from '../../utils/users.utils';
 import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
 import { getElementsAdminQueryFS } from "services/FirestoreServices";
-import { sortAlbumsByField } from '../../utils/albums.utils';
+import { sortAlbumsByField, getAlbumById } from '../../utils/albums.utils';
 import { albumsAddStore, getAlbumsByFieldRedux, getAlbumByUPCRedux } from "redux/actions/AlbumsActions";
 import { userIsAdmin } from 'utils/users.utils';
 import { sortArtistsByField } from '../../utils/artists.utils';
 import { artistsAddStore, getArtistByFieldRedux } from '../../redux/actions/ArtistsActions';
 import SearchNavbar from '../../components/Navbars/SearchNavbar';
 import InfoDialog from '../../components/Dialogs/InfoDialog';
+import AlbumActionsDialog from "views/Albums/AlbumActionsDialog";
 
 const DashboardAdmin = () => {
 
@@ -34,6 +35,7 @@ const DashboardAdmin = () => {
   const [openLoaderDashboard, setOpenLoaderDashboard] = useState(false);
   const [openEmptySearch, setOpenEmptySearch] = useState(false);
   const [openErrorSearch, setOpenErrorSearch] = useState(false);
+  const [openAlbumActionsDialog, setOpenAlbumActionsDialog] = useState({ open: false, albumId: "" });
 
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
@@ -92,8 +94,8 @@ const DashboardAdmin = () => {
 
   const handleGoToAlbum = albumId => navigate(`/admin/albums/${albumId}`);
 
-  const albumsTableElements = getAlbumsPropsForAdminDataTable(sortedAlbums, handleOpenUsuarioDialog, handleGoToAlbum) || [];
-  const albumsTableHeaders = ["Lanzamiento", "Nombre Lanzamiento", "Artista Principal", "Estado", "Usuario", "UPC", "Formato", "Fecha de Lanzamiento"];
+  const albumsTableElements = getAlbumsPropsForAdminDataTable(sortedAlbums, handleOpenUsuarioDialog, handleGoToAlbum, setOpenAlbumActionsDialog) || [];
+  const albumsTableHeaders = ["Acciones", "Lanzamiento", "Nombre Lanzamiento", "Artista Principal", "Estado", "Usuario", "UPC", "Formato", "Fecha de Lanzamiento"];
   const handleGoToAlbums = () => navigate("/admin/albums");
   const propsToAlbumsTable = {
     titleTable: "Lanzamientos", tableElements: albumsTableElements, tableHeaders: albumsTableHeaders,
@@ -175,6 +177,9 @@ const DashboardAdmin = () => {
         <Backdrop open={openLoaderDashboard}>
           <CircularProgress />
         </Backdrop>
+
+        <AlbumActionsDialog isOpen={openAlbumActionsDialog.open} handleClose={() => setOpenAlbumActionsDialog({ open: false, albumId: "" })}
+          albumId={openAlbumActionsDialog.albumId} />
 
         {userSelected && <UserDialog userData={userSelected} isOpen={Boolean(userSelected.id)} title={`${getEmailIfNotHaveUser(userSelected)}`}
           handleClose={handleCloseUserDialog} contentTexts={["Proximamente datos del usuario"]} rolAdmin={rol} />}

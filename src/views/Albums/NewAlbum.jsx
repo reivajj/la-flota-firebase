@@ -18,11 +18,10 @@ import { NewTrackDialog } from "views/Tracks/NewTrackDialog";
 import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
-import { Save, AddCircleOutline } from '@mui/icons-material/';
+import { Save, AddCircleOutline, Edit } from '@mui/icons-material/';
 import {
   albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper,
-  preSaleCheckBoxHelper, releaseDateInfoTooltip, titleInvalidOldReleaseDate, invalidDateContentText,
-  titleInvalidPreCompraDate, noTracksWarningTitle, noTracksWarningText, imageConstraintsMessage, noCoverTitle, noCoverWarningText
+  preSaleCheckBoxHelper, releaseDateInfoTooltip, imageConstraintsMessage
 } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
@@ -30,7 +29,7 @@ import TextFieldWithInfo from "components/TextField/TextFieldWithInfo";
 import AddOtherArtistsAlbumForm from 'components/Forms/AddOtherArtistsAlbumForm';
 import ImageInput from "components/Input/ImageInput";
 import { createOtherArtistsRedux } from '../../redux/actions/ArtistsInvitedActions';
-import { updateAddingAlbumImageUrlAndCoverRedux, createUPCToSuccessAlbumRedux } from '../../redux/actions/AlbumsActions';
+import { updateAddingAlbumImageUrlAndCoverRedux, createUPCToSuccessAlbumRedux, albumsPublishAndDeliveryRedux } from '../../redux/actions/AlbumsActions';
 import TypographyWithInfo from '../../components/Typography/TypographyWithInfo';
 import CheckboxWithInfo from '../../components/Checkbox/CheckboxWithInfo';
 import { createCollaboratorsRedux } from "redux/actions/CollaboratorsActions";
@@ -49,7 +48,7 @@ import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
-import { checkFieldsCreateAlbum } from '../../utils/albums.utils';
+import { checkFieldsCreateAlbum, getDeliveredContentTextDialog, getDeliveredTitleDialog, adaptAlbumToAppleFormat } from '../../utils/albums.utils';
 
 
 const NewAlbum = ({ editing }) => {
@@ -78,6 +77,10 @@ const NewAlbum = ({ editing }) => {
     setTracksDataTable(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
   }, [myTracks])
 
+  useEffect(() => {
+    if (currentAlbumData.appleAdapted) allFieldsValidCreateAlbum();
+  }, [currentAlbumData.appleAdapted])
+
   const changeAlbumId = () => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, id: uuidv4() }));
   const putAlbumIdOnEditingArtist = () => dispatch(updateAddingAlbumRedux({ ...currentAlbumData, id: currentAlbumData.id }));
 
@@ -105,6 +108,8 @@ const NewAlbum = ({ editing }) => {
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [openInvalidValueDialog, setOpenInvalidValueDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
   const [openLoader, setOpenLoader] = useState(false);
+
+  const [deliveryState, setDeliveryState] = useState('none');
   const [openSelectDSP, setOpenSelectDSP] = useState(false);
 
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
@@ -123,15 +128,27 @@ const NewAlbum = ({ editing }) => {
     preOrder: currentAlbumData.preOrder, audio_locale_name: "",
   });
 
-  const handleSelectDSPs = () => {
-    setOpenSelectDSP(true);
+  const handleSelectDSPs = () => setOpenSelectDSP(true);
+  let successDialogTitle = getDeliveredTitleDialog(deliveryState);
+  let successDialogText = getDeliveredContentTextDialog(deliveryState);
+
+  const handleDelivery = async albumUploaded => {
+    let dspsToDelivery = albumUploaded.dsps.filter(dsp => dsp.checked);
+    let responsePublishAndDelivery = await toWithOutError(dispatch(albumsPublishAndDeliveryRedux(albumUploaded, dspsToDelivery, 'all')));
+    if (responsePublishAndDelivery === "ERROR") return "ERROR";
+    if (responsePublishAndDelivery === "PUBLISHED") { setDeliveryState('published'); return; }
+    if (responsePublishAndDelivery === "DELIVERED") { setDeliveryState('delivered'); return; }
+    handleCloseSuccessUpload();
   }
 
   const coverLabelArtistAllValids = () => {
     if (!currentAlbumData.cover?.size) setMessageForCover("Debes seleccionar el Arte de Tapa");
     if (!currentAlbumData.nombreArtist) validator.current.showMessageFor('nombreArtist');
     if (!currentAlbumData.label_name) validator.current.showMessageFor('label_name');
-    if (needArtistLabelCover) dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
+    if (needArtistLabelCover) {
+      handleSelectDSPs();
+      dispatch(updateAddingAlbumRedux({ ...currentAlbumData, basicFieldsComplete: true }));
+    }
   }
 
   const allFieldsValidCreateAlbum = () => {
@@ -142,6 +159,14 @@ const NewAlbum = ({ editing }) => {
       forceUpdate();
     }
   }
+
+  const handleCloseInfoDialog = () => {
+    if (openInvalidValueDialog.beginner === "single-track-name") {
+      adaptAlbumToAppleFormat(currentAlbumData, myTracks, dispatch);
+    }
+    setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] });
+  }
+
 
   const createAlbum = async () => {
     setOpenLoader(true);
@@ -157,9 +182,8 @@ const NewAlbum = ({ editing }) => {
     else internalState = "artists-created"; setCreatingAlbumState("artists-created");
 
     if (internalState === "artists-created") {
-      const cantTracks = myTracks.length;
       const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
-      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum, cantTracks, artistInvited)));
+      albumDataFromFuga = await toWithOutError(dispatch(createAlbumRedux(currentAlbumData, currentUserId, currentUserEmail, explicitAlbum, myTracks, artistInvited)));
       if (albumDataFromFuga === "ERROR") {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;
@@ -188,8 +212,8 @@ const NewAlbum = ({ editing }) => {
 
     if (internalState === "collaborators-created" || internalState === "tracks-created") {
       await toWithOutError(dispatch(createUPCToSuccessAlbumRedux(albumDataFromFuga)));
+      internalState === "collaborators-created" ? await handleDelivery(albumDataFromFuga) : setCreatingAlbumState("success");
       setButtonState("success");
-      internalState === "collaborators-created" ? handleSelectDSPs() : setCreatingAlbumState("success");
     }
     setOpenLoader(false);
   }
@@ -322,15 +346,14 @@ const NewAlbum = ({ editing }) => {
     navigate('/admin/albums');
   }
 
-  const handleCloseInfoDialog = () => {
-    setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] });
-  }
-
   return (
     <Grid container textAlign="center">
       <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
-        <DspsDialog isOpen={openSelectDSP} handleClose={handleCloseSuccessUpload} albumId={currentAlbumData.id} />
+        <SuccessDialog isOpen={deliveryState !== 'none' && deliveryState !== 'processing'} title={successDialogTitle} contentTexts={successDialogText}
+          handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" size="sm" />
+
+        <DspsDialog isOpen={openSelectDSP} setIsOpen={setOpenSelectDSP} currentAlbumData={currentAlbumData} />
 
         <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Seleccionalo, en vez de crear uno nuevo.`]]}
           handleClose={() => setSelloInStore(false)} successImageSource="/images/successArtists.jpg" />
@@ -396,13 +419,20 @@ const NewAlbum = ({ editing }) => {
 
           </Grid>
 
-          {showingNotBasicAlbumFields && <AddOtherArtistsAlbumForm
+          <AddOtherArtistsAlbumForm
             checkBoxLabel="¿Lanzamiento Colaborativo?"
             checkBoxHelper={lanzamientoColaborativoTooltip}
             checkBoxColor="#9c27b0"
             buttonColor="#9c27b0"
             validator={validator}
-          />}
+          />
+
+          {(currentAlbumData.dsps.filter(dsp => dsp.checked).length > 0 || showingNotBasicAlbumFields) &&
+            <Grid item xs={12}>
+              <Button variant="contained" onClick={() => handleSelectDSPs()} sx={buttonAddArtist} endIcon={<Edit />}>
+                Editar DSPS
+              </Button>
+            </Grid>}
 
           <Grid container item xs={12}>
             <Grid item xs={showingNotBasicAlbumFields ? 6 : 12}>
@@ -623,6 +653,7 @@ const NewAlbum = ({ editing }) => {
             checkBoxHelper={oldReleaseCheckBoxHelper}
             color="#9c27b0"
           />
+
           {currentAlbumData.oldRelease &&
             <SelectDateInputDDMMYYYY type="old-release-date" dayValue={currentAlbumData.originalDayOfMonth} monthValue={currentAlbumData.originalMonth} yearValue={currentAlbumData.originalYear}
               setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalMonth")}
@@ -661,11 +692,6 @@ const NewAlbum = ({ editing }) => {
             </Grid>
           </Grid>}
 
-
-        {/* <Grid item xs={12}>
-          <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
-            tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />
-        </Grid> */}
         <Grid item xs={12}>
           <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
             tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />

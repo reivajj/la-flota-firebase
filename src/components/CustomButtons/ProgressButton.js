@@ -4,6 +4,7 @@ import { green, red } from '@mui/material/colors';
 import { Button, Fab, Grid } from '@mui/material';
 import { Check, Replay, Delete } from '@mui/icons-material/';
 import { createTheme } from '@mui/material/styles';
+import { Tooltip } from '../../../node_modules/@mui/material/index';
 
 const getStyleFromStateButton = (buttonState, noFab) => {
   if (buttonState === "success") return styles.buttonSuccess;
@@ -13,14 +14,14 @@ const getStyleFromStateButton = (buttonState, noFab) => {
   return styles.buttonNone;
 }
 
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab, buttonFullWidth, buttonSx, buttonProgressSx }) => {
+const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab, buttonFullWidth, buttonSx, buttonProgressSx, tooltipText }) => {
 
   const getEndButtonIcon = () => {
     if (buttonState === "delete" && noFab) return <Delete />;
     if (buttonState === "error" && noFab) return <Replay />;
     return "";
   }
-  
+
   const endButtonIcon = getEndButtonIcon();
 
   return (
@@ -41,17 +42,19 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
 
         </Grid>}
       <Grid item sx={noFab ? styles.wrapperNoFab : styles.wrapperFab}>
-        <Button
-          variant="contained"
-          fullWidth={buttonFullWidth}
-          color={color}
-          sx={buttonSx ? buttonSx : getStyleFromStateButton(buttonState, noFab)}
-          disabled={loading}
-          onClick={onClickHandler}
-          endIcon={endButtonIcon}
-        >
-          {textButton}
-        </Button>
+        <Tooltip title={tooltipText ? tooltipText : ""}>
+          <Button
+            variant="contained"
+            fullWidth={buttonFullWidth}
+            color={color}
+            sx={buttonSx ? buttonSx : getStyleFromStateButton(buttonState, noFab)}
+            disabled={loading}
+            onClick={onClickHandler}
+            endIcon={endButtonIcon}
+          >
+            {textButton}
+          </Button>
+        </Tooltip>
         {noFab && loading && <CircularProgress size={30} sx={buttonProgressSx || styles.buttonProgress} />}
       </Grid>
     </Grid>

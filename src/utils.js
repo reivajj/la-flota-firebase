@@ -24,7 +24,10 @@ export const cloneDeepLimited = obj => JSON.parse(JSON.stringify(obj));
 export const copyFormDataToJSON = formData => {
   var object = {};
   formData.forEach((value, key) => {
-    if (key === "cover" || key === "track") object[key] = { originalname: value.originalname, sizeInMB: value.size / 1000000 }
+    if (key === "cover" || key === "track") {
+      console.log("VALUE FILE: ", value);
+      object[key] = { originalname: value.originalname, sizeInMB: value.size / 1000000 }
+    }
     else object[key] = value
   });
   var json = JSON.parse(JSON.stringify(object));

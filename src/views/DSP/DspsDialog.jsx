@@ -1,79 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import ProgressButton from 'components/CustomButtons/ProgressButton';
 import {
   Button, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Grid, Divider
 } from '@mui/material';
 import CheckboxGroup from "components/Checkbox/CheckboxGroup";
-import { dspsFuga } from '../../variables/fuga';
 import BasicCheckbox from 'components/Checkbox/BasicCheckbox';
-import { toWithOutError } from 'utils';
-import { useDispatch, useSelector } from 'react-redux';
-import { albumsPublishAndDeliveryRedux } from '../../redux/actions/AlbumsActions';
-import { getAlbumById, getDeliveredTitleDialog, getDeliveredContentTextDialog } from '../../utils/albums.utils';
-import SuccessDialog from '../../components/Dialogs/SuccessDialog';
-import { warningAppleDelivery } from "utils/textToShow.utils";
+import { useDispatch } from 'react-redux';
+import { albumAddDspsStore } from '../../redux/actions/AlbumsActions';
+import AppleCriteriaDialog from './AppleCriteriaDialog';
+import { updateAddingAlbumRedux } from 'redux/actions/AlbumsActions';
 
-const checkboxGroupInfo = dspsFuga.map(dspInfo => {
-  return {
-    ...dspInfo, checked: false, label: dspInfo.dspName,
-    checkBoxHelper: dspInfo.dspName === "Apple Music" ? warningAppleDelivery : "",
-    onClickInfo: dspInfo.dspName === "Apple Music" ? () => console.log("APPLE WARNING") : ""
-  }
-});
-
-const DspsDialog = (props) => {
-
-  const { isOpen, handleClose, albumId } = props;
+const DspsDialog = ({ isOpen, setIsOpen, currentAlbumData }) => {
 
   const dispatch = useDispatch();
-  const albums = useSelector(store => store.albums.albums);
 
-  const [checkedDsps, setCheckedDsps] = useState(checkboxGroupInfo);
-  const [deliveryState, setDeliveryState] = useState('none');
+  const [openAppleCriteria, setOpenAppleCriteria] = useState(false);
+  const [showAtLeastOneDspMustBeSelected, setShowAtLeastOneDspMustBeSelected] = useState(false);
+  const [checkedDsps, setCheckedDsps] = useState(currentAlbumData.dsps);
+
+  useEffect(() => {
+    if (checkedDsps.filter(dsp => dsp.checked).length === 0) setShowAtLeastOneDspMustBeSelected(true);
+    else setShowAtLeastOneDspMustBeSelected(false);
+  }, [checkedDsps])
 
   const handleCheckAllDsps = () => {
-    setCheckedDsps(checkedDsps.map(dsp => { return { ...dsp, checked: true } }))
+    setCheckedDsps(checkedDsps.map(dsp => { return { ...dsp, checked: true } }));
   }
 
   const handleUncheckAllDsps = () => {
-    setCheckedDsps(checkedDsps.map(dsp => { return { ...dsp, checked: false } }))
+    setCheckedDsps(checkedDsps.map(dsp => { return { ...dsp, checked: false } }));
   }
 
   const handleCheckDsp = dsp => {
-    console.log("DSP CHECKED: ", dsp);
-    setCheckedDsps(checkedDsps.map(actualDsp => actualDsp.dspId !== dsp.dspId ? actualDsp : { ...dsp, checked: !dsp.checked }))
+    setCheckedDsps(checkedDsps.map(actualDsp => actualDsp.dspId !== dsp.dspId ? actualDsp : { ...dsp, checked: !dsp.checked }));
   }
 
-  const handleDelivery = async () => {
-    setDeliveryState('processing');
-    let dspsToDelivery = checkedDsps.filter(dsp => dsp.checked);
-    let albumFromStoreById = getAlbumById(albums, albumId);
-    let responsePublishAndDelivery = await toWithOutError(dispatch(albumsPublishAndDeliveryRedux(albumFromStoreById, dspsToDelivery, dispatch)));
-    if (responsePublishAndDelivery === "ERROR") return "ERROR";
-    if (responsePublishAndDelivery === "PUBLISHED") { setDeliveryState('published'); return; }
-    if (responsePublishAndDelivery === "DELIVERED") { setDeliveryState('delivered'); return; }
-    handleClose();
+  const appleIsChecked = dsps => dsps.find(dsp => dsp.dspName === "Apple Music" && dsp.checked);
+
+  const handleCloseDsps = () => {
+    if (checkedDsps.filter(dsp => dsp.checked).length === 0) {
+      setShowAtLeastOneDspMustBeSelected(true);
+      return;
+    }
+    if (appleIsChecked(checkedDsps)) {
+      setOpenAppleCriteria(true);
+      return;
+    }
+    dispatch(updateAddingAlbumRedux({ ...currentAlbumData, dsps: checkedDsps }));
+    setIsOpen(false);
   }
 
   let allCheckeds = checkedDsps.every(dsp => dsp.checked);
   let labelCheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Selecciona todas las DSPs</p>
   let labelUncheckAll = <p style={{ fontWeight: 500, color: 'black' }}>Deselecciona todas las DSPs</p>
 
-  let successDialogTitle = getDeliveredTitleDialog(deliveryState);
-  let successDialogText = getDeliveredContentTextDialog(deliveryState);
+  const uncheckAppleDsp = () => {
+    let dspsWithAppleUnchecked = checkedDsps.map(dsp => {
+      if (dsp.dspName === "Apple Music") dsp.checked = false;
+      return dsp;
+    })
+    setOpenAppleCriteria(false);
+    setCheckedDsps(dspsWithAppleUnchecked);
+    dispatch(albumAddDspsStore(currentAlbumData, dspsWithAppleUnchecked.filter(dsp => dsp.checked)));
+    setIsOpen(false);
+  }
+
+  const handleCloseAppleCriteriaOk = () => {
+    setOpenAppleCriteria(false);
+    dispatch(albumAddDspsStore(currentAlbumData, checkedDsps.filter(dsp => dsp.checked)));
+    setIsOpen(false);
+  }
 
   return (
     <Grid>
-      <SuccessDialog isOpen={deliveryState !== 'none' && deliveryState !== 'processing'} title={successDialogTitle} contentTexts={successDialogText}
-        handleClose={handleClose} successImageSource="/images/success.jpg" size="sm" />
+      <AppleCriteriaDialog isOpen={openAppleCriteria} handleCloseOk={handleCloseAppleCriteriaOk}
+        handleCloseUncheckApple={uncheckAppleDsp} />
 
       <Dialog
         maxWidth="md"
         id="info-dialog"
         fullWidth
         open={isOpen}
-        onClose={handleClose}>
+        onClose={handleCloseDsps}>
 
         <DialogTitle id="title-info-dialog">
           DSPs
@@ -86,6 +94,11 @@ const DspsDialog = (props) => {
 
           <BasicCheckbox checked={allCheckeds} label={allCheckeds ? labelUncheckAll : labelCheckAll} onChecked={allCheckeds ? handleUncheckAllDsps : handleCheckAllDsps} />
 
+          {showAtLeastOneDspMustBeSelected &&
+            <DialogContentText>
+              <p style={{ fontWeight: 500, fontSize: "medium", color: 'red' }}>Deberás elegir al menos una DSP</p>
+            </DialogContentText>}
+
           <Grid item xs={12} textAlign="-moz-center">
             <Divider sx={dividerStyle} />
           </Grid>
@@ -94,23 +107,10 @@ const DspsDialog = (props) => {
 
         </DialogContent>
 
-        <DialogActions>
-          <Grid container spacing={2}>
-            <Grid item xs={6} textAlign="initial">
-              <Button onClick={handleClose} color="primary">
-                Atrás
-              </Button>
-            </Grid>
-            <Grid item xs={6} textAlign="end">
-              <ProgressButton
-                textButton={"Finalizar"}
-                loading={deliveryState === 'processing'}
-                buttonState={'none'}
-                onClickHandler={handleDelivery}
-                noFab={true}
-                buttonProgressSx={buttonProgressStyle} />
-            </Grid>
-          </Grid>
+        <DialogActions textAlign="center">
+          <Button onClick={handleCloseDsps} color="primary">
+            Continuar
+          </Button>
         </DialogActions>
 
       </Dialog>
@@ -121,7 +121,6 @@ const DspsDialog = (props) => {
 export default DspsDialog;
 
 const dividerStyle = { width: "100%", borderColor: "rgba(0,0,0,0.2)", borderBottomWidth: "0.15em" };
-const buttonProgressStyle = { color: 'green', position: 'absolute', marginTop: '3px', marginLeft: '-4em', zIndex: 1 };
 
 DspsDialog.defaultProps = {
   isOpen: false,

@@ -1,16 +1,26 @@
 
 // import { editAction, deleteAction } from 'views/Tracks/NewTrackDialog';
 import { colorFromFugaState, ourAlbumStateWithEquivalence } from '../variables/varias';
-import { fugaAlbumsState } from '../variables/fuga';
-import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliveredSuccessTitle, errorDeliveredTitle, publishedSuccessTitle, noTracksWarningText, titleInvalidOldReleaseDate, invalidDateContentText, noCoverWarningText, noDateWarningText, noDateRelease } from './textToShow.utils';
+import { dspsFuga, fugaAlbumsState } from '../variables/fuga';
+import { deliveredSuccessText, publishedSuccessText, errorDeliveredText, deliveredSuccessTitle, errorDeliveredTitle, publishedSuccessTitle, noTracksWarningText, titleInvalidOldReleaseDate, invalidDateContentText, noCoverWarningText, noDateWarningText, noDateRelease, singleTrackDifferentNamesText } from './textToShow.utils';
 import { noTracksWarningTitle } from './textToShow.utils';
 import { titleInvalidPreCompraDate } from './textToShow.utils';
 import { noCoverTitle } from './textToShow.utils';
 import { artistsWithUniqueName } from './artists.utils';
 import { spotifyUriIsValid } from './artists.utils';
 import { spotifyUriNotValidText } from './textToShow.utils';
+import { warningAppleDelivery } from 'utils/textToShow.utils';
+import { singleTrackDifferentNamesTitle } from './textToShow.utils';
+import { updateAddingAlbumRedux } from 'redux/actions/AlbumsActions';
 
 export const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
+
+export const checkboxGroupInfo = dspsFuga.map(dspInfo => {
+  return {
+    ...dspInfo, checked: false, label: dspInfo.dspName,
+    checkBoxHelper: dspInfo.dspName === "Apple Music" ? warningAppleDelivery : "",
+  }
+});
 
 export const getFilteredAlbumsByUrl = (params, albums) => {
   if (params.view === "allOfArtist") return albums.filter(album => album.artistId === params.id);
@@ -65,12 +75,12 @@ export const checkFieldsCreateAlbum = (currentAlbumData, myTracks, setOpenInvali
     showErrorAndScrollToTop();
     return;
   }
-
   if (!currentAlbumData.c_line || !currentAlbumData.p_line || !currentAlbumData.title || !currentAlbumData.genreName) {
     showErrorAndScrollToTop(); return "NO_VALID"
   };
   if (!currentAlbumData.dayOfMonth || !currentAlbumData.month || !currentAlbumData.year) {
-    setOpenInvalidValueDialog({ open: true, beginner: "no-date", title: noDateRelease, text: noDateWarningText })
+    setOpenInvalidValueDialog({ open: true, beginner: "no-date", title: noDateRelease, text: noDateWarningText });
+    return;
   }
   if (myTracks.length === 0) {
     setOpenInvalidValueDialog({ open: true, beginner: "no-tracks", title: noTracksWarningTitle, text: noTracksWarningText });
@@ -88,16 +98,25 @@ export const checkFieldsCreateAlbum = (currentAlbumData, myTracks, setOpenInvali
     setOpenInvalidValueDialog({ open: true, beginner: "no-cover", title: noCoverTitle, text: noCoverWarningText });
     return;
   }
+  if (myTracks.length === 1 && currentAlbumData.title !== myTracks[0].title) {
+    setOpenInvalidValueDialog({ open: true, beginner: "single-track-name", title: singleTrackDifferentNamesTitle, text: singleTrackDifferentNamesText });
+    return;
+  }
   if (validator.current.allValid()) return "ALL_VALID";
   else return "NO_VALID";
 
 }
 
+export const adaptAlbumToAppleFormat = (album, tracks, dispatch) => {
+  let deliveryToApple = Boolean(album.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
+  let newTitle = tracks.length === 1 ? tracks[0].title : album.title;
+  let newFormat = deliveryToApple ? getOurFormatByCantOfTracks(tracks.length, deliveryToApple) : album.format || getOurFormatByCantOfTracks(tracks.length);
+  dispatch(updateAddingAlbumRedux({ ...album, format: newFormat, title: newTitle, appleAdapted: true }));
+}
+
 export const getArtistNameAndPrimaryOfAlbum = albumData => {
   if (!albumData) return [];
   if (!albumData.allOtherArtists) return albumData.nombreArtist ? [{ name: albumData.nombreArtist, primary: true }] : [];
-  // let allOtherArtists = [];
-  // albumData.allOtherArtists.forEach(otherArtist => allOtherArtists.push({ name: otherArtist.name, primary: otherArtist.primary }))
   return [{ name: albumData.nombreArtist, primary: true },
   ...albumData.allOtherArtists.map(otherArtist => { return { name: otherArtist.name, primary: otherArtist.primary } })];
 }
@@ -124,9 +143,9 @@ export const getFormatByCantOfTracks = cantTracks => {
   return "NO_TRACKS";
 }
 
-export const getOurFormatByCantOfTracks = cantTracks => {
-  if (cantTracks === 1) return "Single";
-  if (cantTracks > 1 && cantTracks < 6) return "EP";
+export const getOurFormatByCantOfTracks = (cantTracks, deliverToApple) => {
+  if (cantTracks === deliverToApple ? 3 : 1) return "Single";
+  if (cantTracks > deliverToApple ? 3 : 1 && cantTracks < 6) return "EP";
   if (cantTracks >= 6) return "Álbum";
   return "Single";
 }

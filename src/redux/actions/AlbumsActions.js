@@ -13,12 +13,15 @@ export const albumsAddStore = albums => {
 }
 
 //Los errores los manejan las funciones a las que llamo.
-export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks, artistsInvitedStore) => async dispatch => {
+export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, artistsInvitedStore) => async dispatch => {
 
-  let formDataAlbum = createAlbumModel(album, explicit, cantTracks, artistsInvitedStore);
+  let deliveryToApple = Boolean(album.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
+  album.title = myTracks.length === 1 ? myTracks[0].title : album.title;
+  album.format = deliveryToApple ? getOurFormatByCantOfTracks(myTracks.length, deliveryToApple) : album.format || getOurFormatByCantOfTracks(myTracks.length);
+  let formDataAlbum = createAlbumModel(album, explicit, myTracks, artistsInvitedStore, deliveryToApple);
   album.ownerId = userId;
   album.ownerEmail = ownerEmail;
-  album.format = album.format || getOurFormatByCantOfTracks(cantTracks);
+  
 
   writeCloudLog(`creating album ${album.title} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
 
@@ -30,6 +33,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, cantTracks
   album.lastUpdateTS = album.whenCreatedTS;
 
   let albumToUploadToFS = { ...album, cover: { name: album.cover.name, size: album.cover.size } };
+  albumToUploadToFS.dsps = albumToUploadToFS.dsps.map(dspInfo => { return { dspId: dspInfo.dspId, dspName: dspInfo.dspName, label: dspInfo.dspName, fugaId: dspInfo.fugaId } });
 
   writeCloudLog(`creating album ${albumToUploadToFS.title} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
 
@@ -90,6 +94,14 @@ export const createUPCToSuccessAlbumRedux = dataAlbumFuga => async dispatch => {
   });
 }
 
+export const albumAddDspsStore = (dataAlbumFuga, dsps) => async dispatch => {
+  dataAlbumFuga.dsps = dsps;
+  dispatch({
+    type: ReducerTypes.ALBUMS_EDIT_BY_ID,
+    payload: dataAlbumFuga
+  });
+}
+
 export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
   let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, 100);
   if (albumsByField === "EMPTY") return "EMPTY";
@@ -99,21 +111,23 @@ export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
 }
 
 // Asumo que el album cumple los requisitos para realizar el delivery.
-export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery) => async dispatch => {
+export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery, targetDelivery) => async dispatch => {
   albumData.dsps = dspsToDelivery;
+  let deliverToApple = Boolean(albumData.dsps.find(dspInfo => dspInfo.dspName !== "Apple Music"));
+
   let responsePublish = await BackendCommunication.publishAlbumFuga(albumData, dispatch);
   if (responsePublish === "ERROR") return "ERROR";
   albumData.state = "PUBLISHED";
 
   writeCloudLog(`Album ${albumData.title} PUBLISHED with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
 
-  let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, dispatch);
-  if (responseDelivery === "ERROR") return "ERROR";
-  albumData.state = "DELIVERED";
+  let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, targetDelivery === 'only-apple', dispatch);
+  if (responseDelivery === "ERROR") return "PUBLISHED";
+  albumData.state = (deliverToApple && !targetDelivery === 'only-apple') ? "DELIVERED_NEED_APPLE_REVISION" : "DELIVERED";
 
-  let resultUpdate = await FirestoreServices.updateElementFS(albumData, { state: albumData.state }, albumData.id, "albums", dispatch);
+  await FirestoreServices.updateElementFS(albumData, { state: albumData.state }, albumData.id, "albums", dispatch);
 
-  writeCloudLog(`Album ${albumData.title} DELIVERED with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
+  writeCloudLog(`Album ${albumData.title} ${albumData.state} with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
 
   dispatch({
     type: ReducerTypes.ALBUMS_EDIT_BY_ID,

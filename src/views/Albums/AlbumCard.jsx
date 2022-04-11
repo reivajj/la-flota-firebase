@@ -22,8 +22,6 @@ const AlbumCard = ({ dataAlbum }) => {
   const [buttonText, setButtonText] = useState("Confirmar");
   const [buttonState, setButtonState] = useState("delete");
 
-
-
   const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
   const handleCloseDelete = () => setOpenDeleteDialog(false);
 

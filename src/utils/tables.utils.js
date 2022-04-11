@@ -1,6 +1,6 @@
 
 import { Grid, IconButton, CircularProgress, Fab, Typography } from '@mui/material';
-import { Delete, Edit, Check, AddCircle } from '@mui/icons-material/';
+import { Delete, Edit, Check, AddCircle, Settings } from '@mui/icons-material/';
 import { getStateColor } from 'utils/albums.utils';
 import { secondsToMmSs } from './timeRelated.utils';
 import { getOurStateFromFugaState } from 'utils/albums.utils';
@@ -25,6 +25,12 @@ export const moreInfoAlbumRender = albumId => {
   let targetOriginUrl = window.location.origin === "http://localhost:3001" ? "http://localhost:3001" : "https://app.laflota.com.ar";
   return <IconButton href={`${targetOriginUrl}/admin/albums/${albumId}`} aria-label="Ir al elemento" target="_blank">
     <AddCircle />
+  </IconButton>
+}
+
+export const iconOpenActions = (albumId, setOpenActionsDialog) => {
+  return <IconButton onClick={() => setOpenActionsDialog({ open: true, albumId: albumId })}>
+    <Settings />
   </IconButton>
 }
 
@@ -74,15 +80,27 @@ export const getAlbumsPropsForUsersDataTable = albums => {
   return albumDataTable;
 }
 
-export const getAlbumsPropsForAdminDataTable = (albums, handleOpenUserDialog, handleGoToAlbum) => {
+const getStateInfo = (sx, state) => {
+  if (state === "DELIVERED_NEED_APPLE_REVISION") return (
+    <Grid>
+      <Typography sx={sx}>Ya se encuentra en las DSPs</Typography>
+      <Typography sx={{ color: "rgb(231, 190, 66)", fontSize: "1em", fontWeight: 600 }}>Apple en revisión</Typography>
+    </Grid>
+  )
+  else
+    return <Typography sx={sx} > {state ? getOurStateFromFugaState(state) : "Ir al Album para ver el Estado"}</Typography>
+}
+
+export const getAlbumsPropsForAdminDataTable = (albums, handleOpenUserDialog, handleGoToAlbum, setOpenActionsDialog) => {
   let albumDataTable = [];
   albums.forEach(album => {
     const stateInfoStyle = { color: getStateColor(album.state ? album.state : ""), fontSize: "1em", fontWeight: 600 };
     albumDataTable.push([
+      iconOpenActions(album.id, setOpenActionsDialog),
       moreInfoAlbumRender(album.id, handleGoToAlbum),
       album.title,
       album.nombreArtist,
-      <Typography sx={stateInfoStyle}>{album.state ? getOurStateFromFugaState(album.state) : "Ir al Album para ver el Estado"}</Typography>,
+      getStateInfo(stateInfoStyle, album.state),
       moreInfoActionRender(album.ownerId, handleOpenUserDialog),
       album.upc || "",
       album.format,

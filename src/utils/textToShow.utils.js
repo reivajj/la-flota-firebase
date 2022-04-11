@@ -20,6 +20,12 @@ export const noTracksWarningText = [<Danger>Por favor, ingresa en la tabla las c
 export const noDateRelease = "Falta seleccionar la fecha del lanzamiento:";
 export const noDateWarningText = [<Danger>Por favor, ingresa el día, mes y año del lanzamiento.</Danger>];
 
+export const singleTrackDifferentNamesTitle = "Un Single no puede tener un nombre distinto al nombre de la única canción";
+export const singleTrackDifferentNamesText = [<p style={{ fontSize: '16px', color: '#f44336' }}>Al ser un lanzamiento de una sola canción, el nombre debe ser igual al de la canción</p>,
+  "Nosotros corregiremos eso. Por lo que el nombre del lanzamiento será igual al nombre de la canción.",
+  "La carga del lanzamiento comenzará automáticamente."
+]
+
 export const noCoverTitle = "Falta el Arte de Tapa. Si aún asi la vez, cárgala nuevamente";
 export const noCoverWarningText = [<Danger>Por favor, vuelve a seleccionar un Arte de Tapa.</Danger>];
 
@@ -60,6 +66,8 @@ export const infoHelperTextAppleId = [
   "Si tenes el Apple ID del perfil de Artista donde queres que subamos la música, ingresalo.", <br />,
   "Podes encontrarla en tu perfil en iTunes(son los últimos dígitos de la URL de tu perfil)."
 ]
+
+export const appleCriteriaTitle = "Has seleccionado Apple Music";
 
 export const preSaleCheckBoxHelper = [
   "Podés permitir que tus seguidores compren tu trabajo en iTunes, Amazon y Google Play antes de la fecha del lanzamiento", <br />,

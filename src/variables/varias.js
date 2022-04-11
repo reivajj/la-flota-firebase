@@ -65,7 +65,8 @@ export const ourAlbumStateWithEquivalence = {
   PUBLISHED: "Aprobado, pronto para delivery",
   DELIVERED: "Ya se encuentra en las DSPs",
   TAKEN_DOWN: "Dado de baja en las DSPs",
-  DELETED: "Eliminado de las DSPs"
+  DELETED: "Eliminado de las DSPs",
+  DELIVERED_NEED_APPLE_REVISION: "Ya se encuentra en las DSPs | Apple en revisión"
 }
 
 export const colorFromFugaState = {
@@ -74,6 +75,7 @@ export const colorFromFugaState = {
   DELIVERED: "rgb(93, 109, 15)",
   TAKEN_DOWN: "rgb(170, 3, 3)",
   DELETED: "rgb(111, 2, 2)",
+  DELIVERED_NEED_APPLE_REVISION: "rgb(93, 109, 15)",
 }
 
 export const ciudades = [

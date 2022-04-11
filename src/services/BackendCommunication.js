@@ -213,10 +213,14 @@ export const publishAlbumFuga = async (albumData, dispatch) => {
   return responsePublishing.data.response;
 }
 
-export const deliverAlbumFuga = async (albumData, dispatch) => {
+export const deliverAlbumFuga = async (albumData, onlyToApple, dispatch) => {
   let dspsIds = [];
-  albumData.dsps.forEach(dspInfo => dspsIds.push({ dsp: dspInfo.dspId }));
-  console.log("ALBUM DATA IN DELIVER FUGA: ", albumData);
+  // Solo hago el delivery a Apple
+  if (onlyToApple) dspsIds = [{ dsp: 1330598 }];
+  // No hago el delivery automatico a Apple Music.
+  else albumData.dsps.forEach(dspInfo => dspInfo.dspName !== "Apple Music" && dspsIds.push({ dsp: dspInfo.dspId }));
+
+  console.log("DSPS IN DELIVER FUGA: ", dspsIds);
   const [errorAddingDspsAlbum] = await to(axios.put(`${targetUrl}albums/${albumData.fugaId}/delivery_instructions/edit`, dspsIds));
   if (errorAddingDspsAlbum) {
     dispatch(createBackendError(errorAddingDspsAlbum));

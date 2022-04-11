@@ -1,4 +1,5 @@
 import * as ReducerTypes from 'redux/actions/Types';
+import { checkboxGroupInfo } from 'utils/albums.utils';
 import { getActualYear } from 'utils/timeRelated.utils';
 
 const filterArtistsWithSameIdThanNewOne = (oldAlbums, addedAlbums) => {
@@ -23,11 +24,11 @@ const editOtherArtistPrimary = ({ isPrimary, otherArtistIndex }, allOtherArtistO
 const initialState = {
   albums: [],
   addingAlbum: {
-    nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false, upc: "", albumCreated: false,
+    dsps: checkboxGroupInfo, nombreArtist: "", imagenUrl: "", label_name: "", title: "", id: "", preview: false, upc: "", albumCreated: false,
     p_year: getActualYear(), p_line: "", c_year: getActualYear(), c_line: "", dayOfMonth: "", cover: "",
     month: "", year: "", genre: "", genreName: "", subgenre: "", subgenreName: "", languageId: "ES", languageName: "Spanish", disc_number: "", allOtherArtists: [],
     artistFugaId: "", artistId: "", preOrder: false, preOrderDate: "", version: "", format: "", basicFieldsComplete: false,
-    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", oldRelease: false, originalYear: "", originalMonth: "", originalDayOfMonth: "",
+    preOrderDayOfMonth: "", preOrderMonth: "", preOrderYear: "", oldRelease: false, originalYear: "", originalMonth: "", originalDayOfMonth: "", appleAdapted: false
   }
 }
 

@@ -98,7 +98,7 @@ const DashboardAdmin = () => {
   const albumsTableHeaders = ["Acciones", "Lanzamiento", "Nombre Lanzamiento", "Artista Principal", "Estado", "Usuario", "UPC", "Formato", "Fecha de Lanzamiento"];
   const handleGoToAlbums = () => navigate("/admin/albums");
   const propsToAlbumsTable = {
-    titleTable: "Lanzamientos", tableElements: albumsTableElements, tableHeaders: albumsTableHeaders,
+    titleTable: "Lanzamientos", tableElements: albumsTableElements, tableHeaders: albumsTableHeaders, tableHeight: 700,
     buttonText: `${albums.length > 5 ? "Ver Más" : "Ir a Lanzamientos"}`, handleButtonClick: handleGoToAlbums, backgroundColor: "lavender", tableWidth: "100%",
   }
 
@@ -106,7 +106,7 @@ const DashboardAdmin = () => {
   const artistsTableHeaders = ["Nombre", "Spotify Uri", "Apple ID"];
   const handleGoToArtists = () => navigate("/admin/artists");
   const propsToArtistsTable = {
-    titleTable: "Artistas", tableElements: artistsTableElements, tableHeaders: artistsTableHeaders,
+    titleTable: "Artistas", tableElements: artistsTableElements, tableHeaders: artistsTableHeaders, tableHeight: 400,
     buttonText: `${sortedArtists.length > 5 ? "Ver Más" : "Ir a Artistas"}`, handleButtonClick: handleGoToArtists, backgroundColor: "thistle", tableWidth: "90%",
   }
 
@@ -114,7 +114,7 @@ const DashboardAdmin = () => {
   const usersTableHeaders = userIsAdmin(rol) ? ["Email", "Password", "Nombre", "Plan", "WP Id"] : ["Email", "Nombre"];
   const handleGoToUsers = () => navigate("/admin/users");
   const propsToUsersTable = {
-    titleTable: "Usuarios", tableElements: usersTableElements, tableHeaders: usersTableHeaders,
+    titleTable: "Usuarios", tableElements: usersTableElements, tableHeaders: usersTableHeaders, tableHeight: 400,
     buttonText: `${sortedUsers.length > 5 ? "Ver Más" : "Ir a Usuarios"}`, handleButtonClick: handleGoToUsers, backgroundColor: "lavender", tableWidth: "100%",
   }
 
@@ -202,7 +202,7 @@ const DashboardAdmin = () => {
 
           {!openLoaderDashboard &&
             <>
-              <Grid item xs={10}>
+              <Grid item xs={11}>
                 <TableWithHeader {...propsToAlbumsTable} />
               </Grid>
 

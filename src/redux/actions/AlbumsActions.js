@@ -122,8 +122,8 @@ export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery, targetD
 
   let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, targetDelivery === 'only-apple', dispatch);
   if (responseDelivery === "ERROR") return "PUBLISHED";
-  albumData.state = (deliverToApple && !targetDelivery === 'only-apple') ? "DELIVERED_NEED_APPLE_REVISION" : "DELIVERED";
-
+  albumData.state = (deliverToApple && targetDelivery !== 'only-apple') ? "DELIVERED_NEED_APPLE_REVISION" : "DELIVERED";
+  
   await FirestoreServices.updateElementFS(albumData, { state: albumData.state }, albumData.id, "albums", dispatch);
 
   writeCloudLog(`Album ${albumData.title} ${albumData.state} with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");

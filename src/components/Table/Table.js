@@ -14,10 +14,10 @@ const useStyles = makeStyles(styles);
 
 export default function CustomTable(props) {
   const classes = useStyles();
-  const { tableHead, tableData, tableHeaderColor } = props;
+  const { tableHead, tableData, tableHeaderColor, tableContainerSx } = props;
   return (
     <div className={classes.tableResponsive}>
-      <TableContainer sx={{ maxHeight: 375, minHeight: 200 }}>
+      <TableContainer sx={tableContainerSx}>
         <Table className={classes.table}>
           {tableHead !== undefined ? (
             <TableHead className={classes[tableHeaderColor + "TableHeader"]}>

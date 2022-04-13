@@ -9,10 +9,10 @@ import CardFooter from "components/Card/CardFooter";
 
 import { AddCircleOutline } from '@mui/icons-material/';
 
-const TableWithHeader = ({ titleTable, tableElements, tableHeaders, buttonText, handleButtonClick, backgroundColor, tableWidth }) => {
-  
+const TableWithHeader = ({ titleTable, tableElements, tableHeaders, buttonText, handleButtonClick, backgroundColor, tableWidth, tableHeight }) => {
+
   const cardStyle = { alignItems: "center", backgroundColor };
-  
+
   return (
     <Grid container item xs={12}>
       <Card style={cardStyle}>
@@ -26,6 +26,7 @@ const TableWithHeader = ({ titleTable, tableElements, tableHeaders, buttonText, 
             tableHeaderColor="primary"
             tableHead={tableHeaders}
             tableData={tableElements}
+            tableContainerSx={{ maxHeight: tableHeight, minHeight: 200 }}
           />
         </CardBody>
 

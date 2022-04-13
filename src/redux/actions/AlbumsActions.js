@@ -18,10 +18,9 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, 
   let deliveryToApple = Boolean(album.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
   album.title = myTracks.length === 1 ? myTracks[0].title : album.title;
   album.format = deliveryToApple ? getOurFormatByCantOfTracks(myTracks.length, deliveryToApple) : album.format || getOurFormatByCantOfTracks(myTracks.length);
+  album.ownerId = userId; album.ownerEmail = ownerEmail;
+
   let formDataAlbum = createAlbumModel(album, explicit, myTracks, artistsInvitedStore, deliveryToApple);
-  album.ownerId = userId;
-  album.ownerEmail = ownerEmail;
-  
 
   writeCloudLog(`creating album ${album.title} y email: ${ownerEmail}, model to send fuga `, album, { notError: "not error" }, "info");
 
@@ -113,7 +112,7 @@ export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
 // Asumo que el album cumple los requisitos para realizar el delivery.
 export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery, targetDelivery) => async dispatch => {
   albumData.dsps = dspsToDelivery;
-  let deliverToApple = Boolean(albumData.dsps.find(dspInfo => dspInfo.dspName !== "Apple Music"));
+  let deliverToApple = Boolean(albumData.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
 
   let responsePublish = await BackendCommunication.publishAlbumFuga(albumData, dispatch);
   if (responsePublish === "ERROR") return "ERROR";

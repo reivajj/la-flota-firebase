@@ -49,9 +49,11 @@ export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedSt
   if (dataAlbum.subgenre) formDataAlbum.append("subgenre", dataAlbum.subgenre);
   if (dataAlbum.version) formDataAlbum.append("release_version", dataAlbum.version);
 
-  formDataAlbum.append("extra_1", `Cantidad de Tracks total: ${myTracks.length}`);
-  formDataAlbum.append("extra_2", "ALGO DE LAS DSP");
-  formDataAlbum.append("extra_3", dataAlbum.id);
+  formDataAlbum.append("extra_1", `Cantidad de Tracks total:${myTracks.length}`);
+  formDataAlbum.append("extra_2", `Deliver to apple:${deliverToApple}`);
+  formDataAlbum.append("extra_3", `Id en la app del lanzamiento:${dataAlbum.id}`);
+  formDataAlbum.append("extra_4", `Email en la app del user:${dataAlbum.ownerEmail}`);
+  formDataAlbum.append("extra_5", `Id en la app del user:${dataAlbum.ownerId}`);
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
 

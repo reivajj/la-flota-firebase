@@ -7,7 +7,7 @@ import TableList from 'views/TableList/TableList.js';
 import Typography from 'views/Typography/Typography.js';
 import Icons from 'views/Icons/Icons.js';
 import Notifications from "views/Notifications/Notifications.js";
-import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
+// import UpgradeToPro from 'views/UpgradeToPro/UpgradeToPro.js';
 import AuthLayout from 'layouts/Auth.js';
 import SignInSide from 'views/Login/SingInSide';
 // import SignUp from 'views/Login/SignUp';
@@ -22,6 +22,7 @@ import AlbumTotalInfo from './views/Albums/AlbumTotalInfo';
 import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 import MyUsers from './views/Users/MyUsers';
 import Test from './views/ViewTest/Test';
+import Subscription from './views/Subscription/Subscription';
 
 const Rutas = () => {
 
@@ -41,6 +42,7 @@ const Rutas = () => {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="dashboard-admin" element={<DashboardAdmin />} />
           <Route path="user" element={<UserProfile />} />
+          <Route path="subscription" element={<Subscription />} />
           <Route path="table" element={<TableList />} />
           <Route path="typography" element={<Typography />} />
           <Route path="icons" element={<Icons />} />
@@ -61,7 +63,7 @@ const Rutas = () => {
 
           <Route path="test" element={<Test />} />
 
-          <Route path="upgrade-to-pro" element={<UpgradeToPro />} />
+          {/* <Route path="upgrade-to-pro" element={<UpgradeToPro />} /> */}
 
         </Route>
 

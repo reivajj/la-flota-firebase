@@ -6,7 +6,7 @@ import { Grid, Typography, Card, ButtonBase, IconButton, CircularProgress, Backd
 // import { deleteAlbumDialogText } from "utils/textToShow.utils";
 // import { deleteAlbumRedux } from "redux/actions/AlbumsActions";
 import { useSelector, useDispatch } from 'react-redux';
-import { getAlbumById, getArtistNameAndPrimaryOfAlbum, getStateColor, getOurStateFromFugaState } from "utils/albums.utils";
+import { getAlbumById, getStateColor, getOurStateFromFugaState } from "utils/albums.utils";
 import { targetUrl } from "services/BackendCommunication";
 import { useFetch } from '../../customHooks/useAxios';
 import { getLocalDateString } from '../../utils/timeRelated.utils';

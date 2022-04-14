@@ -27,6 +27,8 @@ export const getSubStatusColor = subId => {
   return colorFromSubIdState[subId];
 }
 
+export const userIsActive = userStatus => userStatus === "ACTIVA";
+
 export const getUsersPropsForDataTable = users => {
   let usersPropsToTable = [];
   users.forEach(user => {

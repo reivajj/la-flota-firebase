@@ -8,6 +8,7 @@ import UserProfile from "views/UserProfile/UserProfile";
 import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 import MyUsers from './views/Users/MyUsers';
 import Test from './views/ViewTest/Test';
+import Subscription from './views/Subscription/Subscription';
 
 const dashboardRoutes = [
   {
@@ -57,6 +58,13 @@ const dashboardRoutes = [
     name: "Perfil",
     icon: Person,
     component: UserProfile,
+    layout: "/admin"
+  },
+  {
+    path: "/subscription",
+    name: "Suscripción",
+    icon: Person,
+    component: Subscription,
     layout: "/admin"
   },
   {

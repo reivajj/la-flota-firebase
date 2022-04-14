@@ -59,8 +59,9 @@ const AppleCriteriaDialog = (props) => {
         <DialogContentText key={2}>
           <ul>
             <li>Todos los nombres de artistas que estén en el arte de tapa, deberán estar presentes en la metadata del lanzamiento.</li>
-            <li>El título del lanzamiento debe coincidir 100% con el que aparece en el arte de tapa</li>
-            <li>"Volumen" y "Parte" deben estar abreviadas como: Vol. 1 / Pt. 1</li>
+            <li>El título del lanzamiento debe coincidir 100% con el que aparece en el arte de tapa.</li>
+            <li>"Volumen" y "Parte" deben estar abreviadas como: Vol. 1 / Pt. 1.</li>
+            <li>Sólo menciona a un artista en el nivel del lanzamiento si participa en todas las canciones del mismo.</li>
           </ul>
         </DialogContentText>
 

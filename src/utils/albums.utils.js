@@ -12,6 +12,7 @@ import { spotifyUriNotValidText } from './textToShow.utils';
 import { warningAppleDelivery } from 'utils/textToShow.utils';
 import { singleTrackDifferentNamesTitle } from './textToShow.utils';
 import { updateAddingAlbumRedux } from 'redux/actions/AlbumsActions';
+import { subscriptionsStatusLaFlota } from 'variables/varias';
 
 export const formatEquivalence = { Álbum: "ALBUM", EP: "EP", Single: "SINGLE" };
 
@@ -144,9 +145,10 @@ export const getFormatByCantOfTracks = cantTracks => {
 }
 
 export const getOurFormatByCantOfTracks = (cantTracks, deliverToApple) => {
-  if (cantTracks === deliverToApple ? 3 : 1) return "Single";
-  if (cantTracks > deliverToApple ? 3 : 1 && cantTracks < 6) return "EP";
-  if (cantTracks >= 6) return "Álbum";
+  let maxTracksSingle = deliverToApple ? 3 : 1;
+  if (cantTracks <= maxTracksSingle) return "Single";
+  if (cantTracks > maxTracksSingle && cantTracks <= 6) return "EP";
+  if (cantTracks > 6) return "Álbum";
   return "Single";
 }
 
@@ -168,4 +170,10 @@ export const getDeliveredContentTextDialog = deliveryState => {
   if (deliveryState === 'published') return publishedSuccessText;
   if (deliveryState === 'delivered') return deliveredSuccessText;
   return errorDeliveredText;
+}
+
+export const userIsActive = userStatus => {
+  if (!userStatus) return true;
+  let subsNotActives = subscriptionsStatusLaFlota.map(sub => sub.id).filter(sub => sub !== "ACTIVA");
+  return !subsNotActives.includes(userStatus);
 }

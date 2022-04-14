@@ -48,7 +48,7 @@ import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
-import { checkFieldsCreateAlbum, getDeliveredContentTextDialog, getDeliveredTitleDialog, adaptAlbumToAppleFormat } from '../../utils/albums.utils';
+import { checkFieldsCreateAlbum, getDeliveredContentTextDialog, getDeliveredTitleDialog, adaptAlbumToAppleFormat, userIsActive } from '../../utils/albums.utils';
 
 
 const NewAlbum = ({ editing }) => {
@@ -58,8 +58,8 @@ const NewAlbum = ({ editing }) => {
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
 
-  const currentUserData = useSelector(store => store.userData);
-  const currentUserId = currentUserData.id; const currentUserEmail = currentUserData.email;
+  const userData = useSelector(store => store.userData);
+  const currentUserId = userData.id; const currentUserEmail = userData.email;
   const currentAlbumData = useSelector(store => store.albums.addingAlbum);
   const myArtists = useSelector(store => store.artists.artists);
   const myLabels = useSelector(store => store.labels.labels);
@@ -292,7 +292,7 @@ const NewAlbum = ({ editing }) => {
 
   const handlerSubgenreChoose = event => {
     if (event.target.value === "Crea tu propio subgénero") return;
-    let subgenreId = currentUserData.subgenerosPropios.find(g => g.name === event.target.value).id;
+    let subgenreId = userData.subgenerosPropios.find(g => g.name === event.target.value).id;
     setTrackData({ ...trackData, subgenre: subgenreId, subgenreName: event.target.value });
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: subgenreId, subgenreName: event.target.value }));
   }
@@ -346,378 +346,379 @@ const NewAlbum = ({ editing }) => {
     navigate('/admin/albums');
   }
 
-  return (
-    <Grid container textAlign="center">
-      <Card style={{ alignItems: "center", borderRadius: "30px" }} >
+  return userIsActive(userData.userStatus)
+    ? (
+      <Grid container textAlign="center">
+        <Card style={{ alignItems: "center", borderRadius: "30px" }} >
 
-        <SuccessDialog isOpen={deliveryState !== 'none' && deliveryState !== 'processing'} title={successDialogTitle} contentTexts={successDialogText}
-          handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" size="sm" />
+          <SuccessDialog isOpen={deliveryState !== 'none' && deliveryState !== 'processing'} title={successDialogTitle} contentTexts={successDialogText}
+            handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" size="sm" />
 
-        <DspsDialog isOpen={openSelectDSP} setIsOpen={setOpenSelectDSP} currentAlbumData={currentAlbumData} />
+          <DspsDialog isOpen={openSelectDSP} setIsOpen={setOpenSelectDSP} currentAlbumData={currentAlbumData} />
 
-        <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Seleccionalo, en vez de crear uno nuevo.`]]}
-          handleClose={() => setSelloInStore(false)} successImageSource="/images/successArtists.jpg" />
+          <SuccessDialog isOpen={selloInStore} title={`El sello que intentas crear, ya existe asociado a tu cuenta.`} contentTexts={[[`Seleccionalo, en vez de crear uno nuevo.`]]}
+            handleClose={() => setSelloInStore(false)} successImageSource="/images/successArtists.jpg" />
 
-        <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
-          handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
+          <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
+            handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
 
-        <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={handleCloseInfoDialog}
-          title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
+          <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={handleCloseInfoDialog}
+            title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
 
-        <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
-          title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
-          buttonState={buttonState} />
+          <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
+            title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
+            buttonState={buttonState} />
 
-        <EditOrAddFieldsDialog isOpen={openAddLabel} handleCloseDialog={() => setOpenAddLabel(false)} handleConfirm={handleCreateLabel}
-          title="Crea un Sello" subtitle="Puedes agregar un nuevo sello." labelTextField="Nuevo sello." loading={openLoaderLabelCreate}
-          buttonState={buttonState} />
+          <EditOrAddFieldsDialog isOpen={openAddLabel} handleCloseDialog={() => setOpenAddLabel(false)} handleConfirm={handleCreateLabel}
+            title="Crea un Sello" subtitle="Puedes agregar un nuevo sello." labelTextField="Nuevo sello." loading={openLoaderLabelCreate}
+            buttonState={buttonState} />
 
-        <Grid item xs={12} sx={{ width: "60%" }}>
-          <CardHeader color="primary">
-            <Typography sx={cardTitleWhiteStyles}>Crear Lanzamiento</Typography>
-          </CardHeader>
-        </Grid>
-
-        <Grid container item xs={12} paddingTop={4}>
-
-          <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage}
-            textButton={currentAlbumData.imagenUrl === "" ? "Arte de Tapa" : "Cambiar"} progress={progress} message={messageForCover}
-            helperText={albumCoverHelperText}
-          />
-
-          <NewArtist editing={false} view="dialog" isOpen={openAddArtistDialog} handleClose={() => setOpenAddArtistDialog(false)} />
-
-          <Grid container item xs={12} >
-
-            <Grid item xs={12}>
-              <Button
-                variant="contained"
-                onClick={() => setOpenAddArtistDialog(true)}
-                sx={buttonAddArtist}
-                endIcon={<AddCircleOutline />}>
-                Crear Artista Principal
-              </Button>
-            </Grid>
-
-            <Grid item xs={12} ref={topElementRef}>
-              <TextFieldWithInfo
-                name="nombreArtist"
-                sx={textFieldLaFlotaArtistStyle}
-                autoFocus
-                required
-                select
-                label="Artista Principal"
-                value={currentAlbumData.nombreArtist}
-                onChange={handlerArtistChoose}
-                helperText="Selecciona al Artista Principal, si es que ya lo tienes en el sistema. Si no, primero debés crear un Artista."
-                selectItems={myArtists}
-                selectKeyField="id"
-                selectValueField="name"
-                validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: validator }}
-              />
-            </Grid>
-
+          <Grid item xs={12} sx={{ width: "60%" }}>
+            <CardHeader color="primary">
+              <Typography sx={cardTitleWhiteStyles}>Crear Lanzamiento</Typography>
+            </CardHeader>
           </Grid>
 
-          <AddOtherArtistsAlbumForm
-            checkBoxLabel="¿Lanzamiento Colaborativo?"
-            checkBoxHelper={lanzamientoColaborativoTooltip}
-            checkBoxColor="#9c27b0"
-            buttonColor="#9c27b0"
-            validator={validator}
-          />
+          <Grid container item xs={12} paddingTop={4}>
 
-          {(currentAlbumData.dsps.filter(dsp => dsp.checked).length > 0 || showingNotBasicAlbumFields) &&
-            <Grid item xs={12}>
-              <Button variant="contained" onClick={() => handleSelectDSPs()} sx={buttonAddArtist} endIcon={<Edit />}>
-                Editar DSPS
-              </Button>
-            </Grid>}
+            <ImageInput key="new-album" imagenUrl={currentAlbumData.imagenUrl} onClickAddImage={onClickAddImage}
+              textButton={currentAlbumData.imagenUrl === "" ? "Arte de Tapa" : "Cambiar"} progress={progress} message={messageForCover}
+              helperText={albumCoverHelperText}
+            />
 
-          <Grid container item xs={12}>
-            <Grid item xs={showingNotBasicAlbumFields ? 6 : 12}>
-              <TextFieldWithAddElement
-                name="label_name"
-                sx={showingNotBasicAlbumFields ? textFieldStyle : textFieldLaFlotaArtistStyle}
-                required
-                select
-                label="Sello Discográfico"
-                value={currentAlbumData.label_name}
-                onChange={handlerLabelChoose}
-                helperText="Selecciona el sello discográfico."
-                selectItems={myLabels}
-                selectKeyField="name"
-                selectValueField="name"
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: validator }}
-                onClickAddElement={() => setOpenAddLabel(true)}
-                addPlaceholder="Crea un nuevo sello"
-              />
+            <NewArtist editing={false} view="dialog" isOpen={openAddArtistDialog} handleClose={() => setOpenAddArtistDialog(false)} />
+
+            <Grid container item xs={12} >
+
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenAddArtistDialog(true)}
+                  sx={buttonAddArtist}
+                  endIcon={<AddCircleOutline />}>
+                  Crear Artista Principal
+                </Button>
+              </Grid>
+
+              <Grid item xs={12} ref={topElementRef}>
+                <TextFieldWithInfo
+                  name="nombreArtist"
+                  sx={textFieldLaFlotaArtistStyle}
+                  autoFocus
+                  required
+                  select
+                  label="Artista Principal"
+                  value={currentAlbumData.nombreArtist}
+                  onChange={handlerArtistChoose}
+                  helperText="Selecciona al Artista Principal, si es que ya lo tienes en el sistema. Si no, primero debés crear un Artista."
+                  selectItems={myArtists}
+                  selectKeyField="id"
+                  selectValueField="name"
+                  validatorProps={{ restrictions: 'required', message: "Debes seleccionar al Artista del Nuevo Lanzamiento.", validator: validator }}
+                />
+              </Grid>
+
             </Grid>
 
-            {showingNotBasicAlbumFields && <Grid item xs={6}>
-              <TextFieldWithInfo
-                name="title"
-                sx={textFieldStyle}
-                required
-                label="Título del Lanzamiento"
-                value={currentAlbumData.title}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "title")}
-                validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
-              />
+            <AddOtherArtistsAlbumForm
+              checkBoxLabel="¿Lanzamiento Colaborativo?"
+              checkBoxHelper={lanzamientoColaborativoTooltip}
+              checkBoxColor="#9c27b0"
+              buttonColor="#9c27b0"
+              validator={validator}
+            />
+
+            {(currentAlbumData.dsps.filter(dsp => dsp.checked).length > 0 || showingNotBasicAlbumFields) &&
+              <Grid item xs={12}>
+                <Button variant="contained" onClick={() => handleSelectDSPs()} sx={buttonAddArtist} endIcon={<Edit />}>
+                  Editar DSPS
+                </Button>
+              </Grid>}
+
+            <Grid container item xs={12}>
+              <Grid item xs={showingNotBasicAlbumFields ? 6 : 12}>
+                <TextFieldWithAddElement
+                  name="label_name"
+                  sx={showingNotBasicAlbumFields ? textFieldStyle : textFieldLaFlotaArtistStyle}
+                  required
+                  select
+                  label="Sello Discográfico"
+                  value={currentAlbumData.label_name}
+                  onChange={handlerLabelChoose}
+                  helperText="Selecciona el sello discográfico."
+                  selectItems={myLabels}
+                  selectKeyField="name"
+                  selectValueField="name"
+                  validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: validator }}
+                  onClickAddElement={() => setOpenAddLabel(true)}
+                  addPlaceholder="Crea un nuevo sello"
+                />
+              </Grid>
+
+              {showingNotBasicAlbumFields && <Grid item xs={6}>
+                <TextFieldWithInfo
+                  name="title"
+                  sx={textFieldStyle}
+                  required
+                  label="Título del Lanzamiento"
+                  value={currentAlbumData.title}
+                  onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "title")}
+                  validatorProps={{ restrictions: 'required|max:50', message: "Debes ingresar el Título del Lanzamiento.", validator: validator }}
+                />
+              </Grid>}
+            </Grid>
+
+            {showingNotBasicAlbumFields && <Grid container item xs={12}>
+              <Grid item xs={6}>
+                <TextFieldWithInfoImage
+                  name="version"
+                  sx={textFieldStyle}
+                  label="Versión (Vivo, Acústico...)"
+                  value={currentAlbumData.version}
+                  helperText="Puedes especificar si el lanzamiento es una versión de otro lanzamiento. Por Ejemplo, una versión en Vivo o Acústica."
+                  onChange={event => handlerBasicUpdateAlbum(event.target.value, "version")}
+                  imageSource="/images/versionReleaseHelp.png"
+                  contentTexts={[["No debés escribir los paréntesis, se incluirán solos."]]}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextFieldWithInfo
+                  name="format"
+                  sx={textFieldStyle}
+                  select
+                  label="Formato del Lanzamiento"
+                  value={currentAlbumData.format}
+                  onChange={event => handlerBasicUpdateAlbum(event.target.value, "format")}
+                  helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Lanzamiento."
+                  selectItems={["Single", "EP", "Álbum"]}
+                />
+              </Grid>
             </Grid>}
+
           </Grid>
 
           {showingNotBasicAlbumFields && <Grid container item xs={12}>
-            <Grid item xs={6}>
-              <TextFieldWithInfoImage
-                name="version"
-                sx={textFieldStyle}
-                label="Versión (Vivo, Acústico...)"
-                value={currentAlbumData.version}
-                helperText="Puedes especificar si el lanzamiento es una versión de otro lanzamiento. Por Ejemplo, una versión en Vivo o Acústica."
-                onChange={event => handlerBasicUpdateAlbum(event.target.value, "version")}
-                imageSource="/images/versionReleaseHelp.png"
-                contentTexts={[["No debés escribir los paréntesis, se incluirán solos."]]}
-              />
-            </Grid>
+            <Grid container item xs={6}>
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="c_year"
+                  sx={textFieldStyle}
+                  required
+                  select
+                  label="(C) Año de Copyright"
+                  value={currentAlbumData.c_year}
+                  onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_year")}
+                  helperText="Año en que esta grabación fue creada."
+                  selectItems={yearsArray}
+                  validatorProps={{
+                    restrictions: 'required|numeric', message: "Debes seleccionar un año de Copyright del Lanzamiento.", validator,
+                  }}
+                />
+              </Grid>
 
-            <Grid item xs={6}>
-              <TextFieldWithInfo
-                name="format"
-                sx={textFieldStyle}
-                select
-                label="Formato del Lanzamiento"
-                value={currentAlbumData.format}
-                onChange={event => handlerBasicUpdateAlbum(event.target.value, "format")}
-                helperText="Elige el formato del lanzamiento, segun la cantidad de canciones o la duración del Lanzamiento."
-                selectItems={["Single", "EP", "Álbum"]}
-              />
-            </Grid>
-          </Grid>}
-
-        </Grid>
-
-        {showingNotBasicAlbumFields && <Grid container item xs={12}>
-          <Grid container item xs={6}>
-            <Grid item xs={12}>
-              <TextFieldWithInfo
-                name="c_year"
-                sx={textFieldStyle}
-                required
-                select
-                label="(C) Año de Copyright"
-                value={currentAlbumData.c_year}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_year")}
-                helperText="Año en que esta grabación fue creada."
-                selectItems={yearsArray}
-                validatorProps={{
-                  restrictions: 'required|numeric', message: "Debes seleccionar un año de Copyright del Lanzamiento.", validator,
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextFieldWithInfo
-                name="c_line"
-                sx={textFieldStyle}
-                required
-                label="Copyright"
-                value={currentAlbumData.c_line}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_line")}
-                helperText="El dueño de los Derechos de Autor.
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="c_line"
+                  sx={textFieldStyle}
+                  required
+                  label="Copyright"
+                  value={currentAlbumData.c_line}
+                  onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "c_line")}
+                  helperText="El dueño de los Derechos de Autor.
               → Si tu lanzamiento contiene Covers debes agregar el nombre de los autores originales acá (Por ej.: Luis Alberto Spinetta)."
+                  validatorProps={{
+                    restrictions: 'required|max:200', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
+                    validator
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container item xs={6}>
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  sx={textFieldStyle}
+                  name="p_year"
+                  required
+                  select
+                  label="(P) Año de Publishing"
+                  value={currentAlbumData.p_year}
+                  onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
+                  helperText="Año en que esta grabación fue publicada."
+                  selectItems={yearsArray}
+                  validatorProps={{
+                    restrictions: 'required|numeric', message: "Debes seleccionar un año de Publishing del Lanzamiento.",
+                    validator
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextFieldWithInfo
+                  name="p_line"
+                  sx={textFieldStyle}
+                  required
+                  label="Publisher"
+                  value={currentAlbumData.p_line}
+                  onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
+                  helperText="El dueño de los Derechos de Publicación de esta grabación.
+            → Ej. 1: Fito Paez | Ej. 2: Sony Music"
+                  validatorProps={{
+                    restrictions: 'required|max:200', message: "Por favor indicá el publicador del lanzamiento.",
+                    validator
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+          </Grid>}
+
+          {showingNotBasicAlbumFields && <Grid container item xs={12}>
+
+            <Grid item xs={6}>
+              <TextFieldWithInfo
+                name="upc"
+                sx={textFieldStyle}
+                label="UPC"
+                value={currentAlbumData.upc}
+                helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
+                onChange={handlerUPC}
                 validatorProps={{
-                  restrictions: 'required|max:200', message: "Por favor indicá el dueño de los derechos de autor del lanzamiento.",
-                  validator
+                  restrictions: 'min:13|max:13|numeric', message: "Formato inválido: El UPC es un código de 13 números",
+                  validator: validator
                 }}
               />
             </Grid>
-          </Grid>
 
-          <Grid container item xs={6}>
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextFieldWithInfo
+                name="language"
                 sx={textFieldStyle}
-                name="p_year"
                 required
                 select
-                label="(P) Año de Publishing"
-                value={currentAlbumData.p_year}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_year")}
-                helperText="Año en que esta grabación fue publicada."
-                selectItems={yearsArray}
-                validatorProps={{
-                  restrictions: 'required|numeric', message: "Debes seleccionar un año de Publishing del Lanzamiento.",
-                  validator
-                }}
+                label="Idioma Principal del Lanzamiento"
+                value={currentAlbumData.languageName}
+                onChange={handlerLanguageChoose}
+                selectItems={languagesFuga}
+                selectKeyField="id"
+                selectValueField="name"
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextFieldWithInfo
-                name="p_line"
+                name="generosMusicales"
                 sx={textFieldStyle}
                 required
-                label="Publisher"
-                value={currentAlbumData.p_line}
-                onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
-                helperText="El dueño de los Derechos de Publicación de esta grabación.
-            → Ej. 1: Fito Paez | Ej. 2: Sony Music"
-                validatorProps={{
-                  restrictions: 'required|max:200', message: "Por favor indicá el publicador del lanzamiento.",
-                  validator
-                }}
+                select
+                label="Género Musical Principal"
+                value={currentAlbumData.genreName}
+                onChange={handlerGenreChoose}
+                selectItems={allFugaGenres}
+                selectKeyField="id"
+                selectValueField="name"
+                validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Lanzamiento.", validator }}
               />
             </Grid>
-          </Grid>
 
-        </Grid>}
-
-        {showingNotBasicAlbumFields && <Grid container item xs={12}>
-
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="upc"
-              sx={textFieldStyle}
-              label="UPC"
-              value={currentAlbumData.upc}
-              helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
-              onChange={handlerUPC}
-              validatorProps={{
-                restrictions: 'min:13|max:13|numeric', message: "Formato inválido: El UPC es un código de 13 números",
-                validator: validator
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="language"
-              sx={textFieldStyle}
-              required
-              select
-              label="Idioma Principal del Lanzamiento"
-              value={currentAlbumData.languageName}
-              onChange={handlerLanguageChoose}
-              selectItems={languagesFuga}
-              selectKeyField="id"
-              selectValueField="name"
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <TextFieldWithInfo
-              name="generosMusicales"
-              sx={textFieldStyle}
-              required
-              select
-              label="Género Musical Principal"
-              value={currentAlbumData.genreName}
-              onChange={handlerGenreChoose}
-              selectItems={allFugaGenres}
-              selectKeyField="id"
-              selectValueField="name"
-              validatorProps={{ restrictions: 'required', message: "Debés seleccionar el género principal del Lanzamiento.", validator }}
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <TextFieldWithAddElement
-              name="subgenerosMusicales"
-              sx={textFieldStyle}
-              select
-              label="Género Musical Secundario"
-              value={currentAlbumData.subgenreName}
-              onChange={handlerSubgenreChoose}
-              selectItems={currentUserData.subgenerosPropios || []}
-              selectKeyField="id"
-              selectValueField="name"
-              onClickAddElement={() => setOpenAddSubgenre(true)}
-              addPlaceholder="Crea tu propio subgénero"
-            />
-          </Grid>
-        </Grid>}
-
-        {showingNotBasicAlbumFields && <Grid container item xs={12} paddingTop={3} justifyContent="center">
-
-          <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
-
-          <SelectDateInputDDMMYYYY type="release-date" dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
-            setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "dayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "month")}
-            setYear={event => handlerBasicUpdateAlbum(event.target.value, "year")} simpleValidator={validator} />
-
-          <CheckboxWithInfo
-            label="¿El Lanzamiento fue publicado en el pasado?"
-            checked={currentAlbumData.oldRelease}
-            onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "oldRelease")}
-            checkBoxHelper={oldReleaseCheckBoxHelper}
-            color="#9c27b0"
-          />
-
-          {currentAlbumData.oldRelease &&
-            <SelectDateInputDDMMYYYY type="old-release-date" dayValue={currentAlbumData.originalDayOfMonth} monthValue={currentAlbumData.originalMonth} yearValue={currentAlbumData.originalYear}
-              setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalMonth")}
-              setYear={event => handlerBasicUpdateAlbum(event.target.value, "originalYear")} simpleValidator={validator} />
-          }
-
-          <CheckboxWithInfo
-            label="¿Permitir pre-comprar antes del lanzamiento?"
-            checked={currentAlbumData.preOrder}
-            onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "preOrder")}
-            checkBoxHelper={preSaleCheckBoxHelper}
-            color="#9c27b0"
-          />
-
-          {currentAlbumData.preOrder &&
-            <SelectDateInputDDMMYYYY type="preOrder" dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
-              setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderMonth")}
-              setYear={event => handlerBasicUpdateAlbum(event.target.value, "preOrderYear")} simpleValidator={validator} />
-          }
-          {currentAlbumData.preOrder &&
-            <CheckboxWithInfo
-              label="Habilitar pre-escucha para la pre-compra"
-              checked={currentAlbumData.preview}
-              onChecked={event => handlerBasicUpdateAlbum(event.target.checked, "preview")}
-              color="#9c27b0"
-              checkBoxHelper="Permitir que los usuarios escuchen un fragmento (30 segundos) de las canciones durante la etapa de Pre-Compra."
-            />
-          }
-
-        </Grid>}
-
-        {showingNotBasicAlbumFields &&
-          <Grid container item xs={12} paddingTop={4} justifyContent="center">
-            <Grid item xs={8} >
-              <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
+            <Grid item xs={6}>
+              <TextFieldWithAddElement
+                name="subgenerosMusicales"
+                sx={textFieldStyle}
+                select
+                label="Género Musical Secundario"
+                value={currentAlbumData.subgenreName}
+                onChange={handlerSubgenreChoose}
+                selectItems={userData.subgenerosPropios || []}
+                selectKeyField="id"
+                selectValueField="name"
+                onClickAddElement={() => setOpenAddSubgenre(true)}
+                addPlaceholder="Crea tu propio subgénero"
+              />
             </Grid>
           </Grid>}
 
-        <Grid item xs={12}>
-          <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
-            tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />
-        </Grid>
+          {showingNotBasicAlbumFields && <Grid container item xs={12} paddingTop={3} justifyContent="center">
 
-        <Grid item xs={12} paddingTop={4}>
-          <CardFooter style={{ display: 'inline-flex' }}>
-            {(needArtistLabelCoverAndContinue && currentAlbumData.basicFieldsComplete) || openLoader
-              ? <ProgressButton
-                textButton={buttonText}
-                loading={openLoader}
-                buttonState={buttonState}
-                onClickHandler={allFieldsValidCreateAlbum}
-                // onClickHandler={testingNewRelease}
-                noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
-                noFab={false} />
-              : <Button onClick={coverLabelArtistAllValids}>
-                Continuar
-              </Button>
+            <TypographyWithInfo infoTooltip={releaseDateInfoTooltip} title="Fecha del Lanzamiento" />
+
+            <SelectDateInputDDMMYYYY type="release-date" dayValue={currentAlbumData.dayOfMonth} monthValue={currentAlbumData.month} yearValue={currentAlbumData.year}
+              setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "dayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "month")}
+              setYear={event => handlerBasicUpdateAlbum(event.target.value, "year")} simpleValidator={validator} />
+
+            <CheckboxWithInfo
+              label="¿El Lanzamiento fue publicado en el pasado?"
+              checked={currentAlbumData.oldRelease}
+              onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "oldRelease")}
+              checkBoxHelper={oldReleaseCheckBoxHelper}
+              color="#9c27b0"
+            />
+
+            {currentAlbumData.oldRelease &&
+              <SelectDateInputDDMMYYYY type="old-release-date" dayValue={currentAlbumData.originalDayOfMonth} monthValue={currentAlbumData.originalMonth} yearValue={currentAlbumData.originalYear}
+                setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "originalMonth")}
+                setYear={event => handlerBasicUpdateAlbum(event.target.value, "originalYear")} simpleValidator={validator} />
             }
-          </CardFooter>
-        </Grid>
-      </Card >
 
-    </Grid >
-  )
+            <CheckboxWithInfo
+              label="¿Permitir pre-comprar antes del lanzamiento?"
+              checked={currentAlbumData.preOrder}
+              onChecked={(event) => handlerBasicUpdateAlbum(event.target.checked, "preOrder")}
+              checkBoxHelper={preSaleCheckBoxHelper}
+              color="#9c27b0"
+            />
+
+            {currentAlbumData.preOrder &&
+              <SelectDateInputDDMMYYYY type="preOrder" dayValue={currentAlbumData.preOrderDayOfMonth} monthValue={currentAlbumData.preOrderMonth} yearValue={currentAlbumData.preOrderYear}
+                setDayOfMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderDayOfMonth")} setMonth={event => handlerBasicUpdateAlbum(event.target.value, "preOrderMonth")}
+                setYear={event => handlerBasicUpdateAlbum(event.target.value, "preOrderYear")} simpleValidator={validator} />
+            }
+            {currentAlbumData.preOrder &&
+              <CheckboxWithInfo
+                label="Habilitar pre-escucha para la pre-compra"
+                checked={currentAlbumData.preview}
+                onChecked={event => handlerBasicUpdateAlbum(event.target.checked, "preview")}
+                color="#9c27b0"
+                checkBoxHelper="Permitir que los usuarios escuchen un fragmento (30 segundos) de las canciones durante la etapa de Pre-Compra."
+              />
+            }
+
+          </Grid>}
+
+          {showingNotBasicAlbumFields &&
+            <Grid container item xs={12} paddingTop={4} justifyContent="center">
+              <Grid item xs={8} >
+                <TracksTable tracksTableData={tracksDataTable} handleClickAddTrack={handleClickAddTrack} />
+              </Grid>
+            </Grid>}
+
+          <Grid item xs={12}>
+            <NewTrackDialog openDialog={openNewTrackDialog} setOpenNewTrackDialog={setOpenNewTrackDialog} setTracksDataTable={setTracksDataTable}
+              tracksDataTable={tracksDataTable} trackData={trackData} setTrackData={setTrackData} circularProgress={(progress) => trackUploadProgress(progress)} />
+          </Grid>
+
+          <Grid item xs={12} paddingTop={4}>
+            <CardFooter style={{ display: 'inline-flex' }}>
+              {(needArtistLabelCoverAndContinue && currentAlbumData.basicFieldsComplete) || openLoader
+                ? <ProgressButton
+                  textButton={buttonText}
+                  loading={openLoader}
+                  buttonState={buttonState}
+                  onClickHandler={allFieldsValidCreateAlbum}
+                  // onClickHandler={testingNewRelease}
+                  noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
+                  noFab={false} />
+                : <Button onClick={coverLabelArtistAllValids}>
+                  Continuar
+                </Button>
+              }
+            </CardFooter>
+          </Grid>
+        </Card >
+
+      </Grid >
+    ) : <p>TU CUENTA NO ESTA ACTIVA, VER SUSCRIPCIÓN.</p>
 }
 
 export default NewAlbum;

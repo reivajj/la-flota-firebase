@@ -1,17 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
+import { useDispatch, useSelector } from 'react-redux';
 // core components
 import AdminNavbarLinks from "./AdminNavbarLinks.js";
+import { container, grayColor } from "assets/jss/material-dashboard-react.js";
+import useFirestoreQuery from '../../customHooks/useFirestoreQuery';
+import { getDocIfLastUpdateFS } from '../../services/FirestoreServices';
+import { userDataAddInfoStore } from '../../redux/actions/UserDataActions';
 
-import {
-  container,
-  // defaultFont,
-  grayColor
-} from "assets/jss/material-dashboard-react.js";
+const NavbarMain = (props) => {
+  const dispatch = useDispatch();
 
-export default function Header(props) {
+  const userData = useSelector(store => store.userData);
+
+  const stateUserSnap = useFirestoreQuery(getDocIfLastUpdateFS("users", userData?.id || 0, userData?.lastUpdateTS || 0));
+
+  useEffect(() => {
+    console.log("STATE USER SNAP: ", stateUserSnap);
+    if (stateUserSnap.status === "loading") return "Loading...";
+    if (stateUserSnap.status === "error") return `Error al cargar los ultimos Albums: ${stateUserSnap.error.message}`;
+    if (stateUserSnap.status === "success" && stateUserSnap.data.length > 0) dispatch(userDataAddInfoStore(stateUserSnap.data[0]));
+  }, [stateUserSnap])
 
   return (
     <AppBar sx={appBarStyle}>
@@ -25,7 +36,9 @@ export default function Header(props) {
   );
 }
 
-Header.propTypes = {
+export default NavbarMain;
+
+NavbarMain.propTypes = {
   color: PropTypes.oneOf(["primary", "info", "success", "warning", "danger"]),
   handleDrawerToggle: PropTypes.func,
   routes: PropTypes.arrayOf(PropTypes.object)
@@ -56,13 +69,3 @@ const containerStyle = {
 const flexStyle = {
   flex: 1
 }
-// const titleStyle = {
-//   ...defaultFont,
-//   letterSpacing: "unset",
-//   lineHeight: "30px",
-//   fontSize: "18px",
-//   borderRadius: "3px",
-//   textTransform: "none",
-//   color: "inherit",
-//   margin: "0",
-// }

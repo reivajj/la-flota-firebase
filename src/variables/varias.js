@@ -1,13 +1,18 @@
 export const planesLaFlota = [
-  { id: "charly-garcia", name: "Charly García · No soy un extraño", maxArtists: 1 },
-  { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez · Dos en la ciudad", maxArtists: 2 },
-  { id: "gustavo-cerati:te-para-tres", name: "Gustavo Cerati · Té para tres", maxArtists: 3 },
-  { id: "jardin-de-gente-5", name: "Jardín de Gente · 5 Artistas", maxArtists: 5 },
-  { id: "spinettalandia-10", name: "Spinettalandia · 10 Artistas", maxArtists: 10 },
+  { id: "charly-garcia", name: "Charly García · No soy un extraño", maxArtists: 1, imgSource: "/images/charly-garcia.jpg" },
+  { id: "fito-paez:dos-en-la-ciudad", name: "Fito Páez · Dos en la ciudad", maxArtists: 2, imgSource: "/images/fito-paez:dos-en-la-ciudad.jpg" },
+  { id: "gustavo-cerati:te-para-tres", name: "Gustavo Cerati · Té para tres", maxArtists: 3, imgSource: "/images/gustavo-cerati:te-para-tres.jpg" },
+  { id: "jardin-de-gente-5", name: "Spinettalandia · 5 Artistas", maxArtists: 5, imgSource: "/images/spinettalandia.jpg" },
+  { id: "spinettalandia-10", name: "Spinettalandia · 10 Artistas", maxArtists: 10, imgSource: "/images/spinettalandia.jpg" },
+  { id: "spinettalandia-15", name: "Spinettalandia · 15 Artistas", maxArtists: 15, imgSource: "/images/spinettalandia.jpg" },
+  { id: "spinettalandia-20", name: "Spinettalandia · 20 Artistas", maxArtists: 20, imgSource: "/images/spinettalandia.jpg" },
+  { id: "spinettalandia-50", name: "Spinettalandia · 50 Artistas", maxArtists: 50, imgSource: "/images/spinettalandia.jpg" },
+  { id: "spinettalandia-100", name: "Spinettalandia · 100 Artistas", maxArtists: 100, imgSource: "/images/spinettalandia.jpg" },
 
 ]
 
 export const subscriptionsStatusLaFlota = [
+  { id: "PENDIENTE_DE_PAGO", name: "Pendiente de pago" },
   { id: "PENDIENTE", name: "Pendiente de pago" },
   { id: "ACTIVA", name: "Activa" },
   { id: "CANCELADA", name: "Cancelada" },
@@ -18,7 +23,7 @@ export const colorFromSubIdState = {
   CANCELADA: "rgb(224, 9, 9)",
   EN_ESPERA: "rgb(231, 190, 66)",
   ACTIVA: "rgb(10, 109, 15)",
-  PENDIENTE: "rgb(231, 190, 66)",
+  PENDIENTE_DE_PAGO: "rgb(231, 190, 66)",
 }
 
 export const languages = [
@@ -52,7 +57,7 @@ export const provincias = [
   { value: "N", provincia: "Neuquén" },
   { value: "LP", provincia: "La Pampa" },
   { value: "Ca", provincia: "Catamarca" },
-  { value: "SL", provincia: "San Luis"}
+  { value: "SL", provincia: "San Luis" }
 ];
 export const provinciasSorted = provincias.sort((pA, pB) => {
   if (pA.provincia < pB.provincia) return -1;

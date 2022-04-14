@@ -228,12 +228,17 @@ const getBasicInfoElement = (element, collection) => {
   return "";
 }
 
-export const getElementsAdminQueryFS = (targetCollection, limitNumber, lastAlbumUpdatedInTS) => {
-  const elementsDbRef = query(collection(db, targetCollection), where("lastUpdateTS", ">", lastAlbumUpdatedInTS),
+export const getElementsAdminQueryFS = (targetCollection, limitNumber, lastUpdateInTS) => {
+  const elementsDbRef = query(collection(db, targetCollection), where("lastUpdateTS", ">", lastUpdateInTS),
     orderBy("lastUpdateTS", "desc"), limit(limitNumber));
   return elementsDbRef;
 }
 
+export const getDocIfLastUpdateFS = (targetCollection, targetId, lastUpdateInTS) => {
+  const elementsDbRef = query(collection(db, targetCollection), where("lastUpdateTS", ">", lastUpdateInTS),
+    where("id", "==", targetId), limit(1));
+  return elementsDbRef;
+}
 //====================================================ACTIVITY================================================================\\
 
 const addActivityFS = async (collection, ownerId, element, typeOfAction, dispatch) => {

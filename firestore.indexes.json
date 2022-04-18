@@ -136,6 +136,20 @@
         },
         {
           "fieldPath": "lastUpdateTS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastUpdateTS",
           "order": "DESCENDING"
         }
       ]

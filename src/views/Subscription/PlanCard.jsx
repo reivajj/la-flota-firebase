@@ -5,7 +5,7 @@ import { Grid, Card, CardActions, CardContent, CardMedia, Button, Typography } f
 
 const PlanCard = ({ cardTitle, cardText, cardBullets, planImgSrc, userData }) => {
 
-  let userActualPlanName = planesLaFlota.find(plan => plan.id === userData.plan).name;
+  let userActualPlanName = planesLaFlota.find(plan => plan.id === userData.plan)?.name;
   let isCurrentPlan = cardTitle === userActualPlanName;
   let borderHeight = 5;
   const cardStyle = {

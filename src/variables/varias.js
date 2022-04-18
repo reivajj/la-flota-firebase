@@ -8,7 +8,6 @@ export const planesLaFlota = [
   { id: "spinettalandia-20", name: "Spinettalandia · 20 Artistas", maxArtists: 20, imgSource: "/images/spinettalandia.jpg" },
   { id: "spinettalandia-50", name: "Spinettalandia · 50 Artistas", maxArtists: 50, imgSource: "/images/spinettalandia.jpg" },
   { id: "spinettalandia-100", name: "Spinettalandia · 100 Artistas", maxArtists: 100, imgSource: "/images/spinettalandia.jpg" },
-
 ]
 
 export const subscriptionsStatusLaFlota = [

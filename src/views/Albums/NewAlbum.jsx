@@ -225,7 +225,8 @@ const NewAlbum = ({ editing }) => {
     let imageFile = event.target.files[0];
     if (imageFile.type !== "image/jpeg") {
       setOpenInvalidValueDialog({
-        open: true, beginer: "not-jpg-image", title: "La imagen debe tener formato JPG/JPEG", text: ["Por favor, selecciona una imagen con ese formato."]
+        open: true, beginer: "not-jpg-image", title: "La imagen debe tener formato JPG/JPEG", 
+        text: ["Por favor, selecciona una imagen con ese formato."]
       });
       return;
     }
@@ -233,7 +234,8 @@ const NewAlbum = ({ editing }) => {
     img.onload = async () => {
       if (img.width >= 3000 && img.height >= 3000 && img.width <= 6000 && img.height <= 6000 && img.width === img.height) {
         setMessageForCover("");
-        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(imageFile, currentAlbumData.id, 'covers', 1048576 * 20, setMessageForCover, setProgress));
+        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(imageFile, currentAlbumData.id, 
+          'covers', 1048576 * 20, setMessageForCover, setProgress, currentUserEmail));
         if (errorAddingFile) {
           setMessageForCover("Ha ocurrido un error, por favor, intente nuevamente. ");
           return;

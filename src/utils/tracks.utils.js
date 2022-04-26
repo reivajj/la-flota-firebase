@@ -56,7 +56,7 @@ export const readAndCheckAudioFile = async (file, wav, setOpenLowQualityAudioDia
   console.log("LOADED WAV FILE: ", wav);
 
   if (Number(wav.bitDepth) < 16) {
-    setOpenLowQualityAudioDialog({ open: true, title: "El archivo de Audio no es soportado (menor a 24 bits) .", text: textLowQualityAudio });
+    setOpenLowQualityAudioDialog({ open: true, title: "El archivo de Audio no es soportado (menor a 16 bits) .", text: textLowQualityAudio });
     return "ERROR";
   }
   if (wav.fmt.sampleRate < 44100) {

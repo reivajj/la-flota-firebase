@@ -1,7 +1,7 @@
 import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
-import { createAlbumModel } from 'services/CreateModels';
+import { createAlbumModel, createEditAlbumModel } from 'services/CreateModels';
 import { writeCloudLog } from '../../services/LoggingService';
 import { getOurFormatByCantOfTracks } from 'utils/albums.utils';
 
@@ -15,7 +15,8 @@ export const albumsAddStore = albums => {
 //Los errores los manejan las funciones a las que llamo.
 export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, artistsInvitedStore) => async dispatch => {
 
-  let deliveryToApple = Boolean(album.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
+  let dspsToDelivery = album.dsps.filter(dsp => dsp.checked);
+  let deliveryToApple = Boolean(dspsToDelivery.find(dspInfo => dspInfo.dspName === "Apple Music"));
   album.title = myTracks.length === 1 ? myTracks[0].title : album.title;
   album.format = deliveryToApple ? getOurFormatByCantOfTracks(myTracks.length, deliveryToApple) : album.format || getOurFormatByCantOfTracks(myTracks.length);
   album.ownerId = userId; album.ownerEmail = ownerEmail;
@@ -32,7 +33,7 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, 
   album.lastUpdateTS = album.whenCreatedTS;
 
   let albumToUploadToFS = { ...album, cover: { name: album.cover.name, size: album.cover.size } };
-  albumToUploadToFS.dsps = albumToUploadToFS.dsps.map(dspInfo => { return { dspId: dspInfo.dspId, dspName: dspInfo.dspName, label: dspInfo.dspName, fugaId: dspInfo.fugaId } });
+  albumToUploadToFS.dsps = dspsToDelivery.map(dspInfo => { return { dspId: dspInfo.dspId, dspName: dspInfo.dspName, label: dspInfo.dspName, fugaId: dspInfo.fugaId } });
 
   writeCloudLog(`creating album ${albumToUploadToFS.title} y email: ${ownerEmail}, post fuga pre fs`, albumToUploadToFS, { notError: "not error" }, "info");
 
@@ -40,10 +41,28 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, 
 
   dispatch({
     type: ReducerTypes.ADD_ALBUMS,
-    payload: [album]
+    payload: [albumToUploadToFS]
   });
 
-  return album;
+  return albumToUploadToFS;
+}
+
+export const albumsEditRedux = (allOldAlbumData, newAlbumData, ownerEmail) => async dispatch => {
+  let fugaDataAlbum = createEditAlbumModel(newAlbumData);
+
+  writeCloudLog(`editing album ${newAlbumData.title} y email: ${ownerEmail}, model to send fuga `, newAlbumData, { notError: "not error" }, "info");
+  console.log("NEW FUGA DATA: ", fugaDataAlbum);
+
+  let albumFromThirdWebApi = await BackendCommunication.editAlbumFuga(fugaDataAlbum, allOldAlbumData.fugaId, ownerEmail, dispatch)
+  if (albumFromThirdWebApi === "ERROR") return "ERROR";
+
+  console.log("NEW ALBUM DATA: ", newAlbumData);
+  await FirestoreServices.updateElementFS(allOldAlbumData, newAlbumData, allOldAlbumData.id, "albums", dispatch);
+
+  dispatch({
+    type: ReducerTypes.ALBUMS_EDIT_BY_ID,
+    payload: { ...allOldAlbumData, ...newAlbumData }
+  });
 }
 
 export const deleteAlbumRedux = albumData => async dispatch => {
@@ -123,7 +142,7 @@ export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery, targetD
   let responseDelivery = await BackendCommunication.deliverAlbumFuga(albumData, targetDelivery === 'only-apple', dispatch);
   if (responseDelivery === "ERROR") return "PUBLISHED";
   albumData.state = (deliverToApple && targetDelivery !== 'only-apple') ? "DELIVERED_NEED_APPLE_REVISION" : "DELIVERED";
-  
+
   await FirestoreServices.updateElementFS(albumData, { state: albumData.state }, albumData.id, "albums", dispatch);
 
   writeCloudLog(`Album ${albumData.title} ${albumData.state} with email: ${albumData.ownerEmail}`, { state: albumData.state }, { notError: "not error" }, "info");
@@ -134,6 +153,11 @@ export const albumsPublishAndDeliveryRedux = (albumData, dspsToDelivery, targetD
   });
 
   return "DELIVERED";
+}
+
+export const albumsRedeliverAll = albumData => async dispatch => {
+  let responsePublish = await BackendCommunication.redeliverAllAlbumFuga(albumData, dispatch);
+  if (responsePublish === "ERROR") return "ERROR";
 }
 
 export const albumCleanUpdatingAlbum = () => {

@@ -156,6 +156,18 @@ export const createAlbumFuga = async (formDataAlbum, ownerEmail, dispatch) => {
   return albumFromThirdWebApi;
 }
 
+export const editAlbumFuga = async (rawNewDataAlbum, albumFugaId, ownerEmail, dispatch) => {
+  let [errorEditingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.put(`${targetUrl}albums/${albumFugaId}`, rawNewDataAlbum));
+  if (errorEditingAlbumInThirdWebApi) {
+    dispatch(createBackendError(errorEditingAlbumInThirdWebApi));
+    writeCloudLog(`Error editing album in fuga, ownerEmail: ${ownerEmail}`,
+      rawNewDataAlbum, errorEditingAlbumInThirdWebApi, "error");
+    return "ERROR";
+  }
+
+  return albumFromThirdWebApi;
+}
+
 export const getAlbumLiveLinksById = async (albumId, dispatch) => {
   let [errorGettingLiveLinks, liveLinksResponse] = await to(axios.get(`${targetUrl}albums/${albumId}/live_links`));
   if (errorGettingLiveLinks) {
@@ -239,6 +251,17 @@ export const deliverAlbumFuga = async (albumData, onlyToApple, dispatch) => {
 
   logReleaseDeliveryAnalyticEvent(albumData);
   return "SUCCESS";
+}
+
+export const redeliverAllAlbumFuga = async (albumData, dispatch) => {
+  const [errorAddingDspsAlbum, result] = await to(axios.post(`${targetUrl}albums/${albumData.fugaId}/delivery_instructions/redeliver_all`));
+  if (errorAddingDspsAlbum) {
+    dispatch(createBackendError(errorAddingDspsAlbum));
+    writeCloudLog(`Error REDELIVERING to all DSPs, album with name: ${albumData.title} and UPC: ${albumData.upc}
+    , in fuga, ownerEmail: ${albumData.ownerEmail}`, albumData, errorAddingDspsAlbum, "error");
+    return "ERROR";
+  }
+  console.log("RESULT REDELIVER: ", result);
 }
 
 // export const rearrengePositionsFuga = async (tracksData, dispatch) => {

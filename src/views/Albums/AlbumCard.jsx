@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Image } from 'mui-image';
-import { Delete } from '@mui/icons-material';
+import { Delete, Edit } from '@mui/icons-material';
 import DeleteDialog from "components/Dialogs/DeleteDialog";
 import { Divider, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +39,7 @@ const AlbumCard = ({ dataAlbum }) => {
     }
   }
 
-  // const handleEditAlbum = () => navigate(`/admin/edit-album/${dataAlbum.id}`);
+  const handleEditAlbum = () => navigate(`/admin/albums/${dataAlbum.id}?edit=true`);
   const goToAlbumInfo = () => navigate(`/admin/albums/${dataAlbum.id}`);
   const goToLabelAlbum = () => navigate(`/admin/labels?view=label&label_name=${dataAlbum.label_name}`);
   const goToPrincipalArtist = () => navigate(`/admin/artists?view=artist&id=${dataAlbum.artistId}`);
@@ -123,6 +123,18 @@ const AlbumCard = ({ dataAlbum }) => {
               </Button>
             </Grid>
 
+            {/* <Grid container item direction="row" justifyContent="space-between" alignItems="flex-end" xs={12}>
+              <Grid item xs={1}>
+              <IconButton color="inherit" size="small" key="delete" onClick={handleOpenDeleteDialog}>
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Grid>
+              <Grid item xs={1}>
+                <IconButton color="inherit" size="small" onClick={handleEditAlbum}>
+                  <Edit fontSize="inherit" />
+                </IconButton>
+              </Grid>
+            </Grid> */}
             <Grid container item direction="row" justifyContent="center" xs={12}>
               <Grid item xs={1}>
                 <IconButton color="inherit" size="small" key="delete" onClick={handleOpenDeleteDialog}>

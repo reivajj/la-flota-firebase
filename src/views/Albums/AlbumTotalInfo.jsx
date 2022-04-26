@@ -8,7 +8,7 @@ import { Grid, Typography, Card, ButtonBase, IconButton, CircularProgress, Backd
 import { useSelector, useDispatch } from 'react-redux';
 import { getAlbumById, getStateColor, getOurStateFromFugaState } from "utils/albums.utils";
 import { targetUrl } from "services/BackendCommunication";
-import { useFetch } from '../../customHooks/useAxios';
+import { useAxios } from '../../customHooks/useAxios';
 import { getLocalDateString } from '../../utils/timeRelated.utils';
 import TracksTableInAlbumInfo from '../../components/Table/TracksTableInAlbumInfo';
 import ArtistInAddTrack from '../Artists/ArtistInAddTrack';
@@ -35,7 +35,7 @@ const AlbumTotalInfo = () => {
   const [openErrorSearch, setOpenErrorSearch] = useState(false);
 
   const url = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
-  const { status, data, error } = useFetch(url);
+  const { status, data, error } = useAxios(url);
 
   const stateInfoStyle = { color: getStateColor(data.state ? data.state : ""), fontSize: "1em", fontWeight: 400 };
 

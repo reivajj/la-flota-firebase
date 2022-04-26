@@ -14,6 +14,18 @@ export const createArtistModel = (dataArtist, editing) => {
   return rawDataArtist;
 }
 
+export const createEditAlbumModel = albumDataToEdit => {
+  let editAlbumDataFuga = {};
+  let saleAndReleaseDate = albumDataToEdit.year ? `${albumDataToEdit.year}-${albumDataToEdit.month}-${albumDataToEdit.dayOfMonth}` : "";
+  let keys = Object.keys(albumDataToEdit);
+  keys.forEach(key => {
+    if (key === "title") editAlbumDataFuga.name = albumDataToEdit.title;
+    if (key === "year") editAlbumDataFuga.consumer_release_date = saleAndReleaseDate;
+    if (key === "explicit") editAlbumDataFuga.parental_advisory = albumDataToEdit.explicit;
+  })
+  return editAlbumDataFuga;
+}
+
 export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedStore, deliverToApple) => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;
@@ -29,12 +41,11 @@ export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedSt
     }
   });
 
-
   formDataAlbum.append("name", dataAlbum.title);
   formDataAlbum.append("label", dataAlbum.labelFugaId);
   formDataAlbum.append("language", dataAlbum.languageId);
   formDataAlbum.append("catalog_number", uuidv4());
-  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format] || getFormatByCantOfTracks(myTracks.length, deliverToApple));
+  formDataAlbum.append("release_format_type", formatEquivalence[dataAlbum.format]);
   formDataAlbum.append("c_line_text", dataAlbum.c_line);
   formDataAlbum.append("c_line_year", dataAlbum.c_year);
   formDataAlbum.append("p_line_text", dataAlbum.p_line);

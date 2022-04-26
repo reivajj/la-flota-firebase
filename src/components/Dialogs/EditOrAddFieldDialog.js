@@ -33,7 +33,7 @@ const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title
           margin="normal"
           required
           fullWidth
-          label={labelTextField}
+          label={labelTextField ? labelTextField : ""}
           autoFocus
           value={value}
           onChange={(event) => setValue(event.target.value)}

@@ -1,7 +1,7 @@
 import * as ReducerTypes from 'redux/actions/Types';
 
 const filterArtistsWithSameIdThanNewOne = (oldArtists, addedArtists) => {
-  if (!addedArtists) return oldArtists;
+  if (!Array.isArray(addedArtists) || addedArtists.length === 0) return oldArtists;
   return oldArtists.filter(artist => !addedArtists.map(addedArtist => addedArtist.id).includes(artist.id));
 }
 

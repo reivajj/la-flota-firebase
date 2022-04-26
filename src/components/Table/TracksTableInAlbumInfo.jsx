@@ -1,22 +1,20 @@
 import React from "react";
 // core components
-import { Grid, Card } from '@mui/material';
+import { Card } from '@mui/material';
 import Table from "components/Table/Table";
 
 
-const TracksTableInAlbumInfo = ({ tracksTableData }) => {
+const TracksTableInAlbumInfo = ({ tracksTableData, sxCard }) => {
   return (
-    <Grid container item xs={12}>
-      <Card sx={{ width: "100%" }}>
+    <Card sx={sxCard}>
 
-        <Table
-          tableHeaderColor="primary"
-          tableHead={["N°", "Nombre", "ISRC", "Artistas", "Duración (mm:ss)"]}
-          tableData={tracksTableData}
-        />
+      <Table
+        tableHeaderColor="primary"
+        tableHead={["N°", "Nombre", "ISRC", "Artistas", "Duración (mm:ss)"]}
+        tableData={tracksTableData}
+      />
 
-      </Card>
-    </Grid>
+    </Card>
   );
 }
 

@@ -133,8 +133,7 @@ const NewAlbum = ({ editing }) => {
   let successDialogText = getDeliveredContentTextDialog(deliveryState);
 
   const handleDelivery = async albumUploaded => {
-    let dspsToDelivery = albumUploaded.dsps.filter(dsp => dsp.checked);
-    let responsePublishAndDelivery = await toWithOutError(dispatch(albumsPublishAndDeliveryRedux(albumUploaded, dspsToDelivery, 'all')));
+    let responsePublishAndDelivery = await toWithOutError(dispatch(albumsPublishAndDeliveryRedux(albumUploaded, albumUploaded.dsps, 'all')));
     if (responsePublishAndDelivery === "ERROR") return "ERROR";
     if (responsePublishAndDelivery === "PUBLISHED") { setDeliveryState('published'); return; }
     if (responsePublishAndDelivery === "DELIVERED") { setDeliveryState('delivered'); return; }
@@ -179,7 +178,7 @@ const NewAlbum = ({ editing }) => {
       setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
       return;
     }
-    else internalState = "artists-created"; setCreatingAlbumState("artists-created");
+    else { internalState = "artists-created"; setCreatingAlbumState("artists-created"); }
 
     if (internalState === "artists-created") {
       const explicitAlbum = checkIfAnyTrackIsExplicit(myTracks);
@@ -188,7 +187,7 @@ const NewAlbum = ({ editing }) => {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;
       }
-      else internalState = "album-created"; setCreatingAlbumState("album-created");
+      else { internalState = "album-created"; setCreatingAlbumState("album-created"); }
     }
 
     if (internalState === "album-created") {
@@ -198,16 +197,15 @@ const NewAlbum = ({ editing }) => {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;
       }
-      else internalState = "tracks-created"; setCreatingAlbumState("tracks-created");
+      else { internalState = "tracks-created"; setCreatingAlbumState("tracks-created"); }
     }
 
     if (internalState === "tracks-created") {
       const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
         currentUserId, currentUserEmail)))
-      if (tracksCollaboratorsResponse === "ERROR") {
-        setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
+      if (tracksCollaboratorsResponse !== "ERROR") {
+        internalState = "collaborators-created"; setCreatingAlbumState("collaborators-created");
       }
-      else internalState = "collaborators-created"; setCreatingAlbumState("collaborators-created");
     }
 
     if (internalState === "collaborators-created" || internalState === "tracks-created") {
@@ -225,7 +223,7 @@ const NewAlbum = ({ editing }) => {
     let imageFile = event.target.files[0];
     if (imageFile.type !== "image/jpeg") {
       setOpenInvalidValueDialog({
-        open: true, beginer: "not-jpg-image", title: "La imagen debe tener formato JPG/JPEG", 
+        open: true, beginer: "not-jpg-image", title: "La imagen debe tener formato JPG/JPEG",
         text: ["Por favor, selecciona una imagen con ese formato."]
       });
       return;
@@ -234,7 +232,7 @@ const NewAlbum = ({ editing }) => {
     img.onload = async () => {
       if (img.width >= 3000 && img.height >= 3000 && img.width <= 6000 && img.height <= 6000 && img.width === img.height) {
         setMessageForCover("");
-        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(imageFile, currentAlbumData.id, 
+        let [errorAddingFile, urlAndFile] = await to(manageAddImageToStorage(imageFile, currentAlbumData.id,
           'covers', 1048576 * 20, setMessageForCover, setProgress, currentUserEmail));
         if (errorAddingFile) {
           setMessageForCover("Ha ocurrido un error, por favor, intente nuevamente. ");
@@ -587,7 +585,7 @@ const NewAlbum = ({ editing }) => {
                 helperText="Completa sólo si ya tienes un código UPC que quieras usar con este lanzamiento. Si no tienes le asignaremos uno."
                 onChange={handlerUPC}
                 validatorProps={{
-                  restrictions: 'min:13|max:13|numeric', message: "Formato inválido: El UPC es un código de 13 números",
+                  restrictions: 'min:12|max:13|numeric', message: "Formato inválido: El UPC es un código de 12 ó 13 números",
                   validator: validator
                 }}
               />

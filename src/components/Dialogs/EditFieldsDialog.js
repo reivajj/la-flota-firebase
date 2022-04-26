@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 // import PropTypes from "prop-types";
 import {
-  Button, Grid, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Alert
+  Button, Grid, Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, 
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { Person } from '@mui/icons-material';
 import { TextField } from '@mui/material';
 
 const EditFieldsDialog = ({ isOpenWithFieldsInfo, setIsOpenWithFieldsInfo, handleCloseDialog, handleConfirmEdit }) => {

@@ -137,11 +137,12 @@ export const validateUPC = upcCode => {
   else return false;
 }
 
-export const getFormatByCantOfTracks = cantTracks => {
-  if (cantTracks === 1) return "SINGLE";
-  if (cantTracks > 1 && cantTracks < 6) return "EP";
-  if (cantTracks >= 6) return "ALBUM";
-  return "NO_TRACKS";
+export const getFormatByCantOfTracks = (cantTracks, deliverToApple) => {
+  let maxTracksSingle = deliverToApple ? 3 : 1;
+  if (cantTracks <= maxTracksSingle) return "SINGLE";
+  if (cantTracks > maxTracksSingle && cantTracks <= 6) return "EP";
+  if (cantTracks > 6) return "ALBUM";
+  return "Single";
 }
 
 export const getOurFormatByCantOfTracks = (cantTracks, deliverToApple) => {

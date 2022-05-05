@@ -38,8 +38,6 @@ const setUploadProgress = (position, percentageProgress) => {
 }
 
 const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated) => async dispatch => {
-  writeCloudLog(`creating track pre model, with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`, dataTrack, { notError: "not error" }, "info");
-
   let formDataTrack = createTrackModel(dataTrack, artistInvited, artistRecentlyCreated);
 
   writeCloudLog(`creating track to send to fuga with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`

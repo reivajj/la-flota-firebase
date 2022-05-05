@@ -26,6 +26,14 @@ export const createEditAlbumModel = albumDataToEdit => {
   return editAlbumDataFuga;
 }
 
+export const createCoverModel = (coverFile, coverFugaId) => {
+  let formDataCover = new FormData();
+  formDataCover.append("type", "image_cover_art");
+  formDataCover.append("cover", coverFile);
+  formDataCover.append("id", coverFugaId);
+  return formDataCover;
+}
+
 export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedStore, deliverToApple) => {
   let formDataAlbum = new FormData();
   let saleAndReleaseDate = `${dataAlbum.year}-${dataAlbum.month}-${dataAlbum.dayOfMonth}`;

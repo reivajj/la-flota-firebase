@@ -4,6 +4,7 @@ import * as BackendCommunication from 'services/BackendCommunication.js';
 import { createAlbumModel, createEditAlbumModel } from 'services/CreateModels';
 import { writeCloudLog } from '../../services/LoggingService';
 import { getOurFormatByCantOfTracks } from 'utils/albums.utils';
+import { createCoverModel } from '../../services/CreateModels';
 
 export const albumsAddStore = albums => {
   return {
@@ -47,16 +48,23 @@ export const createAlbumRedux = (album, userId, ownerEmail, explicit, myTracks, 
   return albumToUploadToFS;
 }
 
+export const albumsUploadCoverRedux = (albumFugaId, coverFile, coverFugaId, ownerEmail) => async dispatch => {
+  let fugaDataCover = createCoverModel(coverFile, coverFugaId);
+  writeCloudLog(`uploading cover for album ${albumFugaId}, y email: ${ownerEmail}, model to send fuga `,
+    { filename: coverFile.filename, size: coverFile.size / 1000000, coverFugaId }, { notError: "not error" }, "info");
+
+  console.log("UPLOADING COVER: ", { coverFile, coverFugaId, ownerEmail });
+  let coverUploadResponse = await BackendCommunication.uploadCoverFuga(albumFugaId, fugaDataCover, ownerEmail, dispatch)
+  if (coverUploadResponse === "ERROR") return "ERROR";
+}
+
 export const albumsEditRedux = (allOldAlbumData, newAlbumData, ownerEmail) => async dispatch => {
   let fugaDataAlbum = createEditAlbumModel(newAlbumData);
-
   writeCloudLog(`editing album ${newAlbumData.title} y email: ${ownerEmail}, model to send fuga `, newAlbumData, { notError: "not error" }, "info");
-  console.log("NEW FUGA DATA: ", fugaDataAlbum);
 
   let albumFromThirdWebApi = await BackendCommunication.editAlbumFuga(fugaDataAlbum, allOldAlbumData.fugaId, ownerEmail, dispatch)
   if (albumFromThirdWebApi === "ERROR") return "ERROR";
 
-  console.log("NEW ALBUM DATA: ", newAlbumData);
   await FirestoreServices.updateElementFS(allOldAlbumData, newAlbumData, allOldAlbumData.id, "albums", dispatch);
 
   dispatch({
@@ -66,8 +74,10 @@ export const albumsEditRedux = (allOldAlbumData, newAlbumData, ownerEmail) => as
 }
 
 export const deleteAlbumRedux = albumData => async dispatch => {
-  let deleteResponse = await BackendCommunication.deleteAlbumFuga(albumData.fugaId, dispatch);
-  if (deleteResponse === "ERROR") return "ERROR";
+  if (albumData.fugaId) {
+    let deleteResponse = await BackendCommunication.deleteAlbumFuga(albumData.fugaId, dispatch);
+    if (deleteResponse === "ERROR") return "ERROR";
+  }
 
   await FirestoreServices.deleteElementFS(albumData, albumData.id, albumData.ownerId, "albums", "totalAlbums", -1, dispatch);
   await FirestoreServices.deleteAllTracksFromAlbumIdFS(albumData.id, albumData.ownerId, dispatch);
@@ -91,7 +101,6 @@ export const albumGetLiveLinkRedux = albumData => async dispatch => {
       payload: [albumData]
     });
   }
-
   return liveLinksResponse;
 }
 

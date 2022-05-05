@@ -18,7 +18,6 @@ const NavbarMain = (props) => {
   const stateUserSnap = useFirestoreQuery(getDocIfLastUpdateFS("users", userData?.id || 0, userData?.lastUpdateTS || 0));
 
   useEffect(() => {
-    console.log("STATE USER SNAP: ", stateUserSnap);
     if (stateUserSnap.status === "loading") return "Loading...";
     if (stateUserSnap.status === "error") return `Error al cargar los ultimos Albums: ${stateUserSnap.error.message}`;
     if (stateUserSnap.status === "success" && stateUserSnap.data.length > 0) dispatch(userDataAddInfoStore(stateUserSnap.data[0]));

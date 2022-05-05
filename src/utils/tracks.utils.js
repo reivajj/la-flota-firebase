@@ -24,11 +24,8 @@ export const getTracksFieldsFromFugaTrack = track => {
 
 export const isValidFormatISRC = isrcCode => {
   if (!isrcCode) return true;
-  if (isrcCode.length !== 15) return false;
-  let isrcParts = isrcCode.split('-');
-  if (isrcParts.length !== 4) return false;
-
-  return isrcCode.match(/^[A-Z]{2}-?\w{3}-?\d{2}-?\d{5}$/);
+  if (!(isrcCode.length === 15 || isrcCode.length === 12)) return false;
+  return isrcCode.match(/^[A-Z]{2}-?\w{3}-?\d{2}-?\d{5}$/) || isrcCode.match(/^[A-Z]{2}?\w{3}?\d{2}?\d{5}$/);
 }
 
 export const checkIfAnyTrackIsExplicit = tracks => {

@@ -215,7 +215,7 @@ export const deleteElementFS = async (element, elementId, userId, collection, fi
     writeCloudLog("FS Error deleting element", { userId, element, collection }, errorDeletingElementInCollection, "error");
   }
 
-  await updateStatsOfCollection(collection, amountToDecrement, dispatch)
+  await updateStatsOfCollection(collection, amountToDecrement, dispatch);
   await updateStatsOfUserDoc(userId, fieldToDecrementInUserStats, amountToDecrement, dispatch);
   await updateStatsOfUserDoc(userId, `${fieldToDecrementInUserStats}Deleted`, (-1) * amountToDecrement, dispatch);
 
@@ -242,7 +242,7 @@ export const getDocIfLastUpdateFS = (targetCollection, targetId, lastUpdateInTS)
 //====================================================ACTIVITY================================================================\\
 
 const addActivityFS = async (collection, ownerId, element, typeOfAction, dispatch) => {
-  if (!collectionsWithActivities.includes(collection)) return;
+  if (!collectionsWithActivities.includes(collection) || !Boolean(ownerId)) return;
   let activity = {
     action: typeOfAction, target: collection, targetId: element.id,
     ownerId, targetName: getBasicInfoElement(element, collection), lastUpdateTS: new Date().getTime()
@@ -309,7 +309,8 @@ export const updateStatsOfCollection = async (targetCollection, amount, dispatch
 }
 
 export const updateStatsOfUserDoc = async (targetUserId, targetStat, amount, dispatch) => {
-  if (targetStat === "") return;
+  console.log({ targetUserId, targetStat, amount })
+  if (!Boolean(targetStat) || !Boolean(targetUserId)) return;
   const usersDbRef = doc(db, "users", targetUserId);
   let [errorUpdatingStatsInUser] = await to(updateDoc(usersDbRef, { [`stats.${targetStat}`]: increment(amount) }));
   if (errorUpdatingStatsInUser) {

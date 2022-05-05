@@ -14,7 +14,8 @@ const getStyleFromStateButton = (buttonState, noFab) => {
   return styles.buttonNone;
 }
 
-const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, noneIcon, color, noFab, buttonFullWidth, buttonSx, buttonProgressSx, tooltipText }) => {
+const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHandler, noneIcon, color, noFab,
+  buttonFullWidth, buttonSx, buttonProgressSx, tooltipText }) => {
 
   const getEndButtonIcon = () => {
     if (buttonState === "delete" && noFab) return <Delete />;
@@ -48,7 +49,7 @@ const ProgressButton = ({ textButton, loading, buttonState, onClickHandler, none
             fullWidth={buttonFullWidth}
             color={color}
             sx={buttonSx ? buttonSx : getStyleFromStateButton(buttonState, noFab)}
-            disabled={loading}
+            disabled={loading || disabled}
             onClick={onClickHandler}
             endIcon={endButtonIcon}
           >

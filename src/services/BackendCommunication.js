@@ -164,7 +164,17 @@ export const editAlbumFuga = async (rawNewDataAlbum, albumFugaId, ownerEmail, di
       rawNewDataAlbum, errorEditingAlbumInThirdWebApi, "error");
     return "ERROR";
   }
+  return albumFromThirdWebApi;
+}
 
+export const uploadCoverFuga = async (albumFugaId, fugaFormDataCover, ownerEmail, dispatch) => {
+  let [errorUploadingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.post(`${targetUrl}albums/uploadCover`, fugaFormDataCover));
+  if (errorUploadingAlbumInThirdWebApi) {
+    dispatch(createBackendError(errorUploadingAlbumInThirdWebApi));
+    writeCloudLog(`Error uploading cover album with id: ${albumFugaId} in fuga, ownerEmail: ${ownerEmail}`,
+      { data: "UPLOADING COVER" }, errorUploadingAlbumInThirdWebApi, "error");
+    return "ERROR";
+  }
   return albumFromThirdWebApi;
 }
 
@@ -183,7 +193,8 @@ export const deleteAlbumFuga = async (albumFugaId, dispatch) => {
 
   if (errorDeletingAlbumInFuga) {
     const errorCodeIfExist = errorDeletingAlbumInFuga.response.data.data.code;
-    if (errorCodeIfExist === "NOT_AUTHORIZED" || errorCodeIfExist === "NOT_FOUND") return "NOT_AUTHORIZED";
+    let statusText = errorDeletingAlbumInFuga.response.statusText;
+    if (errorCodeIfExist === "NOT_AUTHORIZED" || statusText === "Not Found") return "NOT_FOUND";
     dispatch(createBackendError(errorDeletingAlbumInFuga));
     writeCloudLog("Error deleting album in fuga", albumFugaId, errorDeletingAlbumInFuga, "error");
 
@@ -296,9 +307,9 @@ export const createTrackFuga = async (formDataTrack, ownerEmail, onUploadProgres
 export const createPersonsFuga = async (rawDataPeople, dispatch) => {
   let [errorUploadingPersonsInThirdWebApi, personsFromThirdWebApi] = await to(axios.post(`${targetUrl}people/addAll`, rawDataPeople));
   if (errorUploadingPersonsInThirdWebApi) {
-    dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
+    // No quiero dar error si falla algo con los colaboradores/people
+    // dispatch(createBackendError(errorUploadingPersonsInThirdWebApi));
     writeCloudLog("Error creating person in fuga", copyFormDataToJSON(rawDataPeople), errorUploadingPersonsInThirdWebApi, "error");
-
     return "ERROR";
   }
   let personsWithId = personsFromThirdWebApi.data.response;
@@ -314,8 +325,9 @@ export const createCollaboratorFuga = async (collaborator, ownerEmail, dispatch)
   let rawDataCollaborator = { person: collaborator.person, role: collaborator.role };
   let [errorAttachingCollaboratorInThirdWebApi, collaboratorFromThirdWebApi] = await to(axios.post(`${targetUrl}tracks/${collaborator.trackFugaId}/contributors`, rawDataCollaborator));
   if (errorAttachingCollaboratorInThirdWebApi) {
-    dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
-    writeCloudLog("Error creating collaborator in fuga", collaborator, errorAttachingCollaboratorInThirdWebApi, "error");
+    // No quiero dar error si falla algo con los colaboradores/people
+    // dispatch(createBackendError(errorAttachingCollaboratorInThirdWebApi));
+    writeCloudLog(`Error creating collaborator in fuga, with email: ${ownerEmail}`, collaborator, errorAttachingCollaboratorInThirdWebApi, "error");
     return "ERROR";
   }
   let personsWithId = collaboratorFromThirdWebApi.data.response.id;

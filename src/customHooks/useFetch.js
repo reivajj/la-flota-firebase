@@ -2,7 +2,7 @@ import { useEffect, useRef, useReducer } from 'react';
 
 export const useFetch = (url) => {
 	const cache = useRef({});
-
+  
 	const initialState = {
 		status: 'idle',
 		error: null,

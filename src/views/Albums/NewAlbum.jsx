@@ -49,6 +49,7 @@ import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.ut
 import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
 import { checkFieldsCreateAlbum, getDeliveredContentTextDialog, getDeliveredTitleDialog, adaptAlbumToAppleFormat, userIsActive } from '../../utils/albums.utils';
+import { getArrayYears } from '../../utils/timeRelated.utils';
 
 
 const NewAlbum = ({ editing }) => {
@@ -57,6 +58,8 @@ const NewAlbum = ({ editing }) => {
   const navigate = useNavigate();
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
+
+  const testingAll = false;
 
   const userData = useSelector(store => store.userData);
   const currentUserId = userData.id; const currentUserEmail = userData.email;
@@ -334,11 +337,11 @@ const NewAlbum = ({ editing }) => {
     validator.current.showMessageFor('upc');
   }
 
-  const yearsArray = Array.from({ length: 30 }, (_, i) => getActualYear() - i);
+  const yearsArray = getArrayYears(1950, new Date().getFullYear());
 
   const needArtistLabelCover = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover;
   const needArtistLabelCoverAndContinue = currentAlbumData.nombreArtist && currentAlbumData.label_name && currentAlbumData.cover && currentAlbumData.basicFieldsComplete;
-  const showingNotBasicAlbumFields = needArtistLabelCoverAndContinue || openLoader;
+  const showingNotBasicAlbumFields = testingAll ? true : needArtistLabelCoverAndContinue || openLoader;
 
   const handleCloseSuccessUpload = () => {
     dispatch(albumCleanUpdatingAlbum());
@@ -706,7 +709,6 @@ const NewAlbum = ({ editing }) => {
                   loading={openLoader}
                   buttonState={buttonState}
                   onClickHandler={allFieldsValidCreateAlbum}
-                  // onClickHandler={testingNewRelease}
                   noneIcon={<Save sx={{ color: "rgba(255,255,255, 1)" }} />}
                   noFab={false} />
                 : <Button onClick={coverLabelArtistAllValids}>

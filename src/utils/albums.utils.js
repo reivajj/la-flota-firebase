@@ -178,3 +178,9 @@ export const userIsActive = userStatus => {
   let subsNotActives = subscriptionsStatusLaFlota.map(sub => sub.id).filter(sub => sub !== "ACTIVA");
   return !subsNotActives.includes(userStatus);
 }
+
+export const createImageFromUrlData = async imageFetchData => {
+  const imageBlob = await imageFetchData.blob();
+  const imageObjectURL = URL.createObjectURL(imageBlob);
+  return imageObjectURL;
+}

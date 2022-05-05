@@ -7,15 +7,19 @@ import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import { AddCircleOutline } from '@mui/icons-material/';
+import SelectDateInputDDMMYYYY from 'components/Input/SelectDateInputDDMMYYYY';
 
-const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title, subtitle, labelTextField, loading, buttonState }) => {
+const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title, subtitle, labelTextField, loading, buttonState, type, initialValues }) => {
 
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValues || "");
+  const [dateValues, setDateValues] = useState(initialValues ? { ...initialValues } : "");
   const addCircleIcon = <AddCircleOutline />;
+
+  const handlerDateUpdate = (eventValue, typeOfDate) => setDateValues({ ...dateValues, [typeOfDate]: eventValue });
 
   return (
     <Dialog
-      maxWidth="xs"
+      maxWidth={type === "date" ? "sm" : "xs"}
       fullWidth
       id="edit-or-add-dialog"
       open={isOpen}
@@ -29,15 +33,19 @@ const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title
           {subtitle}
         </DialogContentText>
 
-        <TextField
+        {type !== "date" ? <TextField
           margin="normal"
           required
           fullWidth
           label={labelTextField ? labelTextField : ""}
           autoFocus
-          value={value}
+          value={value || initialValues || ""}
           onChange={(event) => setValue(event.target.value)}
         />
+          : <SelectDateInputDDMMYYYY type="release-date" dayValue={dateValues.dayOfMonth} monthValue={dateValues.month} yearValue={dateValues.year}
+            setDayOfMonth={event => handlerDateUpdate(event.target.value, "dayOfMonth")} setMonth={event => handlerDateUpdate(event.target.value, "month")}
+            setYear={event => handlerDateUpdate(event.target.value, "year")} />
+        }
 
       </DialogContent>
 
@@ -60,7 +68,7 @@ const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title
               textButton={"Confirmar"}
               loading={loading}
               buttonState={buttonState}
-              onClickHandler={() => handleConfirm(value)}
+              onClickHandler={() => handleConfirm(type === "date" ? dateValues : value)}
               noneIcon={addCircleIcon}
               noFab={true}
               buttonFullWidth={true} />

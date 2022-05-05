@@ -4,7 +4,13 @@ export const fugaAlbumsState = ["PENDING", "PUBLISHED", "DELIVERED", "TAKEN_DOWN
 export const dspIdsWithLiveLinks = { spotify_dsp_id: 746109, apple_dsp_id: 1330598 };
 
 export const demoDspsFuga = [{ dspName: 'Spotify (Demo) 2', dspId: 1723792805, fugaId: 5032161672 },
-{ dspName: "Apple Music (Demo) 2", dspId: 1723776097, fugaId: 5032161635 }]
+{ dspName: "Apple Music (Demo) 2", dspId: 1723776097, fugaId: 5032161635 }];
+
+export const imagesSizeTypes = [
+  { id: "muse_header_pinned_view", name: "92x92" },
+  { id: "muse_header_view", name: "280x280" },
+  { id: "firebase", name: "200x200 (nuestras)" }
+];
 
 export const dspsFuga = [
   {
@@ -243,18 +249,8 @@ export const dspsFuga = [
     "dspId": 1130737243
   },
   {
-    "fugaId": 4963279823,
-    "dspName": "United Media Agency (UMA)",
-    "dspId": 1210987244
-  },
-  {
     "fugaId": 4963279831,
     "dspName": "Xiami",
     "dspId": 1234931270
   },
-  {
-    "fugaId": 4963279858,
-    "dspName": "Yandex Music",
-    "dspId": 1209287754
-  }
 ];

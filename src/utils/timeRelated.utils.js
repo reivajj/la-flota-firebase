@@ -1,3 +1,7 @@
+export const getArrayYears = (olderYear, lastYear) => {
+  return Array.from({ length: (lastYear + 1) - olderYear }).map((_, index) => olderYear + index).reverse();
+}
+
 export const getLocalDateString = stringDateUS => {
   let stringDateLocal = stringDateUS.slice(0, 10);
   stringDateLocal = stringDateLocal.split("-");

@@ -1,0 +1,1 @@
+export const appVersion = "Version 1.0 (Fix collaborators)"

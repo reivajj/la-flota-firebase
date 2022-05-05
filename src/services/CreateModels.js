@@ -1,6 +1,7 @@
 import { formatEquivalence, getFormatByCantOfTracks } from 'utils/albums.utils';
 import { v4 as uuidv4 } from 'uuid';
 import { getAllArtistsOfTrack, ifNoPrimaryChangeIt } from '../utils/artists.utils';
+import { appVersion } from '../variables/app.variables';
 
 // Lo uso tanto para crear como para editar.
 export const createArtistModel = (dataArtist, editing) => {
@@ -73,6 +74,7 @@ export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedSt
   formDataAlbum.append("extra_3", `Id en la app del lanzamiento:${dataAlbum.id}`);
   formDataAlbum.append("extra_4", `Email en la app del user:${dataAlbum.ownerEmail}`);
   formDataAlbum.append("extra_5", `Id en la app del user:${dataAlbum.ownerId}`);
+  formDataAlbum.append("extra_6", `Version App:${appVersion}`);
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
 

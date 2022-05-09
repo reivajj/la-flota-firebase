@@ -50,7 +50,7 @@ export const readFileDataAsBase64 = file => {
 export const readAndCheckAudioFile = async (file, wav, setOpenLowQualityAudioDialog) => {
   let fileReaded = await readFileDataAsBase64(file);
   wav.fromBuffer(Buffer.from(fileReaded));
-  console.log("LOADED WAV FILE: ", wav);
+  // console.log("LOADED WAV FILE: ", wav);
 
   if (Number(wav.bitDepth) < 16) {
     setOpenLowQualityAudioDialog({ open: true, title: "El archivo de Audio no es soportado (menor a 16 bits) .", text: textLowQualityAudio });

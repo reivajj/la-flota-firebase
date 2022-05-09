@@ -110,6 +110,41 @@ export const createTrackModel = (dataTrack, artistInvited, artistRecentlyCreated
   return formDataTrack;
 }
 
+export const createTrackAssetModel = (dataTrack, artistInvited, artistRecentlyCreated) => {
+
+  let artistsArrayToUpload = getAllArtistsOfTrack([...dataTrack.artists, ...dataTrack.allOtherArtists], artistInvited, artistRecentlyCreated);
+  artistsArrayToUpload = ifNoPrimaryChangeIt(artistsArrayToUpload);
+
+  let formDataTrack = new FormData();
+
+  formDataTrack.append("name", dataTrack.title);
+  formDataTrack.append("genre", dataTrack.genre);
+  formDataTrack.append("artists", JSON.stringify(artistsArrayToUpload));
+  formDataTrack.append("sequence", dataTrack.position);
+  formDataTrack.append("language", dataTrack.track_language_id || "ES");
+  formDataTrack.append("audio_locale", dataTrack.audio_locale_id || "ES");
+  formDataTrack.append("parental_advisory", dataTrack.explicit || false);
+  if (dataTrack.isrc) formDataTrack.append("isrc", dataTrack.isrc);
+  if (dataTrack.subgenre) formDataTrack.append("subgenre", dataTrack.subgenre);
+  if (dataTrack.lyrics) formDataTrack.lyrics("lyrics", dataTrack.lyrics);
+  if (dataTrack.preOrder) {
+    formDataTrack.append("allow_preorder", true);
+    formDataTrack.append("available_separately", true);
+    formDataTrack.append("allow_preorder_preview", dataTrack.preview);
+    formDataTrack.append("preorder_only", true);
+  }
+  formDataTrack.append("albumId", dataTrack.albumFugaId);
+
+  return formDataTrack;
+}
+
+export const createTrackFileModel = dataTrack => {
+  let formDataTrack = new FormData();
+  formDataTrack.append("track", dataTrack.track);
+  formDataTrack.append("trackId", dataTrack.fugaId);
+  return formDataTrack;
+}
+
 export const createPersonsModel = personsArray => {
   let formDataPersons = new FormData();
   formDataPersons.append("names", JSON.stringify(personsArray));

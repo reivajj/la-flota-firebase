@@ -25,7 +25,7 @@ const ArtistsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ADD_ARTISTS:
       const oldUniqueArtistsInvited = filterArtistsWithSameIdThanNewOne(state.artists, action.payload);
-      return { addingArtist: initialState.addingArtist, artists: [...oldUniqueArtistsInvited, ...action.payload] }
+      return { addingArtist: initialState.addingArtist, artists: [...action.payload, ...oldUniqueArtistsInvited] }
 
     case ReducerTypes.EDIT_ARTIST_WITH_ID:
       return { addingArtist: initialState.addingArtist, artists: editAndAddArtist(state.artists, action.payload) }

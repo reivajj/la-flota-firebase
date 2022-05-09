@@ -38,10 +38,10 @@ const AlbumsReducer = (state = initialState, action) => {
 
     case ReducerTypes.ADD_ALBUMS:
       const oldUniqueAlbums = filterArtistsWithSameIdThanNewOne(state.albums, action.payload)
-      return { ...state, albums: [...oldUniqueAlbums, ...action.payload] };
+      return { ...state, albums: [...action.payload, ...oldUniqueAlbums] };
 
     case ReducerTypes.ALBUMS_EDIT_BY_ID:
-      return { ...state, albums: [...state.albums.filter(album => album.id !== action.payload.id), action.payload] }
+      return { ...state, albums: [action.payload, ...state.albums.filter(album => album.id !== action.payload.id)] }
 
     case ReducerTypes.ALBUMS_UPDATE_ADDING_ALBUM:
       return { ...state, addingAlbum: action.payload }

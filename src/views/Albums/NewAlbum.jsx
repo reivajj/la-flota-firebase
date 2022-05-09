@@ -15,13 +15,13 @@ import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
 import { NewTrackDialog } from "views/Tracks/NewTrackDialog";
-import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
+import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksAssetsToAlbumRedux, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline, Edit } from '@mui/icons-material/';
 import {
   albumCoverHelperText, lanzamientoColaborativoTooltip, oldReleaseCheckBoxHelper,
-  preSaleCheckBoxHelper, releaseDateInfoTooltip, imageConstraintsMessage
+  preSaleCheckBoxHelper, releaseDateInfoTooltip, imageConstraintsMessage, filesMissingTitle, filesMissingText
 } from '../../utils/textToShow.utils';
 import { toWithOutError, to, useForceUpdate } from "utils";
 import { manageAddImageToStorage } from "services/StorageServices";
@@ -50,6 +50,7 @@ import useScript from '../../customHooks/useScript';
 import DspsDialog from "views/DSP/DspsDialog";
 import { checkFieldsCreateAlbum, getDeliveredContentTextDialog, getDeliveredTitleDialog, adaptAlbumToAppleFormat, userIsActive } from '../../utils/albums.utils';
 import { getArrayYears } from '../../utils/timeRelated.utils';
+import { uploadAllTracksFilesToAlbumRedux } from '../../redux/actions/TracksActions';
 
 
 const NewAlbum = ({ editing }) => {
@@ -114,6 +115,7 @@ const NewAlbum = ({ editing }) => {
 
   const [deliveryState, setDeliveryState] = useState('none');
   const [openSelectDSP, setOpenSelectDSP] = useState(false);
+  const [openMissingFilesDialog, setOpenMissingFilesDialog] = useState({ open: false, title: "", text: [""] });
 
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
@@ -143,6 +145,10 @@ const NewAlbum = ({ editing }) => {
     handleCloseSuccessUpload();
   }
 
+  const handleMissingFiles = filesMissing => {
+    setOpenMissingFilesDialog({ open: true, title: filesMissingTitle, text: filesMissingText(filesMissing) });
+  }
+
   const coverLabelArtistAllValids = () => {
     if (!currentAlbumData.cover?.size) setMessageForCover("Debes seleccionar el Arte de Tapa");
     if (!currentAlbumData.nombreArtist) validator.current.showMessageFor('nombreArtist');
@@ -163,12 +169,9 @@ const NewAlbum = ({ editing }) => {
   }
 
   const handleCloseInfoDialog = () => {
-    if (openInvalidValueDialog.beginner === "single-track-name") {
-      adaptAlbumToAppleFormat(currentAlbumData, myTracks, dispatch);
-    }
+    if (openInvalidValueDialog.beginner === "single-track-name") adaptAlbumToAppleFormat(currentAlbumData, myTracks, dispatch);
     setOpenInvalidValueDialog({ open: false, beginner: "", title: "", text: [""] });
   }
-
 
   const createAlbum = async () => {
     setOpenLoader(true);
@@ -194,16 +197,16 @@ const NewAlbum = ({ editing }) => {
     }
 
     if (internalState === "album-created") {
-      responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksToAlbumRedux(myTracks, albumDataFromFuga.id,
+      responseTracksFromFuga = await toWithOutError(dispatch(uploadAllTracksAssetsToAlbumRedux(myTracks, albumDataFromFuga.id,
         albumDataFromFuga.fugaId, currentUserId, currentUserEmail, artistInvited, otherPrimaryArtistsOfTheAlbumCreatedInFuga)));
       if (responseTracksFromFuga === "ERROR") {
         setButtonState("error"); setButtonText("Error"); setOpenLoader(false);
         return;
       }
-      else { internalState = "tracks-created"; setCreatingAlbumState("tracks-created"); }
+      else { internalState = "tracks-assets-created"; setCreatingAlbumState("tracks-assets-created"); }
     }
 
-    if (internalState === "tracks-created") {
+    if (internalState === "tracks-assets-created") {
       const tracksCollaboratorsResponse = await toWithOutError(dispatch(createCollaboratorsRedux(responseTracksFromFuga,
         currentUserId, currentUserEmail)))
       if (tracksCollaboratorsResponse !== "ERROR") {
@@ -211,9 +214,24 @@ const NewAlbum = ({ editing }) => {
       }
     }
 
-    if (internalState === "collaborators-created" || internalState === "tracks-created") {
+    let filesMissing = [];
+    if (internalState === "tracks-assets-created" || internalState === "collaborators-created") {
+      let responseUploads = await toWithOutError(dispatch(uploadAllTracksFilesToAlbumRedux(responseTracksFromFuga,
+        albumDataFromFuga.fugaId, currentUserEmail)));
+      if (responseUploads.length > 0 && responseUploads.some(upload => upload.status === "ERROR")) {
+        filesMissing = responseUploads.filter(uploadedTrack => uploadedTrack.status === "ERROR").map(trackWithStatus => trackWithStatus.dataTrack);
+        internalState = "not-ready-to-delivery"; setCreatingAlbumState("not-ready-to-delivery");
+      }
+      else {
+        if (internalState === "collaborators-created") { internalState = "ready-to-delivery"; setCreatingAlbumState("ready-to-delivery"); }
+        else { internalState = "not-ready-to-delivery"; setCreatingAlbumState("not-ready-to-delivery"); }
+      }
+    }
+
+    if (internalState === "not-ready-to-delivery" || internalState === "ready-to-delivery") {
       await toWithOutError(dispatch(createUPCToSuccessAlbumRedux(albumDataFromFuga)));
-      internalState === "collaborators-created" ? await handleDelivery(albumDataFromFuga) : setCreatingAlbumState("success");
+      if (filesMissing.length > 0) { handleMissingFiles(filesMissing); return; }
+      internalState === "ready-to-delivery" ? await handleDelivery(albumDataFromFuga) : setCreatingAlbumState("success");
       setButtonState("success");
     }
     setOpenLoader(false);
@@ -344,9 +362,10 @@ const NewAlbum = ({ editing }) => {
   const showingNotBasicAlbumFields = testingAll ? true : needArtistLabelCoverAndContinue || openLoader;
 
   const handleCloseSuccessUpload = () => {
+    let albumId = currentAlbumData.id;
     dispatch(albumCleanUpdatingAlbum());
     dispatch(tracksCleanUploadingTracks());
-    navigate('/admin/albums');
+    navigate(`/admin/albums/${albumId}`);
   }
 
   return userIsActive(userData.userStatus)
@@ -364,6 +383,9 @@ const NewAlbum = ({ editing }) => {
 
           <SuccessDialog isOpen={creatingAlbumState === "success"} title="¡Felicitaciones!" contentTexts={[["Tu lanzamiento ya se encuentra en etapa de de revisión"]]}
             handleClose={handleCloseSuccessUpload} successImageSource="/images/success.jpg" />
+
+          <InfoDialog isOpen={openMissingFilesDialog.open} handleClose={handleCloseSuccessUpload}
+            title={openMissingFilesDialog.title} contentTexts={openMissingFilesDialog.text} />
 
           <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={handleCloseInfoDialog}
             title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
@@ -566,7 +588,7 @@ const NewAlbum = ({ editing }) => {
                   value={currentAlbumData.p_line}
                   onChange={(event) => handlerBasicUpdateAlbum(event.target.value, "p_line")}
                   helperText="El dueño de los Derechos de Publicación de esta grabación.
-            → Ej. 1: Fito Paez | Ej. 2: Sony Music"
+                    → Ej. 1: Fito Paez | Ej. 2: Sony Music"
                   validatorProps={{
                     restrictions: 'required|max:200', message: "Por favor indicá el publicador del lanzamiento.",
                     validator

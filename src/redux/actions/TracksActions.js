@@ -2,10 +2,11 @@ import * as ReducerTypes from 'redux/actions/Types';
 import * as FirestoreServices from 'services/FirestoreServices.js';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { v4 as uuidv4 } from 'uuid';
-import { createTrackModel } from 'services/CreateModels';
+import { createTrackAssetModel, createTrackModel } from 'services/CreateModels';
 import { copyFormDataToJSON, toWithOutError } from 'utils';
 import { getAmountOfIsrcCodesToUseFS } from '../../services/FirestoreServices';
 import { writeCloudLog } from '../../services/LoggingService';
+import { createTrackFileModel } from '../../services/CreateModels';
 
 export const createTrackLocalRedux = (trackData, userId) => {
   trackData.ownerId = userId;
@@ -37,6 +38,54 @@ const setUploadProgress = (position, percentageProgress) => {
   }
 }
 
+const createTrackAssetInAlbumRedux = (dataTrack, userId, artistInvited, artistRecentlyCreated) => async dispatch => {
+  let formDataTrack = createTrackAssetModel(dataTrack, artistInvited, artistRecentlyCreated);
+
+  writeCloudLog(`creating track asset to send to fuga with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`
+    , copyFormDataToJSON(formDataTrack), { notError: "not error" }, "info");
+
+  let trackFromThirdWebApi = await BackendCommunication.createTrackAssetFuga(formDataTrack, dataTrack.ownerEmail, dataTrack.albumFugaId, dispatch);
+  if (trackFromThirdWebApi === "ERROR") return "ERROR";
+
+  dataTrack.whenCreatedTS = new Date().getTime();
+  dataTrack.lastUpdateTS = dataTrack.whenCreatedTS;
+  dataTrack.fugaId = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.id;
+  dataTrack.isrc = trackFromThirdWebApi.data.response.fugaTrackCreatedInfo.isrc;
+  let trackSizeInMb = dataTrack.track.size
+  let trackFilename = dataTrack.track.name;
+  let trackForFS = { ...dataTrack, track: { trackSizeInMb, trackFilename } };
+  writeCloudLog(`creating track asset post fuga pre fs, with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`
+    , trackForFS, { notError: "not error" }, "info");
+
+  await FirestoreServices.createElementFS(trackForFS, dataTrack.id, userId, "tracks", "totalTracks", 1, dispatch);
+
+  return dataTrack;
+}
+
+const uploadTrackFileInAlbumRedux = (dataTrack, onUploadProgress) => async dispatch => {
+  let formDataTrack = createTrackFileModel(dataTrack);
+
+  writeCloudLog(`creating track asset to send to fuga with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`
+    , copyFormDataToJSON(formDataTrack), { notError: "not error" }, "info");
+
+  let success = false;
+  for (let retry = 0; (retry < 2 && !success); retry++) {
+    console.log("SUCCESS SUBIENDO TRACK FILE: ", success);
+    let trackFromThirdWebApi = await BackendCommunication.uploadTrackFileFuga(formDataTrack, dataTrack.ownerEmail, onUploadProgress
+      , dataTrack.albumFugaId, retry, dispatch);
+    if (trackFromThirdWebApi !== "ERROR") success = true;
+    else success = false;
+  }
+
+  if (!success) return { dataTrack, status: "ERROR" };
+  let trackSizeInMb = dataTrack.track.size
+  let trackFilename = dataTrack.track.name;
+  writeCloudLog(`creating track asset post fuga pre fs, with album fugaId: ${dataTrack.albumFugaId} and ownerEmail: ${dataTrack.ownerEmail}`
+    , { track: { trackSizeInMb, trackFilename }, trackFugaId: dataTrack.fugaId }, { notError: "not error" }, "info");
+
+  return { dataTrack, status: "SUCCESS" };
+}
+
 const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvited, artistRecentlyCreated) => async dispatch => {
   let formDataTrack = createTrackModel(dataTrack, artistInvited, artistRecentlyCreated);
 
@@ -59,6 +108,65 @@ const createTrackInAlbumRedux = (dataTrack, userId, onUploadProgress, artistInvi
   await FirestoreServices.createElementFS(dataTrack, dataTrack.id, userId, "tracks", "totalTracks", 1, dispatch);
 
   return dataTrack;
+}
+
+export const uploadAllTracksAssetsToAlbumRedux = (tracksData, albumId, albumFugaId, userId, ownerEmail, artistInvited, artistRecentlyCreated) => async dispatch => {
+  if (tracksData.length === 0) return "ERROR";
+
+  writeCloudLog(`creating all tracks assets pre model with album fugaId: ${albumFugaId} and ownerEmail: ${ownerEmail}`
+    , tracksData, { notError: "not error" }, "info");
+
+  let amountOfIsrcsCodesMissing = 0;
+  tracksData.forEach(track => { if (track.isrc === "") amountOfIsrcsCodesMissing++; });
+  let isrcsCodes = await toWithOutError(getAmountOfIsrcCodesToUseFS(amountOfIsrcsCodesMissing, dispatch));
+
+  tracksData.map((track, index) => {
+    if (track.isrc === "") track.isrc = isrcsCodes[index];
+    return track;
+  });
+
+  let sortedTracks = tracksData.sort((tA, tB) => {
+    if (tA.position < tB.position) return -1;
+    else return 1;
+  });
+
+  for (const dataTrack of sortedTracks) {
+    const results = [];
+
+    dataTrack.albumId = albumId; dataTrack.albumFugaId = albumFugaId; dataTrack.ownerId = userId; dataTrack.ownerEmail = ownerEmail;
+    let result = await toWithOutError(dispatch(createTrackAssetInAlbumRedux(dataTrack, userId, artistInvited, artistRecentlyCreated)))
+    if (result === "ERROR") return "ERROR";
+
+    results.push(result);
+  }
+
+  dispatch({
+    type: ReducerTypes.EDIT_TRACK_POST_UPLOAD_IN_DB,
+    payload: sortedTracks
+  });
+
+  return tracksData;
+}
+
+export const uploadAllTracksFilesToAlbumRedux = (tracksData, albumFugaId, ownerEmail) => async dispatch => {
+  if (tracksData.length === 0) return "ERROR";
+
+  writeCloudLog(`uploading all tracks pre model with album fugaId: ${albumFugaId} and ownerEmail: ${ownerEmail}`
+    , tracksData, { notError: "not error" }, "info");
+
+  const results = [];
+  for (const dataTrack of tracksData) {
+
+    const onUploadProgress = progress => {
+      const { loaded, total } = progress;
+      const percentageProgress = Math.floor((loaded / total) * 100);
+      dispatch(setUploadProgress(dataTrack.position, percentageProgress));
+    }
+
+    let result = await toWithOutError(dispatch(uploadTrackFileInAlbumRedux(dataTrack, onUploadProgress)))
+    results.push(result);
+  }
+  return results;
 }
 
 export const uploadAllTracksToAlbumRedux = (tracksData, albumId, albumFugaId, userId, ownerEmail, artistInvited, artistRecentlyCreated) => async dispatch => {

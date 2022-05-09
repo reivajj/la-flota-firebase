@@ -130,10 +130,23 @@ export const textFloatingPointAudio = [
   "Debe tener formato WAV, stereo, de 16, 24, o 32 bits y con un Sample Rate entre 44.1 y 192 kHz"
 ]
 
+export const filesMissingTitle = 'Archivos de audio faltantes';
 export const publishedSuccessTitle = 'Tu lanzamiento ya se encuentra aprobado y listo para ser entregado a las DSPs';
 export const deliveredSuccessTitle = 'Tu lanzamiento ya está en camino a las DSPs';
 export const errorDeliveredTitle = 'Hubo un error al publicar el lanzamiento';
 
+export const filesMissingText = filesMissing => {
+  let trackNamesString = "";
+  filesMissing.forEach(track => {
+    trackNamesString = trackNamesString + track.title + ", "
+  });
+
+  return  [
+    'Tu lanzamiento se ha generado en nuestra plataforma, pero hubo errores al subir los archivos de audio para las siguientes canciones:',
+    `${trackNamesString}`,
+    'Por favor, contáctate con soporte para que te demos una solución.'
+  ]
+}
 export const publishedSuccessText = ['Tu lanzamiento se ha publicado correctamente, pronto estará en camino a las DSPs'];
 export const deliveredSuccessText = ['Tu lanzamiento ya se encuentra en camino a las DPSs, este proceso puede durar de 1 a 5 días hábiles'];
 export const errorDeliveredText = ["Tu lanzamiento ya se encuentra en etapa de de revisión"];

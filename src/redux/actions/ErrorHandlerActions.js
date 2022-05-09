@@ -1,7 +1,12 @@
 import * as ReducerTypes from 'redux/actions/Types';
 
+const checkIfIsNetworkError = error => {
+  if (error.message === "Network Error") return "Error de conexión, reintentaremos una vez más, si sigue fallando, pasaremos al siguiente archivo de audio." 
+  else return error.message;
+}
+
 const handleError = error => {
-  if (!error.response) return { msg: error.message, error };
+  if (!error.response) return { msg: checkIfIsNetworkError(error), error };
   if (!error.response.data) return { msg: "Error inesperado", error };
   return { msg: error.response.data.errorMsgToFrontEnd, error: error.response.data }
 }

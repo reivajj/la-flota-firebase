@@ -1,1 +1,1 @@
-export const appVersion = "Version 1.0 (Fix collaborators)"
+export const appVersion = "Version 1.1 (Cambio de Flujo de Assets y Tracks Files)"

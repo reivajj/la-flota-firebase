@@ -58,12 +58,14 @@ export const albumsUploadCoverRedux = (albumFugaId, coverFile, coverFugaId, owne
   if (coverUploadResponse === "ERROR") return "ERROR";
 }
 
-export const albumsEditRedux = (allOldAlbumData, newAlbumData, ownerEmail) => async dispatch => {
-  let fugaDataAlbum = createEditAlbumModel(newAlbumData);
+export const albumsEditRedux = (allOldAlbumData, newAlbumData, ownerEmail, editInFuga) => async dispatch => {
+  let fugaDataAlbum = editInFuga ? createEditAlbumModel(newAlbumData) : "NO FUGA EDIT";
   writeCloudLog(`editing album ${newAlbumData.title} y email: ${ownerEmail}, model to send fuga `, newAlbumData, { notError: "not error" }, "info");
 
-  let albumFromThirdWebApi = await BackendCommunication.editAlbumFuga(fugaDataAlbum, allOldAlbumData.fugaId, ownerEmail, dispatch)
-  if (albumFromThirdWebApi === "ERROR") return "ERROR";
+  if (editInFuga) {
+    let albumFromThirdWebApi = await BackendCommunication.editAlbumFuga(fugaDataAlbum, allOldAlbumData.fugaId, ownerEmail, dispatch)
+    if (albumFromThirdWebApi === "ERROR") return "ERROR";
+  }
 
   await FirestoreServices.updateElementFS(allOldAlbumData, newAlbumData, allOldAlbumData.id, "albums", dispatch);
 

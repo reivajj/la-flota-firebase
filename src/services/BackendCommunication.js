@@ -160,7 +160,7 @@ export const editAlbumFuga = async (rawNewDataAlbum, albumFugaId, ownerEmail, di
   let [errorEditingAlbumInThirdWebApi, albumFromThirdWebApi] = await to(axios.put(`${targetUrl}albums/${albumFugaId}`, rawNewDataAlbum));
   if (errorEditingAlbumInThirdWebApi) {
     dispatch(createBackendError(errorEditingAlbumInThirdWebApi));
-    writeCloudLog(`Error editing album in fuga, ownerEmail: ${ownerEmail}`,
+    writeCloudLog(`Error editing album in fuga, email from who edit: ${ownerEmail}`,
       rawNewDataAlbum, errorEditingAlbumInThirdWebApi, "error");
     return "ERROR";
   }

@@ -6,7 +6,7 @@ import {
 import ProgressButton from '../../components/CustomButtons/ProgressButton';
 import { toWithOutError } from 'utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { albumsPublishAndDeliveryRedux } from "redux/actions/AlbumsActions";
+import { albumsEditRedux, albumsPublishAndDeliveryRedux } from "redux/actions/AlbumsActions";
 import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import { getDeliveredTitleDialog } from "utils/albums.utils";
 import { getDeliveredContentTextDialog, getAlbumById } from '../../utils/albums.utils';
@@ -17,6 +17,8 @@ import { Delete, Edit } from '@mui/icons-material/';
 import { useNavigate } from 'react-router-dom';
 import { mainBlue } from 'variables/colors';
 import { lightBlue } from '../../variables/colors';
+import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
+import { ourListOfDeliveryStates, ourAlbumStateWithEquivalence } from '../../variables/varias';
 
 const AlbumActionsDialog = (props) => {
 
@@ -32,6 +34,7 @@ const AlbumActionsDialog = (props) => {
   const [buttonState, setButtonState] = useState('none');
   const [deliveryState, setDeliveryState] = useState('none');
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""] })
 
   const handleDeliveryTo = async targetDelivery => {
     setLoading(true); setDeliveryState('processing');
@@ -59,6 +62,30 @@ const AlbumActionsDialog = (props) => {
 
   const goToAlbumInfoAndEdit = () => navigate(`/admin/albums/${album.id}?edit=true`);
 
+  const handleEditDeliveryState = () => setOpenEditDialog({
+    open: true, title: "Cambiar el estado de Delivery", subtitle: ["Solo se cambiará en la APP"],
+    handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'state'),
+    initialValues: ourAlbumStateWithEquivalence[album.state] || "", optionsValues: ourListOfDeliveryStates
+  });
+
+  const handleEditFugaId = () => setOpenEditDialog({
+    open: true, title: "Enlazar con lanzamiento de Fuga", subtitle: ["Útil para cuando creamos por nuestra cuenta un lanzamiento en FUGA",
+      "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."],
+    handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'fugaId'),
+    initialValues: album.fugaId || ""
+  });
+
+
+  const handleConfirmEditAlbum = async (newValue, fieldName) => {
+    setButtonState("loading");
+    let editResult = await toWithOutError(dispatch(albumsEditRedux(album, { [fieldName]: newValue }, album.ownerEmail, false)));
+    if (editResult === "ERROR") { setButtonState("error"); return; }
+    setButtonState("none");
+    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+  }
+
+  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
+
   return (
     <>
       <SuccessDialog isOpen={deliveryState !== 'none' && deliveryState !== 'processing'} title={successDialogTitle} contentTexts={successDialogText}
@@ -68,6 +95,10 @@ const AlbumActionsDialog = (props) => {
         title={"Eliminar Lanzamiento"} textName={album.title} textContent={deleteAlbumDialogText}
         deleteAction={handleDelete} deleteButtonText={"Eliminar"} openLoader={loading} buttonState={'delete'}
       />
+
+      <EditOrAddFieldsDialog isOpen={openEditDialog.open} handleCloseDialog={handleCloseEditDialog} handleConfirm={openEditDialog.handleConfirm}
+        title={openEditDialog.title} subtitle={openEditDialog.subtitle} loading={buttonState === "loading"}
+        buttonState={buttonState} initialValues={openEditDialog.initialValues} type={""} optionsValues={openEditDialog.optionsValues} />
 
       <Dialog
         maxWidth="sm"
@@ -115,6 +146,26 @@ const AlbumActionsDialog = (props) => {
                 endIcon={<Edit />}
                 fullWidth>
                 Editar
+              </Button>
+            </Grid>
+
+            <Grid item xs={6} padding={1}>
+              <Button
+                onClick={handleEditDeliveryState}
+                sx={{ backgroundColor: mainBlue, color: 'white', '&:hover': { backgroundColor: lightBlue } }}
+                endIcon={<Edit />}
+                fullWidth>
+                Cambiar estado en la APP
+              </Button>
+            </Grid>
+
+            <Grid item xs={6} padding={1}>
+              <Button
+                onClick={handleEditFugaId}
+                sx={{ backgroundColor: mainBlue, color: 'white', '&:hover': { backgroundColor: lightBlue } }}
+                endIcon={<Edit />}
+                fullWidth>
+                Enlazar a lanzamiento con FUGA ID
               </Button>
             </Grid>
 

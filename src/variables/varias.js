@@ -64,6 +64,15 @@ export const provinciasSorted = provincias.sort((pA, pB) => {
 })
 
 
+export const ourListOfDeliveryStates = [
+  { id: "PENDING", name: "Pendiente de revisión" },
+  { id: "PUBLISHED", name: "Aprobado, pronto para delivery" },
+  { id: "DELIVERED", name: "Ya se encuentra en las DSPs" },
+  { id: "TAKEN_DOWN", name: "Dado de baja en las DSPs" },
+  { id: "DELETED", name: "Eliminado de las DSPs" },
+  { id: "DELIVERED_NEED_APPLE_REVISION", name: "Ya se encuentra en las DSPs | Apple en revisión" }
+]
+
 export const ourAlbumStateWithEquivalence = {
   PENDING: "Pendiente de revisión",
   PUBLISHED: "Aprobado, pronto para delivery",

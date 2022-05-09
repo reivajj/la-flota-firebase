@@ -122,7 +122,7 @@ const AlbumTotalInfo = () => {
     console.log("NEW DATE: ", newValue);
     setButtonState("loading");
     let editResult = await toWithOutError(dispatch(albumsEditRedux(dataAlbum,
-      fieldName === "date" ? { ...newValue } : { [fieldName]: newValue }, userEmail)));
+      fieldName === "date" ? { ...newValue } : { [fieldName]: newValue }, userEmail, true)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     console.log("EDIT RESULT: ", editResult);
     setButtonState("none");

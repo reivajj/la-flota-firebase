@@ -8,14 +8,24 @@ import { TextField } from '@mui/material';
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import { AddCircleOutline } from '@mui/icons-material/';
 import SelectDateInputDDMMYYYY from 'components/Input/SelectDateInputDDMMYYYY';
+import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 
-const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title, subtitle, labelTextField, loading, buttonState, type, initialValues }) => {
+const EditOrAddFieldsDialog = (props) => {
+
+  const { isOpen, handleCloseDialog, handleConfirm, title, subtitle, labelTextField, loading, buttonState, type, initialValues, optionsValues } = props;
 
   const [value, setValue] = useState(initialValues || "");
   const [dateValues, setDateValues] = useState(initialValues ? { ...initialValues } : "");
   const addCircleIcon = <AddCircleOutline />;
 
   const handlerDateUpdate = (eventValue, typeOfDate) => setDateValues({ ...dateValues, [typeOfDate]: eventValue });
+  const handleChangeValue = event => {
+    if (optionsValues && optionsValues.length > 0) {
+      let idValue = optionsValues.find(valueObject => valueObject.name === event.target.value) || optionsValues[0].id;
+      setValue(idValue);
+    }
+    else setValue(event.target.value)
+  }
 
   return (
     <Dialog
@@ -33,15 +43,20 @@ const EditOrAddFieldsDialog = ({ isOpen, handleCloseDialog, handleConfirm, title
           {subtitle}
         </DialogContentText>
 
-        {type !== "date" ? <TextField
-          margin="normal"
-          required
-          fullWidth
-          label={labelTextField ? labelTextField : ""}
-          autoFocus
-          value={value || initialValues || ""}
-          onChange={(event) => setValue(event.target.value)}
-        />
+        {type !== "date" ?
+          <TextFieldWithInfo
+            name={labelTextField ? labelTextField : ""}
+            fullWidth
+            required
+            label={labelTextField ? labelTextField : ""}
+            value={value || initialValues || ""}
+            onChange={handleChangeValue}
+            select={(optionsValues && optionsValues.length > 0) ? true : false}
+            autoFocus
+            selectItems={optionsValues}
+            selectKeyField="id"
+            selectValueField="name"
+          />
           : <SelectDateInputDDMMYYYY type="release-date" dayValue={dateValues.dayOfMonth} monthValue={dateValues.month} yearValue={dateValues.year}
             setDayOfMonth={event => handlerDateUpdate(event.target.value, "dayOfMonth")} setMonth={event => handlerDateUpdate(event.target.value, "month")}
             setYear={event => handlerDateUpdate(event.target.value, "year")} />

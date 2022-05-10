@@ -28,6 +28,7 @@ import SuccessDialog from 'components/Dialogs/SuccessDialog';
 import { useFetch } from '../../customHooks/useFetch';
 import { userIsAdmin } from 'utils/users.utils';
 import { areMissingTracksFuga } from '../../utils/tracks.utils';
+import useWindowDimensions from '../../customHooks/useWindowDimensions';
 
 const AlbumTotalInfo = () => {
 
@@ -39,6 +40,7 @@ const AlbumTotalInfo = () => {
   const userData = useSelector(store => store.userData);
   const albums = useSelector(store => store.albums.albums);
   const dataAlbum = getAlbumById(albums, params.albumId);
+  const { width } = useWindowDimensions();
 
   console.log("DATA ALBUM : ", dataAlbum);
 
@@ -164,7 +166,8 @@ const AlbumTotalInfo = () => {
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      <SuccessDialog isOpen={buttonState === "success"} title={`Se ha realizado el Redelivery de tu lanzamiento`} contentTexts={[[`Los cambios que has hecho se verán reflejados en las tiendas en los próximos días.`]]}
+      <SuccessDialog isOpen={buttonState === "success"} title={`Se ha realizado el Redelivery de tu lanzamiento`}
+        contentTexts={[[`Los cambios que has hecho se verán reflejados en las tiendas en los próximos días.`]]}
         handleClose={() => setButtonState("none")} successImageSource="/images/successArtists.jpg" />
 
       <EditOrAddFieldsDialog isOpen={openEditDialog.open} handleCloseDialog={handleCloseEditDialog} handleConfirm={openEditDialog.handleConfirm}
@@ -184,7 +187,6 @@ const AlbumTotalInfo = () => {
       {userIsAdmin(userData.rol) && <Grid item xs={12} textAlign='center' padding={2}>
         <Typography>{`ID EN LA APP DEL ALBUM: ${dataAlbum.id}`}</Typography>
       </Grid>}
-
 
       <Card sx={cardElementStyle}>
 
@@ -216,7 +218,8 @@ const AlbumTotalInfo = () => {
                     </IconButton>
                   </Grid>}
                   <Grid item sx={{ width: "95%" }}>
-                    <Typography gutterBottom sx={titleAlbumStlye}>{dataAlbum.title}</Typography>
+                    <Typography noWrap sx={{ ...titleAlbumStlye, width: width < 1200 ? "300px" : "700px", fontSize: width < 1200 ? "1.5em" : "2.5em" }}
+                      gutterBottom>{dataAlbum.title}</Typography>
                   </Grid>
                 </Grid>
 
@@ -270,7 +273,7 @@ const AlbumTotalInfo = () => {
                 </Grid>
 
                 <Grid container item xs sx={{ height: "13.3%", marginLeft: isEditing ? "5%" : "2%" }}>
-                  <Grid item sx={{ width: "270px", marginTop: "8px" }}>
+                  <Grid item sx={{ width: albumState === "PUBLISHED" ? "300px" : "270px", marginTop: "8px" }}>
                     <Typography sx={stateInfoStyle}>
                       {`Estado: ${albumFugaStatus === "fetched" ? getOurStateFromFugaState(albumState) : ""}`}
                     </Typography>
@@ -289,7 +292,7 @@ const AlbumTotalInfo = () => {
 
             <Grid item padding={2}>
               <Button variant="contained" onClick={handleEditOrRedeliver} sx={buttonColorStyle} >
-                {isEditing ? 'Guardar' : 'Editar'}
+                {isEditing ? 'Guardar y Redistribuir' : 'Editar'}
               </Button>
             </Grid>
 
@@ -335,7 +338,7 @@ export default AlbumTotalInfo;
 
 const imageStyle = { width: "100%", height: "100%", borderRadius: "2em" };
 const cardElementStyle = { borderRadius: "30px", width: "80em", height: "20em" };
-const titleAlbumStlye = { color: "rgba(0,0,0,0.9)", whiteSpace: "nowrap", margin: "0", fontWeight: 500, fontSize: "2.5em" };
+const titleAlbumStlye = { color: "rgba(0,0,0,0.9)", whiteSpace: "nowrap", margin: "0", fontWeight: 500 };
 const artistTextStyle = { color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "1em", marginBottom: "0" };
 const moreInfoTextStyle = { color: "rgba(0,0,0,0.4)", whiteSpace: "nowrap", margin: "0", fontWeight: 300, fontSize: "1em", marginBottom: "0" };
 const selloTextStyle = { color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap", margin: "0", fontWeight: 400, fontSize: "1em", marginBottom: "0" };

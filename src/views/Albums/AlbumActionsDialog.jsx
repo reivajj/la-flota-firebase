@@ -42,9 +42,9 @@ const AlbumActionsDialog = (props) => {
     let deliverToApple = Boolean(album.dsps.find(dspInfo => dspInfo.dspName === "Apple Music"));
     const deliveryResponse = await toWithOutError(dispatch(albumsPublishAndDeliveryRedux(album, album.dsps, targetDelivery, deliverToApple)))
 
-    if (deliveryResponse === "ERROR") { setButtonState('error'); return; }
-    if (deliveryResponse === "PUBLISHED") { setButtonState('error'); setDeliveryState('published'); return; }
-    if (deliveryResponse === "DELIVERED") { setButtonState('success'); setDeliveryState('published'); return; }
+    if (deliveryResponse === "ERROR") setButtonState('error');
+    if (deliveryResponse === "PUBLISHED") { setButtonState('error'); setDeliveryState('published'); }
+    if (deliveryResponse === "DELIVERED") { setButtonState('success'); setDeliveryState('published'); }
     setLoading(false);
     handleClose();
   }

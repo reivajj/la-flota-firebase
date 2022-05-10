@@ -1,20 +1,19 @@
 import React from "react";
 import PropTypes from "prop-types";
-import makeStyles from '@mui/styles/makeStyles';
 // core components
-import styles from "assets/jss/material-dashboard-react/components/typographyStyle.js";
+import Typography from '@mui/material/Typography';
+import { dangerColor } from '../../variables/colors';
 
-const useStyles = makeStyles(styles);
-
-export default function Warning(props) {
-  const classes = useStyles();
-  const { children } = props;
+const Warning = (props) => {
+  const { children, sxOverride } = props;
   return (
-    <div className={classes.defaultFontStyle + " " + classes.warningText}>
+    <Typography sx={{ color: dangerColor[0], ...sxOverride }}>
       {children}
-    </div>
+    </Typography>
   );
 }
+
+export default Warning;
 
 Warning.propTypes = {
   children: PropTypes.node

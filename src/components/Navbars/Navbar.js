@@ -12,9 +12,7 @@ import { userDataAddInfoStore } from '../../redux/actions/UserDataActions';
 
 const NavbarMain = (props) => {
   const dispatch = useDispatch();
-
   const userData = useSelector(store => store.userData);
-
   const stateUserSnap = useFirestoreQuery(getDocIfLastUpdateFS("users", userData?.id || 0, userData?.lastUpdateTS || 0));
 
   useEffect(() => {

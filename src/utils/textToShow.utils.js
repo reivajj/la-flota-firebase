@@ -137,16 +137,30 @@ export const errorDeliveredTitle = 'Hubo un error al publicar el lanzamiento';
 
 export const filesMissingText = filesMissing => {
   let trackNamesString = "";
-  filesMissing.forEach(track => {
-    trackNamesString = trackNamesString + track.title + ", "
+  filesMissing.forEach((track, index) => {
+    if (index === filesMissing.length - 1) trackNamesString = trackNamesString + track.title
+    else trackNamesString = trackNamesString + track.title + ", "
   });
 
   return [
-    'Tu lanzamiento se ha generado en nuestra plataforma, pero hubo errores al subir los archivos de audio para las siguientes canciones:',
-    `${trackNamesString}`,
-    'Por favor, contáctate con soporte para que te demos una solución.'
+    <Warning sxOverride={{ fontSize: '18px', fontWeigth: '600' }}>
+      {'Tu lanzamiento se ha generado en nuestra plataforma, pero hubo errores al subir los archivos de audio para las siguientes canciones:'}
+    </Warning>, <br />,
+    <b>{trackNamesString}</b>, <br />,
+    "Por favor, envía los archivos de las canciones que mencionamos al siguiente link de WeTransfer, ",
+    "que el nombre de cada archivo se corresponda con el nombre de la canción ",
+    "y el título del mensaje sea el nombre del Lanzamiento", <br />,
+    <Link
+      sx={{ fontSize: '18px', fontWeigth: '600' }}
+      href="https://wetransfer.com/?to=info@laflota.com.ar"
+      target="_blank"
+      variant="body2"
+      underline="hover">
+      WeTransfer
+    </Link>,
   ]
 }
+
 export const publishedSuccessText = ['Tu lanzamiento se ha publicado correctamente, pronto estará en camino a las DSPs'];
 export const deliveredSuccessText = ['Tu lanzamiento ya se encuentra en camino a las DPSs, este proceso puede durar de 1 a 5 días hábiles'];
 export const errorDeliveredText = ["Tu lanzamiento ya se encuentra en etapa de de revisión"];

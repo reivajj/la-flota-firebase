@@ -66,6 +66,7 @@ export const provinciasSorted = provincias.sort((pA, pB) => {
 
 export const ourListOfDeliveryStates = [
   { id: "PENDING", name: "Pendiente de revisión" },
+  { id: "TRACKS_MISSING", name: "Faltan archivos de Audio" },
   { id: "PUBLISHED", name: "Aprobado, pronto para delivery" },
   { id: "DELIVERED", name: "Ya se encuentra en las DSPs" },
   { id: "TAKEN_DOWN", name: "Dado de baja en las DSPs" },
@@ -75,6 +76,7 @@ export const ourListOfDeliveryStates = [
 
 export const ourAlbumStateWithEquivalence = {
   PENDING: "Pendiente de revisión",
+  TRACKS_MISSING: "Faltan archivos de Audio",
   PUBLISHED: "Aprobado, pronto para delivery",
   DELIVERED: "Ya se encuentra en las DSPs",
   TAKEN_DOWN: "Dado de baja en las DSPs",
@@ -84,6 +86,7 @@ export const ourAlbumStateWithEquivalence = {
 
 export const colorFromFugaState = {
   PENDING: "rgb(231, 190, 66)",
+  TRACKS_MISSING: "rgb(111, 2, 2)",
   PUBLISHED: "rgb(64, 68, 46)",
   DELIVERED: "rgb(93, 109, 15)",
   TAKEN_DOWN: "rgb(170, 3, 3)",

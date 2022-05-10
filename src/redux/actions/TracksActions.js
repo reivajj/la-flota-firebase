@@ -70,7 +70,6 @@ const uploadTrackFileInAlbumRedux = (dataTrack, onUploadProgress) => async dispa
 
   let success = false;
   for (let retry = 0; (retry < 2 && !success); retry++) {
-    console.log("SUCCESS SUBIENDO TRACK FILE: ", success);
     let trackFromThirdWebApi = await BackendCommunication.uploadTrackFileFuga(formDataTrack, dataTrack.ownerEmail, onUploadProgress
       , dataTrack.albumFugaId, retry, dispatch);
     if (trackFromThirdWebApi !== "ERROR") success = true;

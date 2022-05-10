@@ -12,13 +12,14 @@ import { getDeliveredTitleDialog } from "utils/albums.utils";
 import { getDeliveredContentTextDialog, getAlbumById } from '../../utils/albums.utils';
 import DeleteDialog from '../../components/Dialogs/DeleteDialog';
 import { deleteAlbumRedux } from '../../redux/actions/AlbumsActions';
-import { deleteAlbumDialogText } from '../../utils/textToShow.utils';
+import { deleteAlbumDialogText, subtitleEditFugaId } from '../../utils/textToShow.utils';
 import { Delete, Edit } from '@mui/icons-material/';
 import { useNavigate } from 'react-router-dom';
 import { mainBlue } from 'variables/colors';
 import { lightBlue } from '../../variables/colors';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { ourListOfDeliveryStates, ourAlbumStateWithEquivalence } from '../../variables/varias';
+import { subtitleEditUPC } from 'utils/textToShow.utils';
 
 const AlbumActionsDialog = (props) => {
 
@@ -69,16 +70,21 @@ const AlbumActionsDialog = (props) => {
   });
 
   const handleEditFugaId = () => setOpenEditDialog({
-    open: true, title: "Enlazar con lanzamiento de Fuga", subtitle: ["Útil para cuando creamos por nuestra cuenta un lanzamiento en FUGA",
-      "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."],
+    open: true, title: "Enlazar con lanzamiento de Fuga", subtitle: subtitleEditFugaId,
     handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'fugaId'),
     initialValues: album.fugaId || ""
+  });
+
+  const handleEditUPC = () => setOpenEditDialog({
+    open: true, title: "Editar UPC", subtitle: subtitleEditUPC, handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'upc'),
+    initialValues: album.upc
   });
 
 
   const handleConfirmEditAlbum = async (newValue, fieldName) => {
     setButtonState("loading");
-    let editResult = await toWithOutError(dispatch(albumsEditRedux(album, { [fieldName]: newValue }, album.ownerEmail, false)));
+    let finalValue = fieldName === 'state' ? newValue.id : newValue;
+    let editResult = await toWithOutError(dispatch(albumsEditRedux(album, { [fieldName]: finalValue }, album.ownerEmail, false)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     setButtonState("none");
     setOpenEditDialog({ open: false, title: "", subtitle: "" });
@@ -112,10 +118,10 @@ const AlbumActionsDialog = (props) => {
 
         <DialogContent>
           <DialogContentText key={0}>
-            Las acciones que se lleven a cabo acá se verán reflejadas en Fuga.
+            Las acciones que se lleven a cabo en Editar, se verán reflejadas en Fuga.
           </DialogContentText>
           <DialogContentText key={1}>
-            Si se edita la metadata de un Lanzamiento, al mismo tiempo se realizará el Redelivery del mismo. (PROXIMAMENTE)
+            Si se edita la metadata de un Lanzamiento, al mismo tiempo se realizará el Redelivery del mismo.
           </DialogContentText>
 
           <Grid container direction="column" paddingTop={2}>
@@ -166,6 +172,16 @@ const AlbumActionsDialog = (props) => {
                 endIcon={<Edit />}
                 fullWidth>
                 Enlazar a lanzamiento con FUGA ID
+              </Button>
+            </Grid>
+
+            <Grid item xs={6} padding={1}>
+              <Button
+                onClick={handleEditUPC}
+                sx={{ backgroundColor: mainBlue, color: 'white', '&:hover': { backgroundColor: lightBlue } }}
+                endIcon={<Edit />}
+                fullWidth>
+                Editar o agregar UPC
               </Button>
             </Grid>
 

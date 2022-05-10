@@ -122,12 +122,12 @@ export const getArtistNameAndPrimaryOfAlbum = albumData => {
   ...albumData.allOtherArtists.map(otherArtist => { return { name: otherArtist.name, primary: otherArtist.primary } })];
 }
 
-export const getOurStateFromFugaState = fugaState => {
+export const getOurStateFromFugaState = (fugaState) => {
   return ourAlbumStateWithEquivalence[fugaState];
 }
 
 export const getStateColor = fugaState => {
-  if (!fugaAlbumsState.includes(fugaState)) return "rgb(231, 190, 66)";
+  if (!Object.keys(colorFromFugaState).includes(fugaState)) return "rgb(231, 190, 66)";
   return colorFromFugaState[fugaState];
 }
 

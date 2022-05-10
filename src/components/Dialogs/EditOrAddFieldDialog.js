@@ -21,8 +21,8 @@ const EditOrAddFieldsDialog = (props) => {
   const handlerDateUpdate = (eventValue, typeOfDate) => setDateValues({ ...dateValues, [typeOfDate]: eventValue });
   const handleChangeValue = event => {
     if (optionsValues && optionsValues.length > 0) {
-      let idValue = optionsValues.find(valueObject => valueObject.name === event.target.value) || optionsValues[0].id;
-      setValue(idValue);
+      let newValueObject = optionsValues.find(valueObject => valueObject.name === event.target.value) || optionsValues[0];
+      setValue(newValueObject);
     }
     else setValue(event.target.value)
   }
@@ -49,7 +49,7 @@ const EditOrAddFieldsDialog = (props) => {
             fullWidth
             required
             label={labelTextField ? labelTextField : ""}
-            value={value || initialValues || ""}
+            value={optionsValues ? value.name || initialValues : value || initialValues || ""}
             onChange={handleChangeValue}
             select={(optionsValues && optionsValues.length > 0) ? true : false}
             autoFocus

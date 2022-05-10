@@ -8,7 +8,7 @@ import CardFooter from "components/Card/CardFooter.js";
 
 import { Grid, Typography, Button } from '@mui/material';
 import SimpleReactValidator from "simple-react-validator";
-import { albumCleanUpdatingAlbum, createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
+import { albumCleanUpdatingAlbum, albumsEditRedux, createAlbumRedux, updateAddingAlbumRedux } from "redux/actions/AlbumsActions";
 import { v4 as uuidv4 } from 'uuid';
 
 import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
@@ -145,8 +145,9 @@ const NewAlbum = ({ editing }) => {
     handleCloseSuccessUpload();
   }
 
-  const handleMissingFiles = filesMissing => {
+  const handleMissingFiles = async filesMissing => {
     setOpenMissingFilesDialog({ open: true, title: filesMissingTitle, text: filesMissingText(filesMissing) });
+    await toWithOutError(dispatch(albumsEditRedux(currentAlbumData, { state: "TRACKS_MISSING" }, currentAlbumData.ownerEmail, false)));
   }
 
   const coverLabelArtistAllValids = () => {

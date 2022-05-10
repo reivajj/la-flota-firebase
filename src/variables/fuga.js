@@ -1,5 +1,5 @@
 // Important: You can only edit a delivery instruction when its state is NOT_ADDED or ADDED.
-export const fugaAlbumsState = ["PENDING", "PUBLISHED", "DELIVERED", "TAKEN_DOWN", "DELETED", "DELIVERED_NEED_APPLE_REVISION"];
+export const fugaAlbumsState = ["PENDING", "TRACKS_MISSING", "PUBLISHED", "DELIVERED", "TAKEN_DOWN", "DELETED", "DELIVERED_NEED_APPLE_REVISION"];
 
 export const dspIdsWithLiveLinks = { spotify_dsp_id: 746109, apple_dsp_id: 1330598 };
 

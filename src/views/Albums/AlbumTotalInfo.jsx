@@ -26,7 +26,8 @@ import { useNavigate } from 'react-router';
 import { albumsEditRedux, albumsUploadCoverRedux } from '../../redux/actions/AlbumsActions';
 import SuccessDialog from 'components/Dialogs/SuccessDialog';
 import { useFetch } from '../../customHooks/useFetch';
-import { userIsAdmin, userIsDev } from 'utils/users.utils';
+import { userIsAdmin } from 'utils/users.utils';
+import { areMissingTracksFuga } from '../../utils/tracks.utils';
 
 const AlbumTotalInfo = () => {
 
@@ -60,7 +61,10 @@ const AlbumTotalInfo = () => {
   let imageFetch = useFetch(urlFugaImageAlbum);
   let imageFetchStatus = imageFetch.status; let imageFetchData = imageFetch.data;
 
-  const stateInfoStyle = { color: getStateColor(albumFugaData.state ? albumFugaData.state : ""), fontSize: "1em", fontWeight: 400 };
+  let audioTracksMissing = albumFugaStatus === "fetched" ? areMissingTracksFuga(albumFugaData.assets) : false;
+  let albumState = audioTracksMissing ? "TRACKS_MISSING" : albumFugaData.state ? albumFugaData.state : "";
+
+  const stateInfoStyle = { color: getStateColor(albumState), fontSize: "1em", fontWeight: 500 };
 
   // imageFetchStatus === "fetched" && console.log("image albumFuga: ", imageFetchData);
   // albumFugaStatus === "fetched" && console.log("albumFugaData albumFuga: ", albumFugaData);
@@ -119,12 +123,10 @@ const AlbumTotalInfo = () => {
   const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
 
   const handleConfirmEditAlbum = async (newValue, fieldName) => {
-    console.log("NEW DATE: ", newValue);
     setButtonState("loading");
     let editResult = await toWithOutError(dispatch(albumsEditRedux(dataAlbum,
       fieldName === "date" ? { ...newValue } : { [fieldName]: newValue }, userEmail, true)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
-    console.log("EDIT RESULT: ", editResult);
     setButtonState("none");
     setOpenEditDialog({ open: false, title: "", subtitle: "" });
   }
@@ -270,7 +272,7 @@ const AlbumTotalInfo = () => {
                 <Grid container item xs sx={{ height: "13.3%", marginLeft: isEditing ? "5%" : "2%" }}>
                   <Grid item sx={{ width: "270px", marginTop: "8px" }}>
                     <Typography sx={stateInfoStyle}>
-                      {`Estado: ${albumFugaStatus === "fetched" ? getOurStateFromFugaState(albumFugaData.state) : ""}`}
+                      {`Estado: ${albumFugaStatus === "fetched" ? getOurStateFromFugaState(albumState) : ""}`}
                     </Typography>
                   </Grid>
 

@@ -66,3 +66,9 @@ export const readAndCheckAudioFile = async (file, wav, setOpenLowQualityAudioDia
   }
   return "SUCCESS";
 }
+
+export const areMissingTracksFuga = assetsDataFuga => {
+  let findAssetWithNoAudioFile = assetsDataFuga.find(asset => !asset.audio.has_uploaded);
+  if (findAssetWithNoAudioFile) return true;
+  else return false;
+}

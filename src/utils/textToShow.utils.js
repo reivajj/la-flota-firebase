@@ -141,7 +141,7 @@ export const filesMissingText = filesMissing => {
     trackNamesString = trackNamesString + track.title + ", "
   });
 
-  return  [
+  return [
     'Tu lanzamiento se ha generado en nuestra plataforma, pero hubo errores al subir los archivos de audio para las siguientes canciones:',
     `${trackNamesString}`,
     'Por favor, contáctate con soporte para que te demos una solución.'
@@ -158,3 +158,13 @@ export const warningAppleDelivery = [
   // <br />,
   // "Haz click para más información sobre los requisitos."
 ]
+
+export const subtitleEditUPC = [
+  "Este cambio claramente no genera un Redelivery, ", <br />,
+  "ya que no debería estar en Delivery si podemos cambiar el UPC.", <br />,
+  "Se supone que sólo debemos agregar o editar un UPC cuando por algun motivo,",
+  "el UPC que aparece en la APP no concuerda con el de FUGA.", <br />,
+  <b>{'El cambio solo impacta a nivel de la APP'}</b>]
+
+export const subtitleEditFugaId = ["Útil para cuando creamos por nuestra cuenta un lanzamiento en FUGA ", <br />,
+  "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."]  

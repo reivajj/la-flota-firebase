@@ -64,7 +64,6 @@ export const createArtistRedux = (isAdmin, artist, userId, ownerEmail, typeOfArt
 
   delete artist.imagenRef;
   let rawDataArtist = createArtistModel(artist, false);
-  console.log("FORM DATA ARTIST: ", rawDataArtist);
   writeCloudLog("creating artist model to send fuga", rawDataArtist, { notError: "not error" }, "info");
 
   let artistFromThirdWebApi = await BackendCommunication.createArtistFuga(rawDataArtist, ownerEmail, dispatch);
@@ -75,7 +74,6 @@ export const createArtistRedux = (isAdmin, artist, userId, ownerEmail, typeOfArt
   artist.ownerId = isAdmin ? userByEmailData.id : userId;
   artist.ownerEmail = ownerEmail;
 
-  console.log("ARTIST: ", artist);
   artist.fugaId = artistFromThirdWebApi.data.response.id;
   artist.fugaPropietaryId = artistFromThirdWebApi.data.response.proprietary_id;
   artist.spotifyIdentifierIdFuga = artistFromThirdWebApi.data.response.spotifyIdentifierIdFuga;

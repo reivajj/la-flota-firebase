@@ -75,6 +75,7 @@ export const createAlbumModel = (dataAlbum, explicit, myTracks, artistsInvitedSt
   formDataAlbum.append("extra_4", `Email en la app del user:${dataAlbum.ownerEmail}`);
   formDataAlbum.append("extra_5", `Id en la app del user:${dataAlbum.ownerId}`);
   formDataAlbum.append("extra_6", `Version App:${appVersion}`);
+  formDataAlbum.append("extra_7", `Id en la app del Artista:${dataAlbum.artistId}`);
   formDataAlbum.append("typeCover", "image_cover_art");
   formDataAlbum.append("cover", dataAlbum.cover);
 

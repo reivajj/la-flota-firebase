@@ -1,4 +1,4 @@
-import { Dashboard, Person, PeopleAlt, Album, CollectionsBookmark } from "@mui/icons-material";
+import { Dashboard, Person, PeopleAlt, Album, CollectionsBookmark, Paid } from "@mui/icons-material";
 // core components/views for Admin layout
 import DashboardPage from "views/Dashboard/DashboardBasicUser.js";
 import MyAlbums from "views/Albums/MyAlbums";
@@ -43,6 +43,13 @@ const dashboardRoutes = [
     path: "/albums",
     name: "Lanzamientos",
     icon: Album,
+    component: MyAlbums,
+    layout: "/admin"
+  },
+  {
+    path: "/regalias",
+    name: "Regalías",
+    icon: Paid,
     component: MyAlbums,
     layout: "/admin"
   },

@@ -88,3 +88,7 @@ export const USERS_ADD = "users_add";
 export const USERS_DELETE_BY_ID = "users_delete_by_id";
 export const USERS_SIGN_OUT = "users_sign_out";
 export const USERS_EDIT_BY_ID = "users_edit_by_id";
+
+//Royalties
+export const ROYALTIES_ADD = "royalties_add";
+export const ROYALTIES_SIGN_OUT = "royalties_sign_out";

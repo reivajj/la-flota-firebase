@@ -404,3 +404,18 @@ export const createSubgenreFuga = async (subgenreName, dispatch) => {
   }
   return resultWIthFugaId.data.response;
 }
+
+//=====================================================ROYALTIES=======================================================================\\
+
+export const getRoyaltiesForTableView = async (fieldName, fieldValue, companyName, limit, offset, dispatch) => {
+  const [errorGettingRoyalties, royaltiesResponse] = await to(axios.post(`${targetUrl}royalties/search`,
+    { fieldName, fieldValue, companyName, limit, offset }));
+  if (errorGettingRoyalties) {
+    dispatch(createBackendError(errorGettingRoyalties));
+    writeCloudLog("Error getting royalties from DB", { fieldName, fieldValue, companyName, limit, offset }, errorGettingRoyalties, "error");
+    return "ERROR";
+  }
+
+  let result = royaltiesResponse.data.response;
+  return { count: result.total, rows: result.royalties };
+}

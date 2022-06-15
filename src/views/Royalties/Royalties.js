@@ -23,6 +23,8 @@ const Royalties = () => {
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
+  const [isrcSearchValue, setIsrcSearchValue] = useState("");
+  const [artistSearchValue, setArtistSearchValue] = useState("");
   // END SEARCH STUFF
 
   const [totalCount, setTotalCount] = useState(0);
@@ -67,9 +69,15 @@ const Royalties = () => {
   // INIT SEARCH STUFF
   const onSearchEmailHandler = async email => {
     setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
-    if (!email) { setSearchParams({ field: "upc", values: [] }); return }
+    if (!email) { setSearchParams({ field: "upc", values: [] }); return };
     let userAlbums = await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerEmail', email)));
     setSearchParams({ field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) });
+  }
+
+  const onSearchArtistHandler = async artistName => {
+    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+    if (!artistName) { setSearchParams({ field: "upc", values: [] }); return };
+    setSearchParams({ field: "releaseArtist", values: artistName.trim() });
   }
 
   const onSearchUPCHandler = async upcsSeparatedByComa => {
@@ -78,21 +86,31 @@ const Royalties = () => {
     setSearchParams({ field: "upc", values: upcsAsArray });
   }
 
+  const onSearchISRCHandler = async isrcsSeparatedByComa => {
+    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+    let isrcsAsArray = isrcsSeparatedByComa.toString().split(",");
+    setSearchParams({ field: "isrc", values: isrcsAsArray });
+  }
+
   const handleEnterKeyPress = (event, searchProps) => {
     if (event.key === 'Enter') {
       if (searchProps.name === "Email") onSearchEmailHandler(searchProps.value);
-      if (searchProps.name === "UPC") onSearchUPCHandler(searchProps.value);
+      if (searchProps.name === "UPC's separados por coma") onSearchUPCHandler(searchProps.value);
+      if (searchProps.name === "ISRC's separados por coma") onSearchISRCHandler(searchProps.value);
+      if (searchProps.name === "Nombre de Artista") onSearchArtistHandler(searchProps.value);
     }
   }
 
   const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
+  const upcSearchProps = { name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
+  const isrcSearchProps = { name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcSearchValue.trim(), setValue: setIsrcSearchValue };
+  const artistSearchProps = { name: "Nombre de Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistSearchValue, setValue: setArtistSearchValue };
 
   const cleanSearchResults = () => {
-    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage > 7 ? rowsPerPage : 7));
     setSearchParams({ field: "upc", values: [] });
-    setEmailSearchValue("");
-    setUpcSearchValue("");
+    setEmailSearchValue(""); setUpcSearchValue(""); setIsrcSearchValue("");
+    setArtistSearchValue("");
   }
   // END SEARCH STUFF
 
@@ -109,8 +127,8 @@ const Royalties = () => {
         <Grid item xs={12} sx={{ textAlign: "center" }}>
 
           <Grid item xs={12} padding={0} >
-            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps]} cleanSearchResults={cleanSearchResults} appBarSx={appBarSx}
-              appBarTitle='Regalías' mainSearchColor={fugaGreen} />
+            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]}
+              cleanSearchResults={cleanSearchResults} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen} />
           </Grid>
 
           <Grid item xs={12} sx={{ margin: 'auto' }}>

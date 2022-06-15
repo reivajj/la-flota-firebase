@@ -16,39 +16,39 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
 }));
 
+const Search = styled('div')(({ theme, mainSearchColor }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(mainSearchColor ? mainSearchColor : theme.palette.common.white, mainSearchColor ? 0.85 : 0.15),
+  '&:hover': {
+    backgroundColor: alpha(mainSearchColor ? mainSearchColor : theme.palette.common.white, mainSearchColor ? 0.95 : 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: '1em',
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '25ch',
+    },
+  },
+}));
+
 const SearchNavbar = (props) => {
   const { searchArrayProps, cleanSearchResults, appBarSx, appBarTitle, mainSearchColor } = props;
   const { width } = useWindowDimensions();
-
-  const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(mainSearchColor ? mainSearchColor : theme.palette.common.white, mainSearchColor ? 0.85 : 0.15),
-    '&:hover': {
-      backgroundColor: alpha(mainSearchColor ? mainSearchColor : theme.palette.common.white, mainSearchColor ? 0.95 : 0.25),
-    },
-    marginRight: theme.spacing(2),
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
-  }));
-
-  const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    '& .MuiInputBase-input': {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: '1em',
-      transition: theme.transitions.create('width'),
-      width: '100%',
-      [theme.breakpoints.up('md')]: {
-        width: '25ch',
-      },
-    },
-  }));
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -65,7 +65,7 @@ const SearchNavbar = (props) => {
           </Typography>}
 
           {searchArrayProps.map((searchProp, index) =>
-            <Search key={'search' + index}>
+            <Search key={'search' + index} mainSearchColor={mainSearchColor}>
               <StyledInputBase
                 key={'input' + searchProp.name}
                 onKeyPress={(event) => searchProp.handleEnterKeyPress(event, searchProp)}

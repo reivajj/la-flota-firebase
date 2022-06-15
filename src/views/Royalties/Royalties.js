@@ -17,7 +17,6 @@ const Royalties = () => {
   const currentUserData = useSelector(store => store.userData);
   const rol = currentUserData.rol;
 
-  const [searching, setSearching] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [royaltiesRows, setRoyaltiesRows] = useState([]);
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
@@ -26,13 +25,11 @@ const Royalties = () => {
 
   useEffect(() => {
     const getRoyaltiesCountAndRows = async () => {
-      setSearching(true);
       setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
       let { count, rows } = await getRoyaltiesForTableView("upc", [], "fuga", rowsPerPage, rowsPerPage * page, dispatch);
       console.log({ count, rows });
       setTotalCount(count);
       setRoyaltiesRows(rows.map(royaltyRow => createRoyaltyRowForUser(royaltyRow)));
-      setSearching(false);
     }
 
     getRoyaltiesCountAndRows();
@@ -69,7 +66,7 @@ const Royalties = () => {
             <SearchNavbar searchArrayProps={[]} cleanSearchResults={() => console.log()} />
           </Grid>
 
-          <Grid item xs={11} sx={{ margin: 'auto' }}>
+          <Grid item xs={12} sx={{ margin: 'auto' }}>
             <CustomizedTable {...royaltiesTableParams} />
           </Grid>
 

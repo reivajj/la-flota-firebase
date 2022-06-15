@@ -12,9 +12,12 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
     color: theme.palette.common.white,
+    padding: '12px',
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
+    padding: '8px',
+    height: '60px'
   },
 }));
 
@@ -38,7 +41,7 @@ const CustomizedTable = (props) => {
           <TableHead>
             <TableRow key='headers'>
               {headers.map(headerName => (
-                <StyledTableCell align="left">{headerName}</StyledTableCell>
+                <StyledTableCell align="center">{headerName}</StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -48,7 +51,7 @@ const CustomizedTable = (props) => {
               .map(row => (
                 <StyledTableRow key={row.id}>
                   {Object.values(row).map(rowValue => (
-                    <StyledTableCell align="left">{rowValue}</StyledTableCell>
+                    <StyledTableCell align="center">{rowValue}</StyledTableCell>
                   ))}
                 </StyledTableRow>
               ))}

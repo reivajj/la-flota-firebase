@@ -99,8 +99,8 @@ const MyUsers = () => {
     }
   }
 
-  const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue, setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue, setValue: setUpcSearchValue };
+  const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
+  const upcSearchProps = { name: "UPC", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
 
   return userIsAdmin(currentUser.rol) && !userIsRRSS(currentUser.rol)
     ? (

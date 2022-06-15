@@ -2,22 +2,24 @@ import React from "react";
 import { styled } from '@mui/material/styles';
 import {
   Table, TableBody, TableCell, TableContainer, TablePagination,
-  TableHead, TableRow, Paper
+  TableHead, TableRow, Paper, Typography, Tooltip
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import TablePaginationActions from './TablePaginationActions';
+import { fugaGreen } from "variables/colors";
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
+    // backgroundColor: theme.palette.common.black,
+    backgroundColor: fugaGreen,
     color: theme.palette.common.white,
-    padding: '12px',
+    padding: '8px',
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
     padding: '8px',
-    height: '60px'
+    height: '60px',
   },
 }));
 
@@ -32,16 +34,17 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const CustomizedTable = (props) => {
-  const { rows, headers, totalCount, handleChangePage, page, handleChangeRowsPerPage, rowsPerPage } = props;
-
+  const { rows, headers, headersHeight, columnsWidth, totalCount, handleChangePage, page, handleChangeRowsPerPage, rowsPerPage } = props;
+  const stringLengthNeedWrap = 17;
+  
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 600 }}>
         <Table sx={{ minWidth: 700 }} stickyHeader aria-label="customized table">
-          <TableHead>
+          <TableHead sx={{ height: headersHeight }}>
             <TableRow key='headers'>
-              {headers.map(headerName => (
-                <StyledTableCell align="center">{headerName}</StyledTableCell>
+              {headers.map((headerName, index) => (
+                <StyledTableCell sx={{ width: columnsWidth[index] }} align="center">{headerName}</StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -50,8 +53,15 @@ const CustomizedTable = (props) => {
               // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map(row => (
                 <StyledTableRow key={row.id}>
-                  {Object.values(row).map(rowValue => (
-                    <StyledTableCell align="center">{rowValue}</StyledTableCell>
+                  {Object.values(row).map((rowValue, index) => (
+                    <StyledTableCell align="center">
+                      {rowValue && rowValue.length > stringLengthNeedWrap
+                        ? <Tooltip key={index} title={rowValue} >
+                          <Typography sx={{ maxWidth: 150 }} noWrap>{rowValue}</Typography>
+                        </Tooltip>
+                        : <Typography sx={{ maxWidth: 150 }} noWrap>{rowValue}</Typography>
+                      }
+                    </StyledTableCell>
                   ))}
                 </StyledTableRow>
               ))}

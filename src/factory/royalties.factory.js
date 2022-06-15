@@ -1,22 +1,36 @@
 import { Skeleton } from '@mui/material';
 
 const stringReducer = string => {
-  return string.length > 120
-    ? string.slice(0, 13) + '...'
+  return string.length > 143
+    ? string.slice(0, 40) + '...'
     : string;
 }
 
+const dspReducer = dspString => {
+  let dspObject = {
+    'Amazon Unlimited': 'Amazon',
+    'Netease Cloud Music': 'Netease',
+    'Facebook Fingerprinting': 'Facebook',
+    'Facebook Audio Library': 'Instagram',
+    'Youtube Music': 'Youtube M.',
+    'Youtube Ad Supported': 'Youtube Ad'
+  }
+  return dspObject[dspString] || dspString;
+}
+
 export const getRoyaltyHeadersForUser = [
-  "Fecha inicial", "Fecha final", "Artista", "DSP", "Track", "Lanzamiento", "ISRC", "UPC", "Regalía", "Moneda", "Territorio",
-  "Tipo de Usuario", "Tipo de venta", "Cantidad", "Stream Id"
+  { name: "Mes", width: "5%" }, { name: "Artista", width: "13%" },
+  { name: "DSP", width: "7%" }, { name: "Track", width: "13%" }, { name: "Lanzamiento", width: "13%" }, { name: "ISRC", width: "5%" },
+  { name: "UPC", width: "5%" }, { name: "Regalía", width: "5%" }, { name: "Moneda", width: "5%" }, { name: "Territorio", width: "5%" },
+  { name: "Usuario", width: "5%" }, { name: "Tipo de venta", width: "9%" }, { name: "Cantidad", width: "5%" },
+  { name: "Stream Id", width: "5%" }
 ]
 
 export const createRoyaltyRowForUser = royaltyFromDB => {
   return {
-    saleStartDate: royaltyFromDB.saleStartDate,
-    saleEndDate: royaltyFromDB.saleEndDate,
+    saleStartDate: royaltyFromDB.saleStartDate.slice(0,7),
     releaseArtist: stringReducer(royaltyFromDB.releaseArtist),
-    dsp: stringReducer(royaltyFromDB.dsp),
+    dsp: dspReducer(royaltyFromDB.dsp),
     assetTitle: stringReducer(royaltyFromDB.assetTitle),
     releaseTitle: stringReducer(royaltyFromDB.releaseTitle),
     isrc: royaltyFromDB.isrc,
@@ -25,7 +39,7 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
     netRevenueCurrency: royaltyFromDB.netRevenueCurrency,
     territory: royaltyFromDB.territory,
     saleUserType: royaltyFromDB.saleUserType,
-    assetOrReleaseSale: royaltyFromDB.assetOrReleaseSale === "Asset" ? "Track" : "Lanzamiento",
+    saleType: royaltyFromDB.saleType,
     assetQuantity: royaltyFromDB.assetQuantity,
     id: royaltyFromDB.saleId,
   }

@@ -21,29 +21,44 @@ const dspReducer = dspString => {
 export const getRoyaltyHeadersForUser = [
   { name: "Mes", width: "5%" }, { name: "Artista", width: "13%" },
   { name: "DSP", width: "7%" }, { name: "Track", width: "13%" }, { name: "Lanzamiento", width: "13%" }, { name: "ISRC", width: "5%" },
-  { name: "UPC", width: "5%" }, { name: "Regalía", width: "5%" }, { name: "Moneda", width: "5%" }, { name: "Territorio", width: "5%" },
+  { name: "UPC", width: "5%" }, { name: "Regalías", width: "5%" }, { name: "Moneda", width: "5%" }, { name: "Territorio", width: "5%" },
   { name: "Usuario", width: "5%" }, { name: "Tipo de venta", width: "9%" }, { name: "Cantidad", width: "5%" },
   { name: "Stream Id", width: "5%" }
 ]
 
+export const getAccountingHeadersForUser = [
+  { name: "DSP", width: "25%" }, { name: "Streams", width: "25%" },
+  { name: "Descargas", width: "25%" }, { name: "Regalías", width: "25%" }
+]
+
 export const createRoyaltyRowForUser = royaltyFromDB => {
   return {
-    saleStartDate: royaltyFromDB.saleStartDate.slice(0,7),
+    saleStartDate: royaltyFromDB.saleStartDate.slice(0, 7),
     releaseArtist: stringReducer(royaltyFromDB.releaseArtist),
     dsp: dspReducer(royaltyFromDB.dsp),
     assetTitle: stringReducer(royaltyFromDB.assetTitle),
     releaseTitle: stringReducer(royaltyFromDB.releaseTitle),
     isrc: royaltyFromDB.isrc,
     upc: royaltyFromDB.upc,
-    netRevenue: parseFloat(royaltyFromDB.netRevenue).toFixed(6),
+    netRevenue: parseFloat(royaltyFromDB.netRevenue).toFixed(4),
     netRevenueCurrency: royaltyFromDB.netRevenueCurrency,
     territory: royaltyFromDB.territory,
-    saleUserType: royaltyFromDB.saleUserType,
-    saleType: royaltyFromDB.saleType,
+    saleUserType: royaltyFromDB.saleUserType ? royaltyFromDB.saleUserType : "YT User",
+    saleType: royaltyFromDB.saleType === "Video Stream (Audio + Video)" ? "Video Stream (Video + Audio)" : royaltyFromDB.saleType,
     assetQuantity: royaltyFromDB.assetQuantity,
     id: royaltyFromDB.saleId,
   }
 }
+
+export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
+  return {
+    [groupByProp]: accountingFromDB[groupByProp],
+    streams: accountingFromDB.streams,
+    downloads: accountingFromDB.downloads,
+    netRevenue: 'EUR ' + parseFloat(accountingFromDB.revenues).toFixed(4),
+  }
+}
+
 
 const loadingSkeleton = () => (
   <Skeleton variant="rectangular" sx={{ height: '30px', mx: 1 }} />
@@ -54,20 +69,30 @@ export const getSkeletonRoyaltiesRow = rowsPerPage => {
   return [...Array(rowsPerPage)].map((index) => {
     return {
       saleStartDate: loadingSkeleton(),
-      saleEndDate: loadingSkeleton(),
+      releaseArtist: loadingSkeleton(),
+      dsp: loadingSkeleton(),
+      assetTitle: loadingSkeleton(),
+      releaseTitle: loadingSkeleton(),
+      isrc: loadingSkeleton(),
+      upc: loadingSkeleton(),
       netRevenue: loadingSkeleton(),
       netRevenueCurrency: loadingSkeleton(),
-      releaseArtist: loadingSkeleton(),
-      releaseTitle: loadingSkeleton(),
-      assetTitle: loadingSkeleton(),
-      upc: loadingSkeleton(),
-      isrc: loadingSkeleton(),
-      dsp: loadingSkeleton(),
-      saleUserType: loadingSkeleton(),
       territory: loadingSkeleton(),
-      assetOrReleaseSale: loadingSkeleton(),
+      saleUserType: loadingSkeleton(),
+      saleType: loadingSkeleton(),
       assetQuantity: loadingSkeleton(),
       id: index,
+    }
+  })
+}
+
+export const getSkeletonAccountingRow = rowsPerPage => {
+  return [...Array(rowsPerPage)].map(() => {
+    return {
+      dsp: loadingSkeleton(),
+      netRevenue: loadingSkeleton(),
+      streams: loadingSkeleton(),
+      downloads: loadingSkeleton(),
     }
   })
 }

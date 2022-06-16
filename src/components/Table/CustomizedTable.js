@@ -8,10 +8,8 @@ import { tableCellClasses } from '@mui/material/TableCell';
 import TablePaginationActions from './TablePaginationActions';
 import { fugaGreen } from "variables/colors";
 
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
+const StyledTableCell = styled(TableCell)(({ theme, rowsBodyHeight }) => ({
   [`&.${tableCellClasses.head}`]: {
-    // backgroundColor: theme.palette.common.black,
     backgroundColor: fugaGreen,
     color: theme.palette.common.white,
     padding: '8px',
@@ -19,7 +17,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
     padding: '8px',
-    height: '60px',
+    height: rowsBodyHeight,
   },
 }));
 
@@ -34,9 +32,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const CustomizedTable = (props) => {
-  const { rows, headers, headersHeight, columnsWidth, totalCount, handleChangePage, page, handleChangeRowsPerPage, rowsPerPage } = props;
-  const stringLengthNeedWrap = 17;
-  
+  const { rows, headers, headersHeight, columnsWidth, totalCount, handleChangePage, page,
+     handleChangeRowsPerPage, rowsPerPage, maxWidthText, maxLengthChars, rowsHeight, rowsAlign } = props;
+
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 600 }}>
@@ -44,7 +42,7 @@ const CustomizedTable = (props) => {
           <TableHead sx={{ height: headersHeight }}>
             <TableRow key='headers'>
               {headers.map((headerName, index) => (
-                <StyledTableCell sx={{ width: columnsWidth[index] }} align="center">{headerName}</StyledTableCell>
+                <StyledTableCell sx={{ width: columnsWidth[index] }} align={rowsAlign}>{headerName}</StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -54,12 +52,12 @@ const CustomizedTable = (props) => {
               .map(row => (
                 <StyledTableRow key={row.id}>
                   {Object.values(row).map((rowValue, index) => (
-                    <StyledTableCell align="center">
-                      {rowValue && rowValue.length > stringLengthNeedWrap
+                    <StyledTableCell rowsBodyHeight={rowsHeight} align={rowsAlign}>
+                      {rowValue && rowValue.length > maxLengthChars
                         ? <Tooltip key={index} title={rowValue} >
-                          <Typography sx={{ maxWidth: 150 }} noWrap>{rowValue}</Typography>
+                          <Typography sx={{ maxWidth: maxWidthText }} noWrap>{rowValue}</Typography>
                         </Tooltip>
-                        : <Typography sx={{ maxWidth: 150 }} noWrap>{rowValue}</Typography>
+                        : <Typography sx={{ maxWidth: maxWidthText }} noWrap>{rowValue}</Typography>
                       }
                     </StyledTableCell>
                   ))}
@@ -68,7 +66,7 @@ const CustomizedTable = (props) => {
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {totalCount !== 0 && <TablePagination
         rowsPerPageOptions={[5, 10, 25, 50]}
         colSpan={3}
         count={totalCount}
@@ -82,7 +80,7 @@ const CustomizedTable = (props) => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         ActionsComponent={TablePaginationActions}
-      />
+      />}
     </Paper>
 
   );

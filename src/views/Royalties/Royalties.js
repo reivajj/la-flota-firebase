@@ -5,8 +5,8 @@ import { needAdminPermissionsText } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
-import { getRoyaltyHeadersForUser, getSkeletonRoyaltiesRow } from "factory/royalties.factory";
-import { getRoyaltiesForTableView } from '../../services/BackendCommunication';
+import { createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow } from "factory/royalties.factory";
+import { getRoyaltiesForTableView, getAccountingGroupedByForTableView } from '../../services/BackendCommunication';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRoyaltyRowForUser } from '../../factory/royalties.factory';
 import { userIsAdmin } from 'utils/users.utils';
@@ -14,6 +14,7 @@ import { whiteColor } from 'assets/jss/material-dashboard-react.js';
 import { fugaGreen } from 'variables/colors';
 import { toWithOutError } from 'utils';
 import { getAlbumsByFieldRedux } from 'redux/actions/AlbumsActions';
+import AccountingBar from "components/Navbars/AccountingBar";
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,11 @@ const Royalties = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchParams, setSearchParams] = useState({ field: "upc", values: [] });
 
+  const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(6))
+  const [filterAccountingParams, setFilterAccountingParams] = useState({ field: "upc", values: [], groupBy: "dsp" });
+  const [totalsAccounting, setTotalsAccounting] = useState({ netRevenue: 0, streams: 0, downloads: 0 });
+
+  // Royalties
   useEffect(() => {
     const getRoyaltiesCountAndRows = async () => {
       let { count, rows } = await getRoyaltiesForTableView(searchParams.field, searchParams.values, "fuga", rowsPerPage, rowsPerPage * page, dispatch);
@@ -45,8 +51,32 @@ const Royalties = () => {
     getRoyaltiesCountAndRows();
   }, [page, rowsPerPage, searchParams])
 
-  const headersName = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.name);
-  const headersWidth = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.width);
+  // Accounting
+  useEffect(() => {
+    const getAccountingInfo = async () => {
+      let accountingValues = await getAccountingGroupedByForTableView(filterAccountingParams.groupBy,
+        filterAccountingParams.field, filterAccountingParams.values, dispatch);
+
+      let totals = { netRevenue: 0, streams: 0, downloads: 0 };
+      totals = { dsp: "Totales", ...totals };
+      accountingValues.forEach(accVal => {
+        totals.streams += accVal.streams;
+        totals.downloads += accVal.downloads;
+        totals.netRevenue += accVal.revenues;
+      })
+
+      totals.netRevenue = parseFloat(totals.netRevenue).toFixed(4);
+      setTotalsAccounting(totals);
+      setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, "dsp"))]);
+    }
+
+    getAccountingInfo();
+  }, [])
+
+  const headersRoyaltiesName = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.name);
+  const headersRoytaltiesWidth = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.width);
+  const headersAccountingName = getAccountingHeadersForUser.map(headerWithWidth => headerWithWidth.name);
+  const headersAccountingWidth = getAccountingHeadersForUser.map(headerWithWidth => headerWithWidth.width);
 
   const handleChangePage = (event, newPage) => {
     setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
@@ -61,9 +91,16 @@ const Royalties = () => {
 
   let appBarSx = { borderRadius: '0em', backgroundColor: whiteColor };
   let royaltiesTableParams = {
-    rows: royaltiesRows, headers: headersName, columnsWidth: headersWidth,
+    rows: royaltiesRows, headers: headersRoyaltiesName, columnsWidth: headersRoytaltiesWidth,
     totalCount, handleChangePage, page, handleChangeRowsPerPage, rowsPerPage,
-    headersHeight: 65
+    headersHeight: 65, maxLengthChars: 17, maxWidthText: 150, rowsAlign: 'center',
+    rowsHeight: 60
+  };
+
+  let accountingTableParams = {
+    rows: accountingRows, headers: headersAccountingName, columnsWidth: headersAccountingWidth,
+    totalCount: 0, headersHeight: 45, rowsHeight: 30, maxLengthChars: 60, maxWidthText: 300,
+    rowsAlign: 'left'
   };
 
   // INIT SEARCH STUFF
@@ -125,6 +162,14 @@ const Royalties = () => {
           title={"Necesitas permisos de Administrador"} contentTexts={needAdminPermissionsText} />
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
+
+          <Grid item xs={12} padding={0} >
+            <AccountingBar searchArrayProps={[emailSearchProps]} total={0} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen} />
+          </Grid>
+
+          <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
+            <CustomizedTable {...accountingTableParams} />
+          </Grid>
 
           <Grid item xs={12} padding={0} >
             <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]}

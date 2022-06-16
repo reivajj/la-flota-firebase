@@ -419,3 +419,25 @@ export const getRoyaltiesForTableView = async (fieldName, fieldValue, companyNam
   let result = royaltiesResponse.data.response;
   return { count: result.total, rows: result.royalties };
 }
+
+export const queryRoyaltiesWithOp = async (fieldName, fieldValue, companyName, op, fieldOp, groupBy, dispatch) => {
+  const [errorGettingRoyalties, royaltiesResponse] = await to(axios.post(`${targetUrl}royalties/query-with-op`,
+    { fieldName, fieldValue, companyName, op, fieldOp, groupBy }));
+  if (errorGettingRoyalties) {
+    dispatch(createBackendError(errorGettingRoyalties));
+    writeCloudLog("Error getting royalties from DB", { fieldName, fieldValue, companyName, op, fieldOp, groupBy }
+      , errorGettingRoyalties, "error");
+    return "ERROR";
+  }
+  return royaltiesResponse.data.response;;
+}
+
+export const getAccountingGroupedByForTableView = async (groupByProp, fieldName, fieldValue, dispatch) => {
+  const [errorGettingAccounting, accountingResponse] = await to(axios.post(`${targetUrl}royalties/accounting-groupBy/${groupByProp}`, { fieldName, fieldValue }));
+  if (errorGettingAccounting) {
+    dispatch(createBackendError(errorGettingAccounting));
+    writeCloudLog("Error getting royalties from DB", { groupByProp }, errorGettingAccounting, "error");
+    return "ERROR";
+  }
+  return accountingResponse.data.response;
+}

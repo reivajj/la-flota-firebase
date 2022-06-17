@@ -65,8 +65,9 @@ const Royalties = () => {
         totals.netRevenue += accVal.revenues;
       })
 
-      totals.netRevenue = parseFloat(totals.netRevenue).toFixed(4);
+      totals = { dsp: totals.dsp, streams: totals.streams, downloads: totals.downloads, netRevenue: 'EUR ' + parseFloat(totals.netRevenue).toFixed(4) }
       setTotalsAccounting(totals);
+      console.log("TOTALS: ", totals)
       setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, "dsp"))]);
     }
 

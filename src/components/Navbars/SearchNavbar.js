@@ -49,24 +49,25 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const SearchNavbar = (props) => {
   const { searchArrayProps, cleanSearchResults, appBarSx, appBarTitle, mainSearchColor, isOpen, handleCollapseTable } = props;
   const { width } = useWindowDimensions();
+  const collapsable = handleCollapseTable !== undefined;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={appBarSx ? appBarSx : { borderRadius: '2em', backgroundColor: mainColor }}>
-        <Toolbar style={{ paddingLeft: 0, paddingRight: 0 }}>
+        <Toolbar style={{ paddingLeft: collapsable ? 0 : "16px", paddingRight: collapsable ? 0 : "16px" }}>
 
-          <IconButton key={'collapse' + isOpen} onClick={handleCollapseTable} >
+          {collapsable && <IconButton key={'collapse' + isOpen} onClick={handleCollapseTable} >
             {isOpen
               ? <ExpandLess sx={{ color: "black" }} />
               : <ExpandMore sx={{ color: "black" }} />
             }
-          </IconButton>
+          </IconButton>}
 
           {width > 1200 && <Typography
             variant="h6"
             noWrap
             component="div"
-            sx={{ display: { xs: 'none', sm: 'block' }, color: mainSearchColor ? mainSearchColor : 'white' }}
+            sx={{ display: { xs: 'none', sm: 'block' }, width: "100px", color: mainSearchColor ? mainSearchColor : 'white' }}
           >
             {appBarTitle ? appBarTitle : 'Buscador'}
           </Typography>}

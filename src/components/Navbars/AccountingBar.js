@@ -66,9 +66,9 @@ const AccountingBar = (props) => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ display: { xs: 'none', sm: 'block' }, color: mainSearchColor ? mainSearchColor : 'white' }}
+            sx={{ display: { xs: 'none', sm: 'block' }, width: "100px", color: mainSearchColor ? mainSearchColor : 'white' }}
           >
-            Ganancias
+            Ingresos
           </Typography>}
 
           {searchArrayProps.map((searchProp, index) =>

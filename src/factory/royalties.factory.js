@@ -50,15 +50,33 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
   }
 }
 
+const formatThousandsPoint = number => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const formatPeriodComma = number => number.toString().replace(".", ",");
+
 export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   return {
     [groupByProp]: accountingFromDB[groupByProp],
-    streams: accountingFromDB.streams,
-    downloads: accountingFromDB.downloads,
-    netRevenue: 'EUR ' + parseFloat(accountingFromDB.revenues).toFixed(4),
+    streams: formatThousandsPoint(accountingFromDB.streams),
+    downloads: formatThousandsPoint(accountingFromDB.downloads),
+    netRevenue: 'EUR ' + formatPeriodComma(parseFloat(accountingFromDB.revenues).toFixed(2)),
   }
 }
 
+export const getTotalesAccountingRow = accountingValues => {
+  let totals = { netRevenue: 0, streams: 0, downloads: 0 };
+  totals = { dsp: "Totales", ...totals };
+
+  accountingValues.forEach(accVal => {
+    totals.streams += accVal.streams;
+    totals.downloads += accVal.downloads;
+    totals.netRevenue += accVal.revenues;
+  })
+
+  return {
+    dsp: totals.dsp, streams: formatThousandsPoint(totals.streams), downloads: formatThousandsPoint(totals.downloads),
+    netRevenue: 'EUR ' + formatPeriodComma(parseFloat(totals.netRevenue).toFixed(2))
+  }
+}
 
 const loadingSkeleton = () => (
   <Skeleton variant="rectangular" sx={{ height: '30px', mx: 1 }} />

@@ -5,7 +5,7 @@ import { needAdminPermissionsText } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
-import { createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow } from "factory/royalties.factory";
+import { createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow } from "factory/royalties.factory";
 import { getRoyaltiesForTableView, getAccountingGroupedByForTableView } from '../../services/BackendCommunication';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRoyaltyRowForUser } from '../../factory/royalties.factory';
@@ -34,10 +34,11 @@ const Royalties = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchParams, setSearchParams] = useState({ field: "upc", values: [] });
+  const [royaltiesTableIsOpen, setRoyaltiesTableIsOpen] = useState(false);
 
   const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(6))
   const [filterAccountingParams, setFilterAccountingParams] = useState({ field: "upc", values: [], groupBy: "dsp" });
-  const [totalsAccounting, setTotalsAccounting] = useState({ netRevenue: 0, streams: 0, downloads: 0 });
+  const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(true);
 
   // Royalties
   useEffect(() => {
@@ -57,22 +58,16 @@ const Royalties = () => {
       let accountingValues = await getAccountingGroupedByForTableView(filterAccountingParams.groupBy,
         filterAccountingParams.field, filterAccountingParams.values, dispatch);
 
-      let totals = { netRevenue: 0, streams: 0, downloads: 0 };
-      totals = { dsp: "Totales", ...totals };
-      accountingValues.forEach(accVal => {
-        totals.streams += accVal.streams;
-        totals.downloads += accVal.downloads;
-        totals.netRevenue += accVal.revenues;
-      })
-
-      totals = { dsp: totals.dsp, streams: totals.streams, downloads: totals.downloads, netRevenue: 'EUR ' + parseFloat(totals.netRevenue).toFixed(4) }
-      setTotalsAccounting(totals);
+      let totals = getTotalesAccountingRow(accountingValues);
       console.log("TOTALS: ", totals)
       setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, "dsp"))]);
     }
 
     getAccountingInfo();
   }, [])
+
+  const handleCollapseAccounting = () => setAccountingTableIsOpen(!accountingTableIsOpen);
+  const handleCollapseRoyalties = () => setRoyaltiesTableIsOpen(!royaltiesTableIsOpen);
 
   const headersRoyaltiesName = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.name);
   const headersRoytaltiesWidth = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.width);
@@ -165,21 +160,23 @@ const Royalties = () => {
         <Grid item xs={12} sx={{ textAlign: "center" }}>
 
           <Grid item xs={12} padding={0} >
-            <AccountingBar searchArrayProps={[emailSearchProps]} total={0} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen} />
+            <AccountingBar searchArrayProps={[emailSearchProps]} total={0} appBarSx={appBarSx} appBarTitle='Ganancias' mainSearchColor={fugaGreen}
+              isOpen={accountingTableIsOpen} handleCollapseTable={handleCollapseAccounting} />
           </Grid>
 
-          <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
+          {accountingTableIsOpen && <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
             <CustomizedTable {...accountingTableParams} />
-          </Grid>
+          </Grid>}
 
-          <Grid item xs={12} padding={0} >
+          <Grid item xs={12} paddingTop={2} >
             <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]}
-              cleanSearchResults={cleanSearchResults} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen} />
+              cleanSearchResults={cleanSearchResults} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen}
+              isOpen={royaltiesTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
           </Grid>
 
-          <Grid item xs={12} sx={{ margin: 'auto' }}>
+          {royaltiesTableIsOpen && <Grid item xs={12} sx={{ margin: 'auto' }}>
             <CustomizedTable {...royaltiesTableParams} />
-          </Grid>
+          </Grid>}
 
         </Grid>
 

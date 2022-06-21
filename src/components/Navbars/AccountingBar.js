@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React, { useState } from "react";
 import { styled, alpha } from '@mui/material/styles';
 import { AppBar, IconButton, Box, Toolbar, Typography, InputBase } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Search as SearchIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { mainColor } from '../../variables/colors';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import useWindowDimensions from '../../customHooks/useWindowDimensions';
@@ -47,13 +47,20 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const AccountingBar = (props) => {
-  const { searchArrayProps, cleanSearchResults, appBarSx, appBarTitle, mainSearchColor } = props;
+  const { searchArrayProps, cleanSearchResults, appBarSx, appBarTitle, mainSearchColor, isOpen, handleCollapseTable } = props;
   const { width } = useWindowDimensions();
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={appBarSx ? appBarSx : { borderRadius: '2em', backgroundColor: mainColor }}>
         <Toolbar>
+
+          <IconButton key={'collapse' + isOpen} onClick={handleCollapseTable} >
+            {isOpen
+              ? <ExpandLess sx={{ color: "black" }} />
+              : <ExpandMore sx={{ color: "black" }} />
+            }
+          </IconButton>
 
           {width > 1200 && <Typography
             variant="h6"

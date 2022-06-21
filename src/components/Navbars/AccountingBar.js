@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { styled, alpha } from '@mui/material/styles';
 import { AppBar, IconButton, Box, Toolbar, Typography, InputBase } from '@mui/material';
 import { Search as SearchIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
@@ -53,7 +53,7 @@ const AccountingBar = (props) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={appBarSx ? appBarSx : { borderRadius: '2em', backgroundColor: mainColor }}>
-        <Toolbar>
+        <Toolbar style={{ paddingLeft: "0px", paddingRight: "0px" }}>
 
           <IconButton key={'collapse' + isOpen} onClick={handleCollapseTable} >
             {isOpen

@@ -53,7 +53,7 @@ const SearchNavbar = (props) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={appBarSx ? appBarSx : { borderRadius: '2em', backgroundColor: mainColor }}>
-        <Toolbar>
+        <Toolbar style={{ paddingLeft: 0, paddingRight: 0 }}>
 
           <IconButton key={'collapse' + isOpen} onClick={handleCollapseTable} >
             {isOpen

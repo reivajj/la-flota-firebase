@@ -1,20 +1,10 @@
 import * as React from 'react';
 import { styled, alpha } from '@mui/material/styles';
-import { AppBar, IconButton, Box, Toolbar, Typography, InputBase } from '@mui/material';
+import { AppBar, IconButton, Box, Toolbar, Typography, Grid, InputBase, Tooltip } from '@mui/material';
 import { Search as SearchIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { mainColor } from '../../variables/colors';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import useWindowDimensions from '../../customHooks/useWindowDimensions';
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  marginLeft: '-2em',
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
 
 const Search = styled('div')(({ theme, mainSearchColor }) => ({
   position: 'relative',
@@ -23,11 +13,10 @@ const Search = styled('div')(({ theme, mainSearchColor }) => ({
   '&:hover': {
     backgroundColor: alpha(mainSearchColor ? mainSearchColor : theme.palette.common.white, mainSearchColor ? 0.95 : 0.25),
   },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
+  marginRight: theme.spacing(1),
+  marginLeft: theme.spacing(1),
   width: '100%',
   [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
     width: 'auto',
   },
 }));
@@ -40,9 +29,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     paddingLeft: '1em',
     transition: theme.transitions.create('width'),
     width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '25ch',
-    },
   },
 }));
 
@@ -50,6 +36,8 @@ const SearchNavbar = (props) => {
   const { searchArrayProps, cleanSearchResults, appBarSx, appBarTitle, mainSearchColor, isOpen, handleCollapseTable } = props;
   const { width } = useWindowDimensions();
   const collapsable = handleCollapseTable !== undefined;
+  const smallWindow = width < 1200;
+  const caller = "royalties";
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -63,7 +51,7 @@ const SearchNavbar = (props) => {
             }
           </IconButton>}
 
-          {width > 1200 && <Typography
+          {!smallWindow && <Typography
             variant="h6"
             noWrap
             component="div"
@@ -73,26 +61,37 @@ const SearchNavbar = (props) => {
           </Typography>}
 
           {searchArrayProps.map((searchProp, index) =>
-            <Search key={'search' + index} mainSearchColor={mainSearchColor}>
-              <StyledInputBase
-                key={'input' + searchProp.name}
-                onKeyPress={(event) => searchProp.handleEnterKeyPress(event, searchProp)}
-                placeholder={searchProp.name}
-                value={searchProp.value}
-                onChange={(event) => { searchProp.setValue(event.target.value); }}
-                inputProps={{ 'aria-label': searchProp.name }}
-              />
-              <IconButton key={'icon' + searchProp.name} onClick={() => searchProp.onSearchHandler(searchProp.value)} >{<SearchIcon key={'searchIcon' + index} sx={{ color: "white" }} />}</IconButton>
-            </Search>
+            <Tooltip key={'tooltip' + index} title={searchProp.name}>
+              <Search key={'search' + index} mainSearchColor={mainSearchColor} style={{ width: smallWindow ? "20%" : "auto" }}>
+                <Grid container sx={{ height: "40px" }}>
+
+                  <Grid item xs={9} sx={{ height: "inherit" }}>
+                    <StyledInputBase
+                      key={'input' + searchProp.name}
+                      onKeyPress={(event) => searchProp.handleEnterKeyPress(event, searchProp, caller)}
+                      placeholder={smallWindow ? searchProp.shortName : searchProp.name}
+                      value={searchProp.value}
+                      onChange={(event) => { searchProp.setValue(event.target.value); }}
+                      inputProps={{ 'aria-label': searchProp.name }}
+                    />
+                  </Grid>
+                  <Grid item xs={3} sx={{ height: "inherit" }}>
+                    <IconButton key={'icon' + searchProp.name} sx={{ padding: 0, marginTop: "10px" }} onClick={() => searchProp.onSearchHandler(searchProp.value, caller)} >
+                      <SearchIcon key={'searchIcon' + index} sx={{ color: "white" }} />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Search>
+            </Tooltip>
           )}
 
           <Box sx={{ flexGrow: 1 }} />
-          <IconButton onClick={cleanSearchResults} >
-            <SearchOffIcon sx={{ color: mainSearchColor ? mainSearchColor : 'white', fontSize: "1.7em" }} />
+          <IconButton onClick={() => cleanSearchResults(caller)} >
+            <SearchOffIcon sx={{ color: mainSearchColor ? mainSearchColor : 'white', fontSize: "1.7em", marginTop: "10px" }} />
           </IconButton>
         </Toolbar>
       </AppBar>
-    </Box>
+    </Box >
   );
 }
 

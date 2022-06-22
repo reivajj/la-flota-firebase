@@ -26,10 +26,34 @@ export const getRoyaltyHeadersForUser = [
   { name: "Stream Id", width: "5%" }
 ]
 
-export const getAccountingHeadersForUser = [
-  { name: "DSP", width: "25%" }, { name: "Streams", width: "25%" },
+const groupByIdToName = id => {
+  let idToNameReducer = {
+    'dsp': "DSP's",
+    'territory': 'Territorios',
+    'releaseArtist': 'Artistas'
+  }
+  return idToNameReducer[id] || "DSP's";
+}
+
+export const groupByNameToId = name => {
+  let nameToIdReducer = {
+    "DSP's": 'dsp',
+    'Territorios': 'territory',
+    'Artistas': 'releaseArtist',
+    'Tracks': 'assetTitle',
+    'Lanzamientos': 'releaseTitle',
+    'UPC': 'upc',
+    'ISRC': 'isrc'
+  }
+  return nameToIdReducer[name] || "dsp";
+}
+
+export const getAccountingHeadersForUser = groupByProp => [
+  { name: groupByProp.name, width: "25%" }, { name: "Streams", width: "25%" },
   { name: "Descargas", width: "25%" }, { name: "Regalías", width: "25%" }
 ]
+
+export const accountingGroupByValues = ["DSP's", "Territorios", "Artistas", "Tracks", "Lanzamientos", "UPC", "ISRC"];
 
 export const createRoyaltyRowForUser = royaltyFromDB => {
   return {
@@ -55,7 +79,7 @@ const formatPeriodComma = number => number.toString().replace(".", ",");
 
 export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   return {
-    [groupByProp]: accountingFromDB[groupByProp],
+    [groupByProp.name]: accountingFromDB[groupByProp.id],
     streams: formatThousandsPoint(accountingFromDB.streams),
     downloads: formatThousandsPoint(accountingFromDB.downloads),
     netRevenue: 'EUR ' + formatPeriodComma(parseFloat(accountingFromDB.revenues).toFixed(2)),

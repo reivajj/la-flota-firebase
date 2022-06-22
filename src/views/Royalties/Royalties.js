@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Grid, Backdrop, CircularProgress } from '@mui/material';
 
-import { needAdminPermissionsText } from '../../utils/textToShow.utils';
+import { needAdminPermissionsText, resourceNotYoursText } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
-import { createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow } from "factory/royalties.factory";
+import { accountingGroupByValues, createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId } from "factory/royalties.factory";
 import { getRoyaltiesForTableView, getAccountingGroupedByForTableView } from '../../services/BackendCommunication';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRoyaltyRowForUser } from '../../factory/royalties.factory';
@@ -19,13 +19,23 @@ import AccountingBar from "components/Navbars/AccountingBar";
 const Royalties = () => {
   const dispatch = useDispatch();
   const currentUserData = useSelector(store => store.userData);
+  const albums = useSelector(store => store.albums.albums);
+  const artists = useSelector(store => store.artists.artists);
   const rol = currentUserData.rol;
+
+  const isAdmin = userIsAdmin(rol);
+  const albumsUpc = albums.map(album => album.upc);
 
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
   const [isrcSearchValue, setIsrcSearchValue] = useState("");
   const [artistSearchValue, setArtistSearchValue] = useState("");
+
+  const [emailAccSearchValue, setEmailAccSearchValue] = useState("");
+  const [upcAccSearchValue, setUpcAccSearchValue] = useState("");
+  const [isrcAccSearchValue, setIsrcAccSearchValue] = useState("");
+  const [artistAccSearchValue, setArtistAccSearchValue] = useState("");
   // END SEARCH STUFF
 
   const [totalCount, setTotalCount] = useState(0);
@@ -33,11 +43,11 @@ const Royalties = () => {
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [searchParams, setSearchParams] = useState({ field: "upc", values: [] });
+  const [searchParams, setSearchParams] = useState({ field: "upc", values: isAdmin ? [] : albumsUpc });
   const [royaltiesTableIsOpen, setRoyaltiesTableIsOpen] = useState(false);
 
-  const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(6))
-  const [filterAccountingParams, setFilterAccountingParams] = useState({ field: "upc", values: [], groupBy: "dsp" });
+  const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(10));
+  const [filterAccountingParams, setFilterAccountingParams] = useState({ field: "upc", values: isAdmin ? [] : albumsUpc, groupBy: { id: 'dsp', name: "DSP's" } });
   const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(true);
 
   // Royalties
@@ -55,24 +65,22 @@ const Royalties = () => {
   // Accounting
   useEffect(() => {
     const getAccountingInfo = async () => {
-      let accountingValues = await getAccountingGroupedByForTableView(filterAccountingParams.groupBy,
-        filterAccountingParams.field, filterAccountingParams.values, dispatch);
-
+      let { groupBy, field, values } = filterAccountingParams;
+      let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
       let totals = getTotalesAccountingRow(accountingValues);
-      console.log("TOTALS: ", totals)
-      setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, "dsp"))]);
+      setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, 50)]);
     }
 
     getAccountingInfo();
-  }, [])
+  }, [filterAccountingParams])
 
   const handleCollapseAccounting = () => setAccountingTableIsOpen(!accountingTableIsOpen);
   const handleCollapseRoyalties = () => setRoyaltiesTableIsOpen(!royaltiesTableIsOpen);
 
   const headersRoyaltiesName = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.name);
   const headersRoytaltiesWidth = getRoyaltyHeadersForUser.map(headerWithWidth => headerWithWidth.width);
-  const headersAccountingName = getAccountingHeadersForUser.map(headerWithWidth => headerWithWidth.name);
-  const headersAccountingWidth = getAccountingHeadersForUser.map(headerWithWidth => headerWithWidth.width);
+  const headersAccountingName = getAccountingHeadersForUser(filterAccountingParams.groupBy).map(headerWithWidth => headerWithWidth.name);
+  const headersAccountingWidth = getAccountingHeadersForUser(filterAccountingParams.groupBy).map(headerWithWidth => headerWithWidth.width);
 
   const handleChangePage = (event, newPage) => {
     setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
@@ -100,52 +108,111 @@ const Royalties = () => {
   };
 
   // INIT SEARCH STUFF
-  const onSearchEmailHandler = async email => {
-    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
-    if (!email) { setSearchParams({ field: "upc", values: [] }); return };
-    let userAlbums = await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerEmail', email)));
-    setSearchParams({ field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) });
+
+  const setSkeletonRows = caller => {
+    if (caller === "royalties") setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+    if (caller === "accounting") setAccountingRows(getSkeletonAccountingRow(accountingRows.length));
   }
 
-  const onSearchArtistHandler = async artistName => {
-    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
-    if (!artistName) { setSearchParams({ field: "upc", values: [] }); return };
-    setSearchParams({ field: "releaseArtist", values: artistName.trim() });
+  const onSearchEmailHandler = async (email, caller) => {
+    setSkeletonRows(caller);
+    if (!email) { setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc }); return };
+    let userAlbums = isAdmin
+      ? await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerEmail', email, 1000)))
+      : albumsUpc;
+    if (caller === "royalties") setSearchParams({ field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) })
   }
 
-  const onSearchUPCHandler = async upcsSeparatedByComa => {
-    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+  const onSearchArtistHandler = async (artistName, caller) => {
+    if (!isAdmin && !artists.map(artist => artist.name).includes(artistName.trim())) {
+      setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
+      setOpenNotAdminWarning(true);
+      return;
+    }
+    setSkeletonRows(caller);
+    if (!artistName) { setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc }); return };
+    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: artistName });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: artistName.trim() });
+  }
+
+  const onSearchUPCHandler = async (upcsSeparatedByComa, caller) => {
     let upcsAsArray = upcsSeparatedByComa.toString().split(",");
-    setSearchParams({ field: "upc", values: upcsAsArray });
+
+    if (!isAdmin) {
+      let includesAllUpcs = upcsAsArray.every(upc => albumsUpc.indexOf(upc) > -1);
+      if (!includesAllUpcs) {
+        setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
+        setOpenNotAdminWarning(true);
+        return;
+      }
+    }
+    setSkeletonRows(caller);
+    if (caller === "royalties") setSearchParams({ field: "upc", values: upcsAsArray });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "upc", values: upcsAsArray });
   }
 
-  const onSearchISRCHandler = async isrcsSeparatedByComa => {
-    setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage));
+  const onSearchISRCHandler = async (isrcsSeparatedByComa, caller) => {
+    setSkeletonRows(caller);
     let isrcsAsArray = isrcsSeparatedByComa.toString().split(",");
-    setSearchParams({ field: "isrc", values: isrcsAsArray });
+    if (caller === "royalties") setSearchParams({ field: "isrc", values: isrcsAsArray });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "isrc", values: isrcsAsArray });
   }
 
-  const handleEnterKeyPress = (event, searchProps) => {
+  const handleEnterKeyPress = (event, searchProps, caller) => {
     if (event.key === 'Enter') {
-      if (searchProps.name === "Email") onSearchEmailHandler(searchProps.value);
-      if (searchProps.name === "UPC's separados por coma") onSearchUPCHandler(searchProps.value);
-      if (searchProps.name === "ISRC's separados por coma") onSearchISRCHandler(searchProps.value);
-      if (searchProps.name === "Nombre de Artista") onSearchArtistHandler(searchProps.value);
+      if (searchProps.name === "Email") onSearchEmailHandler(searchProps.value, caller);
+      if (searchProps.name === "UPC's separados por coma") onSearchUPCHandler(searchProps.value, caller);
+      if (searchProps.name === "ISRC's separados por coma") onSearchISRCHandler(searchProps.value, caller);
+      if (searchProps.name === "Artista") onSearchArtistHandler(searchProps.value, caller);
     }
   }
 
-  const emailSearchProps = { name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
-  const upcSearchProps = { name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
-  const isrcSearchProps = { name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcSearchValue.trim(), setValue: setIsrcSearchValue };
-  const artistSearchProps = { name: "Nombre de Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistSearchValue, setValue: setArtistSearchValue };
+  const emailSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
+  const upcSearchProps = { shortName: "UPC's", name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
+  const isrcSearchProps = { shortName: "ISRC's", name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcSearchValue.trim(), setValue: setIsrcSearchValue };
+  const artistSearchProps = { shortName: "Artista", name: "Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistSearchValue, setValue: setArtistSearchValue };
 
-  const cleanSearchResults = () => {
+  const emailAccSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailAccSearchValue.trim(), setValue: setEmailAccSearchValue };
+  const upcAccSearchProps = { shortName: "UPC's", name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcAccSearchValue.trim(), setValue: setUpcAccSearchValue };
+  const isrcAccSearchProps = { shortName: "ISRC's", name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcAccSearchValue.trim(), setValue: setIsrcAccSearchValue };
+  const artistAccSearchProps = { shortName: "Artista", name: "Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistAccSearchValue, setValue: setArtistAccSearchValue };
+
+  const handleChangeGroupBy = groupByName => {
+    console.log(groupByName);
+    setAccountingRows(getSkeletonAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
+    setFilterAccountingParams({ ...filterAccountingParams, groupBy: { id: groupByNameToId(groupByName), name: groupByName || "DSP's" } })
+  }
+
+  const groupByProps = { helper: "Agrupar según", values: accountingGroupByValues, handleChangeGroupBy, value: filterAccountingParams.groupBy }
+
+  const cleanRoyaltiesParams = () => {
     setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage > 7 ? rowsPerPage : 7));
-    setSearchParams({ field: "upc", values: [] });
+    setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
     setEmailSearchValue(""); setUpcSearchValue(""); setIsrcSearchValue("");
     setArtistSearchValue("");
   }
+
+  const cleanAccountingParams = () => {
+    setAccountingRows(getSkeletonAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
+    setFilterAccountingParams({ groupBy: { id: "dsp", name: "DSP's" }, field: "upc", values: isAdmin ? [] : albumsUpc });
+    setEmailAccSearchValue(""); setUpcAccSearchValue(""); setIsrcAccSearchValue("");
+    setArtistAccSearchValue("");
+  }
+
+  const cleanSearchResults = caller => {
+    if (caller === "royalties") cleanRoyaltiesParams();
+    if (caller === "accounting") cleanAccountingParams();
+  }
   // END SEARCH STUFF
+
+  const buscadoresAccounting = isAdmin
+    ? [emailAccSearchProps, upcAccSearchProps, isrcAccSearchProps, artistAccSearchProps]
+    : [upcAccSearchProps, artistAccSearchProps]
+
+  const buscadoresRoyalties = isAdmin
+    ? [emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]
+    : [upcSearchProps, artistSearchProps]
 
   return userIsAdmin(rol)
     ? (
@@ -155,13 +222,14 @@ const Royalties = () => {
         </Backdrop>
 
         <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
-          title={"Necesitas permisos de Administrador"} contentTexts={needAdminPermissionsText} />
+          title={"Necesitas permisos de Administrador"} contentTexts={resourceNotYoursText} />
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
 
           <Grid item xs={12} padding={0} >
-            <AccountingBar searchArrayProps={[emailSearchProps]} total={0} appBarSx={appBarSx} appBarTitle='Ganancias' mainSearchColor={fugaGreen}
-              isOpen={accountingTableIsOpen} handleCollapseTable={handleCollapseAccounting} />
+            <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
+              appBarSx={appBarSx} appBarTitle='Ingresos' mainSearchColor={fugaGreen} isOpen={accountingTableIsOpen}
+              handleCollapseTable={handleCollapseAccounting} groupByProps={groupByProps} />
           </Grid>
 
           {accountingTableIsOpen && <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
@@ -169,8 +237,8 @@ const Royalties = () => {
           </Grid>}
 
           <Grid item xs={12} paddingTop={2} >
-            <SearchNavbar searchArrayProps={[emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]}
-              cleanSearchResults={cleanSearchResults} appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen}
+            <SearchNavbar searchArrayProps={buscadoresRoyalties} cleanSearchResults={cleanSearchResults}
+              appBarSx={appBarSx} appBarTitle='Regalías' mainSearchColor={fugaGreen}
               isOpen={royaltiesTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
           </Grid>
 

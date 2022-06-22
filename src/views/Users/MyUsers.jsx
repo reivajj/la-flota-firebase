@@ -80,7 +80,7 @@ const MyUsers = () => {
     setOpenLoaderMyUsers(true);
     let albumFromUPC = albumsFromStore.find(albumFromStore => albumFromStore.upc === upc);
     if (!albumFromUPC) {
-      albumFromUPC = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
+      albumFromUPC = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc, 50)));
       if (albumFromUPC === "ERROR") { setOpenLoaderMyUsers(false); setOpenErrorSearch(true); return "ERROR"; }
       if (albumFromUPC === "EMPTY") { setOpenLoaderMyUsers(false); setOpenEmptySearch(true); return "EMPTY"; }
     }

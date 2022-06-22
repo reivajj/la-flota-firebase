@@ -43,6 +43,10 @@ export const maxArtistsText = [
 
 export const needAdminPermissionsText = ["No puedes realizar esta acción, no tienes permisos de Administrador."]
 
+export const resourceNotYoursText = ["No puedes realizar esta búsqueda, el recurso que intentas buscar o al menos uno de ellos no te pertenece o no existe.",
+  "Por favor corrobora que está bien escrito."]
+
+
 export const infoSpotifyUri = [
   "Ingresa el código URi de Spotify.", <br />,
   "Ejemplo: spotify:artist:1JTD8FzXyY8Pk3lX1FIkpG", <br />,

@@ -30,13 +30,13 @@ export const passwordChanged = (text) => {
 };
 
 const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) => {
-  const limit = 50;
+  const limit = 1000;
   const albums = await FirestoreServices.getElements(userUid, "albums", dispatch, limit);
   const artists = await FirestoreServices.getElements(userUid, "artists", dispatch, limit);
-  const labels = await FirestoreServices.getElements(userUid, "labels", dispatch, limit);
-  const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, limit);
-  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, limit)
-  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, limit);
+  const labels = await FirestoreServices.getElements(userUid, "labels", dispatch, 10);
+  const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, 40);
+  const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, 20)
+  const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, 20);
 
   dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, [], artists, labels, invitedArtists, collaborators, activities));
 }

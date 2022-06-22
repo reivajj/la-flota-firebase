@@ -131,8 +131,8 @@ export const albumAddDspsStore = (dataAlbumFuga, dsps) => async dispatch => {
   });
 }
 
-export const getAlbumsByFieldRedux = (field, fieldValue) => async dispatch => {
-  let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, 100);
+export const getAlbumsByFieldRedux = (field, fieldValue, limit) => async dispatch => {
+  let albumsByField = await FirestoreServices.getElementsByField('albums', field, fieldValue, dispatch, limit);
   if (albumsByField === "EMPTY") return "EMPTY";
   if (Array.isArray(albumsByField) && albumsByField.length > 0) dispatch(albumsAddStore(albumsByField));
   else return "ERROR";

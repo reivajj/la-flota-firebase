@@ -429,7 +429,7 @@ export const queryRoyaltiesWithOp = async (fieldName, fieldValue, companyName, o
       , errorGettingRoyalties, "error");
     return "ERROR";
   }
-  return royaltiesResponse.data.response;;
+  return royaltiesResponse.data.response;
 }
 
 export const getAccountingGroupedByForTableView = async (groupByProp, fieldName, fieldValue, dispatch) => {

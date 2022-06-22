@@ -133,7 +133,7 @@ const DashboardAdmin = () => {
     }
 
     await toWithOutError(dispatch(getArtistByFieldRedux('ownerId', userFinded.id)));
-    await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerId', userFinded.id)));
+    await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerId', userFinded.id, 50)));
     setSearchAction({
       user: { field: 'email', value: email }, artist: { field: 'ownerId', value: userFinded.id },
       album: { field: 'ownerId', value: userFinded.id }, recently: true
@@ -145,7 +145,7 @@ const DashboardAdmin = () => {
     setOpenLoaderDashboard(true);
     let albumFinded = albums.find(albumFromStore => albumFromStore.upc === upc);
     if (!albumFinded) {
-      albumFinded = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc)));
+      albumFinded = await toWithOutError(dispatch(getAlbumsByFieldRedux('upc', upc, 2)));
       if (albumFinded === "ERROR") { setOpenLoaderDashboard(false); setOpenErrorSearch(true); return "ERROR"; }
       if (albumFinded === "EMPTY") { setOpenLoaderDashboard(false); setOpenEmptySearch(true); return "EMPTY"; }
     }

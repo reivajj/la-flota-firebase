@@ -25,7 +25,8 @@ const Royalties = () => {
   const rol = currentUserData.rol;
 
   const isAdmin = userIsAdmin(rol);
-  const albumsUpc = albums.map(album => album.upc);
+  const albumsUpc = albums.map(album => album.upc.toString());
+  const artistsNames = artists.map(artist => artist.name); 
 
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
@@ -48,8 +49,14 @@ const Royalties = () => {
   const [searchParams, setSearchParams] = useState({ field: "upc", values: isAdmin ? [] : albumsUpc });
   const [royaltiesTableIsOpen, setRoyaltiesTableIsOpen] = useState(false);
 
+  const getAccInitParams = () => {
+    return isAdmin
+      ? { field: "upc", values: [], groupBy: { id: 'dsp', name: "DSP's" } }
+      : { field: "releaseArtist", values: artistsNames, groupBy: { id: 'dsp', name: "DSP's" } }
+  }
+
   const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(10));
-  const [filterAccountingParams, setFilterAccountingParams] = useState({ field: "upc", values: isAdmin ? [] : albumsUpc, groupBy: { id: 'dsp', name: "DSP's" } });
+  const [filterAccountingParams, setFilterAccountingParams] = useState(getAccInitParams());
   const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(true);
 
   // Royalties
@@ -69,6 +76,7 @@ const Royalties = () => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
       let { groupBy, field, values } = filterAccountingParams;
+      console.log(filterAccountingParams);
       let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
       let totals = getTotalesAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, 50)]);
@@ -136,7 +144,7 @@ const Royalties = () => {
     }
     setSkeletonRows(caller);
     if (!artistName) { setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc }); return };
-    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: artistName });
+    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: artistName.trim() });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: artistName.trim() });
   }
 
@@ -212,11 +220,11 @@ const Royalties = () => {
 
   const buscadoresAccounting = isAdmin
     ? [emailAccSearchProps, upcAccSearchProps, isrcAccSearchProps, artistAccSearchProps]
-    : [upcAccSearchProps, artistAccSearchProps]
+    : [artistAccSearchProps]
 
   const buscadoresRoyalties = isAdmin
     ? [emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]
-    : [upcSearchProps, artistSearchProps]
+    : [artistSearchProps]
 
   const handleCloserWaitingRoyalties = () => {
     setLoadingRoyalties(false);
@@ -230,7 +238,7 @@ const Royalties = () => {
         </Backdrop>
 
         <WaitingDialog isOpen={loadingRoyalties} title="Cargando Regalías" contentTexts={waitForRoyalties}
-        handleClose={handleCloserWaitingRoyalties} successImageSource="/images/success.jpg" size="sm"  />
+          handleClose={handleCloserWaitingRoyalties} successImageSource="/images/success.jpg" size="sm" />
 
         <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
           title={"Necesitas permisos de Administrador"} contentTexts={resourceNotYoursText} />

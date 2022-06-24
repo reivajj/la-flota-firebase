@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Grid, Backdrop, CircularProgress } from '@mui/material';
 
-import { needAdminPermissionsText, resourceNotYoursText } from '../../utils/textToShow.utils';
+import { resourceNotYoursText, waitForRoyalties } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
@@ -15,6 +15,7 @@ import { fugaGreen } from 'variables/colors';
 import { toWithOutError } from 'utils';
 import { getAlbumsByFieldRedux } from 'redux/actions/AlbumsActions';
 import AccountingBar from "components/Navbars/AccountingBar";
+import WaitingDialog from "components/Dialogs/WaitingDialog";
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ const Royalties = () => {
   const [artistAccSearchValue, setArtistAccSearchValue] = useState("");
   // END SEARCH STUFF
 
+  const [loadingRoyalties, setLoadingRoyalties] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [royaltiesRows, setRoyaltiesRows] = useState([]);
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
@@ -65,10 +67,12 @@ const Royalties = () => {
   // Accounting
   useEffect(() => {
     const getAccountingInfo = async () => {
+      setLoadingRoyalties(true);
       let { groupBy, field, values } = filterAccountingParams;
       let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
       let totals = getTotalesAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, 50)]);
+      setLoadingRoyalties(false);
     }
 
     getAccountingInfo();
@@ -214,12 +218,19 @@ const Royalties = () => {
     ? [emailSearchProps, upcSearchProps, isrcSearchProps, artistSearchProps]
     : [upcSearchProps, artistSearchProps]
 
-  return userIsAdmin(rol)
+  const handleCloserWaitingRoyalties = () => {
+    setLoadingRoyalties(false);
+  }
+
+  return true
     ? (
       <>
         <Backdrop open={false}>
           <CircularProgress />
         </Backdrop>
+
+        <WaitingDialog isOpen={loadingRoyalties} title="Cargando Regalías" contentTexts={waitForRoyalties}
+        handleClose={handleCloserWaitingRoyalties} successImageSource="/images/success.jpg" size="sm"  />
 
         <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
           title={"Necesitas permisos de Administrador"} contentTexts={resourceNotYoursText} />

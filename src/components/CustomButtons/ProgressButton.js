@@ -14,7 +14,7 @@ const getStyleFromStateButton = (buttonState, noFab) => {
   return styles.buttonNone;
 }
 
-const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHandler, noneIcon, color, noFab,
+const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHandler, successIcon, noneIcon, color, noFab,
   buttonFullWidth, buttonSx, buttonProgressSx, tooltipText }) => {
 
   const getEndButtonIcon = () => {
@@ -36,7 +36,9 @@ const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHan
             onClick={onClickHandler}
           >
             {(buttonState === "none" || buttonState === "delete") ? noneIcon
-              : buttonState === "success" ? <Check sx={{ color: "rgba(255,255,255, 1)" }} /> : <Replay sx={{ color: "rgba(255,255,255, 1)" }} />}
+              : buttonState === "success"
+                ? successIcon ? successIcon : <Check sx={{ color: "rgba(255,255,255, 1)" }} />
+                : <Replay sx={{ color: "rgba(255,255,255, 1)" }} />}
 
           </Fab>
           {loading && <CircularProgress size={68} sx={styles.fabProgress} />}

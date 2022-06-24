@@ -185,4 +185,9 @@ export const subtitleEditUPC = [
   <b>{'El cambio solo impacta a nivel de la APP'}</b>]
 
 export const subtitleEditFugaId = ["Útil para cuando creamos por nuestra cuenta un lanzamiento en FUGA ", <br />,
-  "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."]  
+  "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."]
+
+export const waitForRoyalties = ["Estamos obteniendo tus ingresos desde nuestros servidores.", <br />,
+  "Puede demorar un poco, estamos trabajando para mejorar el tiempo de respuesta.", <br />,
+  <b>{"Pronto será más rápido!"}</b>
+]  

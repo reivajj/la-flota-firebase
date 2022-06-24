@@ -36,9 +36,7 @@ const DashboardBasicUser = () => {
   useEffect(() => {
     if (!openBienvenidaAndCreateArtists && currentUserData.isNewInFBSystem) {
 
-      const createDgArtists = async () => {
-        let result = await toWithOutError(dispatch(artistsCreateFromDGArtistsRedux(currentUserData.id, currentUserData.email)));
-        if (result === "ERROR") return "ERROR";
+      const createChangeToNotNew = async () => {
 
         let [errorUpdatingUser] = await toWithOutError(dispatch(userDataUpdateRedux({ isNewInFBSystem: false, id: currentUserData.id })));
         if (errorUpdatingUser === "ERROR") return "ERROR";
@@ -46,8 +44,9 @@ const DashboardBasicUser = () => {
       }
 
       setOpenBienvenidaAndCreateArtists(currentUserData.isNewInFBSystem);
-      createDgArtists();
+      createChangeToNotNew();
     }
+    
   }, [currentUserData.isNewInFBSystem])
 
   const albumsTableElements = getAlbumsPropsForUsersDataTable(albums) || [];

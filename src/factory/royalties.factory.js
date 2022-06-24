@@ -1,5 +1,43 @@
 import { Skeleton } from '@mui/material';
 
+export const accExample = [
+  {
+    "revenuesUSD": 111110.3844300000000004,
+    "dsp": "Spotify",
+    "streams": 443333000000,
+    "downloads": 0,
+    "revenuesEUR": 2320.33
+  },
+  {
+    "revenuesUSD": 0.02276,
+    "dsp": "Youtube Ad Supported",
+    "streams": 51,
+    "downloads": 0,
+    "revenuesEUR": 0
+  },
+  {
+    "revenuesUSD": 0.01611,
+    "dsp": "Apple Music",
+    "streams": 3,
+    "downloads": 0,
+    "revenuesEUR": 1
+  },
+  {
+    "revenuesUSD": 0.0026600000000000005,
+    "dsp": "Facebook Audio Library",
+    "streams": 195,
+    "downloads": 0,
+    "revenuesEUR": 0
+  },
+  {
+    "revenuesUSD": 0.00001,
+    "dsp": "Facebook Fingerprinting",
+    "streams": 1,
+    "downloads": 0,
+    "revenuesEUR": 0
+  }
+]
+
 const stringReducer = string => {
   return string.length > 143
     ? string.slice(0, 40) + '...'
@@ -42,18 +80,17 @@ export const groupByNameToId = name => {
     'Artistas': 'releaseArtist',
     'Tracks': 'assetTitle',
     'Lanzamientos': 'releaseTitle',
-    'UPC': 'upc',
-    'ISRC': 'isrc'
   }
   return nameToIdReducer[name] || "dsp";
 }
 
 export const getAccountingHeadersForUser = groupByProp => [
-  { name: groupByProp.name, width: "25%" }, { name: "Streams", width: "25%" },
-  { name: "Descargas", width: "25%" }, { name: "Regalías", width: "25%" }
+  { name: groupByProp.name, width: "25%" }, { name: "Streams", width: "15%" },
+  { name: "Descargas", width: "10%" }, { name: "Regalías (EUR)", width: "25%" },
+  { name: "Regalías (USD)", width: "25%" },
 ]
 
-export const accountingGroupByValues = ["DSP's", "Territorios", "Artistas", "Tracks", "Lanzamientos", "UPC", "ISRC"];
+export const accountingGroupByValues = ["DSP's", "Artistas", "Tracks", "Territorios", "Lanzamientos"];
 
 export const createRoyaltyRowForUser = royaltyFromDB => {
   return {
@@ -79,26 +116,29 @@ const formatPeriodComma = number => number.toString().replace(".", ",");
 
 export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   return {
-    [groupByProp.name]: accountingFromDB[groupByProp.id],
+    [groupByProp.name]: dspReducer(accountingFromDB[groupByProp.id]),
     streams: formatThousandsPoint(accountingFromDB.streams),
     downloads: formatThousandsPoint(accountingFromDB.downloads),
-    netRevenue: 'EUR ' + formatPeriodComma(parseFloat(accountingFromDB.revenues).toFixed(2)),
+    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(parseFloat(accountingFromDB.revenuesEUR).toFixed(2))),
+    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(parseFloat(accountingFromDB.revenuesUSD).toFixed(2))),
   }
 }
 
 export const getTotalesAccountingRow = accountingValues => {
-  let totals = { netRevenue: 0, streams: 0, downloads: 0 };
+  let totals = { netRevenueEUR: 0, netRevenueUSD: 0, streams: 0, downloads: 0 };
   totals = { dsp: "Totales", ...totals };
-
+  console.log(accountingValues);
   accountingValues.forEach(accVal => {
     totals.streams += accVal.streams;
     totals.downloads += accVal.downloads;
-    totals.netRevenue += accVal.revenues;
+    totals.netRevenueUSD += accVal.revenuesUSD;
+    totals.netRevenueEUR += accVal.revenuesEUR;
   })
 
   return {
     dsp: totals.dsp, streams: formatThousandsPoint(totals.streams), downloads: formatThousandsPoint(totals.downloads),
-    netRevenue: 'EUR ' + formatPeriodComma(parseFloat(totals.netRevenue).toFixed(2))
+    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(parseFloat(totals.netRevenueEUR).toFixed(2))),
+    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(parseFloat(totals.netRevenueUSD).toFixed(2)))
   }
 }
 
@@ -132,7 +172,8 @@ export const getSkeletonAccountingRow = rowsPerPage => {
   return [...Array(rowsPerPage)].map(() => {
     return {
       dsp: loadingSkeleton(),
-      netRevenue: loadingSkeleton(),
+      netRevenueEUR: loadingSkeleton(),
+      netRevenueUSD: loadingSkeleton(),
       streams: loadingSkeleton(),
       downloads: loadingSkeleton(),
     }

@@ -1,60 +1,29 @@
 import { Skeleton } from '@mui/material';
 import { truncateFloat } from 'utils';
+import { dspReducer, sortAccountingRows, sumEqualDSPNames } from 'utils/royalties.utils';
 
 export const accExample = [
   {
-    "revenuesUSD": 111110.3844300000000004,
-    "dsp": "Spotify",
-    "streams": 443333000000,
-    "downloads": 0,
-    "revenuesEUR": 2320.33
+      "streams": 1117291292,
+      "dsp": "Facebook Fingerprinting",
+      "revenuesUSD": 17092.190599899586,
+      "downloads": 0,
+      "revenuesEUR": 11.112620689118724
   },
   {
-    "revenuesUSD": 0.02276,
-    "dsp": "Youtube Ad Supported",
-    "streams": 51,
-    "downloads": 0,
-    "revenuesEUR": 0
+      "streams": 969185482,
+      "dsp": "TikTok",
+      "revenuesUSD": 927.1497700001396,
+      "downloads": 0,
+      "revenuesEUR": 1.323852406537548
   },
-  {
-    "revenuesUSD": 0.01611,
-    "dsp": "Apple Music",
-    "streams": 3,
-    "downloads": 0,
-    "revenuesEUR": 1
-  },
-  {
-    "revenuesUSD": 0.0026600000000000005,
-    "dsp": "Facebook Audio Library",
-    "streams": 195,
-    "downloads": 0,
-    "revenuesEUR": 0
-  },
-  {
-    "revenuesUSD": 0.00001,
-    "dsp": "Facebook Fingerprinting",
-    "streams": 1,
-    "downloads": 0,
-    "revenuesEUR": 0
-  }
+  
 ]
 
 const stringReducer = string => {
   return string.length > 143
     ? string.slice(0, 40) + '...'
     : string;
-}
-
-const dspReducer = dspString => {
-  let dspObject = {
-    'Amazon Unlimited': 'Amazon',
-    'Netease Cloud Music': 'Netease',
-    'Facebook Fingerprinting': 'Facebook',
-    'Facebook Audio Library': 'Instagram',
-    'Youtube Music': 'Youtube M.',
-    'Youtube Ad Supported': 'Youtube Ad'
-  }
-  return dspObject[dspString] || dspString;
 }
 
 export const getRoyaltyHeadersForUser = [
@@ -64,15 +33,6 @@ export const getRoyaltyHeadersForUser = [
   { name: "Usuario", width: "5%" }, { name: "Tipo de venta", width: "9%" }, { name: "Cantidad", width: "5%" },
   { name: "Stream Id", width: "5%" }
 ]
-
-const groupByIdToName = id => {
-  let idToNameReducer = {
-    'dsp': "DSP's",
-    'territory': 'Territorios',
-    'releaseArtist': 'Artistas'
-  }
-  return idToNameReducer[id] || "DSP's";
-}
 
 export const groupByNameToId = name => {
   let nameToIdReducer = {
@@ -112,8 +72,8 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
   }
 }
 
-const formatThousandsPoint = number => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-const formatPeriodComma = number => number.toString().replace(".", ",");
+const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : 0;
+const formatPeriodComma = number => number ? number.toString().replace(".", ",") : 0;
 
 export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   return {
@@ -125,13 +85,20 @@ export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   }
 }
 
+export const getAccountingRows = (accRows, groupBy, maxRows) => {
+  let squashedAccRows = sumEqualDSPNames(accRows);
+  let sortedAccRows = [...squashedAccRows.sort(sortAccountingRows)];
+  return sortedAccRows.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, maxRows)
+}
+
 export const getTotalesAccountingRow = accountingValues => {
   let totals = { netRevenueEUR: 0, netRevenueUSD: 0, streams: 0, downloads: 0 };
+  if (accountingValues.length === 0) return [totals];
   totals = { dsp: "Totales", ...totals };
   console.log(accountingValues);
   accountingValues.forEach(accVal => {
-    totals.streams += accVal.streams;
-    totals.downloads += accVal.downloads;
+    totals.streams += dspReducer(accVal.dsp) === "iTunes" ? 0 : accVal.streams;
+    totals.downloads += dspReducer(accVal.dsp) === "iTunes" ? accVal.downloads + accVal.streams : accVal.downloads;
     totals.netRevenueUSD += accVal.revenuesUSD;
     totals.netRevenueEUR += accVal.revenuesEUR;
   })

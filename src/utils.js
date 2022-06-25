@@ -25,7 +25,6 @@ export const copyFormDataToJSON = formData => {
   var object = {};
   formData.forEach((value, key) => {
     if (key === "cover" || key === "track") {
-      console.log("VALUE FILE: ", value);
       object[key] = { originalname: value.originalname, sizeInMB: value.size / 1000000 }
     }
     else object[key] = value
@@ -59,7 +58,8 @@ export const deepEqual = function (x, y) {
 }
 
 export const truncateFloat = (number, decimals, separator) => {
-  if (number === 0) return number;
+  if (!number) return 0;
+  if (number.toString().split(separator).length < 2) return number;
   let decimalsTruncated = number.toString().split(separator)[1].slice(0, decimals);
   return parseFloat(`${number.toString().split(separator)[0]}${separator}${decimalsTruncated}`);
 }

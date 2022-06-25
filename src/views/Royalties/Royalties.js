@@ -5,7 +5,7 @@ import { resourceNotYoursText, waitForRoyalties } from '../../utils/textToShow.u
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
-import { accountingGroupByValues, createAccountingRowForUser, getAccountingHeadersForUser, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId } from "factory/royalties.factory";
+import { accExample, accountingGroupByValues, getAccountingHeadersForUser, getAccountingRows, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId } from "factory/royalties.factory";
 import { getRoyaltiesForTableView, getAccountingGroupedByForTableView } from '../../services/BackendCommunication';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRoyaltyRowForUser } from '../../factory/royalties.factory';
@@ -68,14 +68,15 @@ const Royalties = () => {
     getRoyaltiesCountAndRows();
   }, [page, rowsPerPage, searchParams])
 
-  // Accounting
+  // Accounting 
   useEffect(() => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
       let { groupBy, field, values } = filterAccountingParams;
       let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
+      let accountingRowsToShow = getAccountingRows(accountingValues, groupBy, 50);
       let totals = getTotalesAccountingRow(accountingValues);
-      setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, 50)]);
+      setAccountingRows([totals, ...accountingRowsToShow]);
       setLoadingRoyalties(false);
     }
 
@@ -123,67 +124,48 @@ const Royalties = () => {
   }
 
   const onSearchEmailHandler = async (email, caller) => {
-    if (!email) {
-      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
-      return;
-    }
-    let userArtists = isAdmin
-      ? await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)))
-      : artistsNames;
+    if (!email) return;
+    let userArtists = await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)));
     setSkeletonRows(caller);
     if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) })
   }
 
   const onSearchArtistHandler = async (artistName, caller) => {
+    if (!artistName) return;
     if (!isAdmin && !artists.map(artist => artist.name).includes(artistName.trim())) {
       setOpenNotAdminWarning(true);
       return;
     }
+
     setSkeletonRows(caller);
-    if (!artistName) {
-      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
-      return
-    };
     if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: artistName.trim() });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: artistName.trim() });
   }
 
   const onSearchUPCHandler = async (upcsSeparatedByComa, caller) => {
     let upcsAsArray = upcsSeparatedByComa.toString().split(",");
-    if (!isAdmin) {
-      let includesAllUpcs = upcsAsArray.every(upc => albumsUpc.indexOf(upc) > -1);
-      if (!includesAllUpcs) {
-        setOpenNotAdminWarning(true);
-        return;
-      }
+    if (upcsAsArray.length === 0) return;
+    if (!isAdmin && !upcsAsArray.every(upc => albumsUpc.indexOf(upc) > -1)) {
+      setOpenNotAdminWarning(true);
+      return;
     }
+
     setSkeletonRows(caller);
-    if (upcsAsArray.length === 0) {
-      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
-      return
-    };
     if (caller === "royalties") setSearchParams({ field: "upc", values: upcsAsArray });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "upc", values: upcsAsArray });
   }
 
   const onSearchISRCHandler = async (isrcsSeparatedByComa, caller) => {
     let isrcsAsArray = isrcsSeparatedByComa.toString().split(",");
-    if (!isAdmin) {
+    if (isrcsAsArray.length === 0) return;
+    if (!isAdmin && !isrcsAsArray.every(isrc => albumsUpc.indexOf(isrc) > -1)) {
       // TENGO QUE PEDIR TODOS LOS ISRCS del user para verificar que no busque cosas que no son suyas...
-      let includesAllIsrcs = isrcsAsArray.every(isrc => albumsUpc.indexOf(isrc) > -1);
-      if (!includesAllIsrcs) {
-        caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
-        setOpenNotAdminWarning(true);
-        return;
-      }
+      setOpenNotAdminWarning(true);
+      return;
     }
+
     setSkeletonRows(caller);
-    if (isrcsAsArray.length === 0) {
-      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
-      return
-    };
-    
     if (caller === "royalties") setSearchParams({ field: "isrc", values: isrcsAsArray });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "isrc", values: isrcsAsArray });
   }

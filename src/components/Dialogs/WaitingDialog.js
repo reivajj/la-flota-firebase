@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {
-  Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Card, Fab
+  Dialog, DialogTitle, DialogContentText, DialogContent, DialogActions, Card
 } from '@mui/material';
 import { Image } from 'mui-image';
 import Success from "components/Typography/Success";

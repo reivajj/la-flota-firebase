@@ -76,7 +76,6 @@ const Royalties = () => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
       let { groupBy, field, values } = filterAccountingParams;
-      console.log(filterAccountingParams);
       let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
       let totals = getTotalesAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingValues.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, 50)]);

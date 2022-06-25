@@ -47,7 +47,7 @@ export const combineArraysWithNoDuplicates = (arr1, arr2) => [...new Set(arr1.co
 export const deepEqual = function (x, y) {
   if (x === y) return true;
   else if ((typeof x == "object" && x != null) && (typeof y == "object" && y != null)) {
-    if (Object.keys(x).length != Object.keys(y).length) return false;
+    if (Object.keys(x).length !== Object.keys(y).length) return false;
 
     for (var prop in x) {
       if (y.hasOwnProperty(prop)) if (!deepEqual(x[prop], y[prop])) return false;
@@ -56,4 +56,10 @@ export const deepEqual = function (x, y) {
     return true;
   }
   else return false;
+}
+
+export const truncateFloat = (number, decimals, separator) => {
+  if (number === 0) return number;
+  let decimalsTruncated = number.toString().split(separator)[1].slice(0, decimals);
+  return parseFloat(`${number.toString().split(separator)[0]}${separator}${decimalsTruncated}`);
 }

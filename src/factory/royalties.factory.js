@@ -1,4 +1,5 @@
 import { Skeleton } from '@mui/material';
+import { truncateFloat } from 'utils';
 
 export const accExample = [
   {
@@ -101,7 +102,7 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
     releaseTitle: stringReducer(royaltyFromDB.releaseTitle),
     isrc: royaltyFromDB.isrc,
     upc: royaltyFromDB.upc,
-    netRevenue: parseFloat(royaltyFromDB.netRevenue).toFixed(4),
+    netRevenue: truncateFloat(royaltyFromDB.netRevenue, 4, '.'),
     netRevenueCurrency: royaltyFromDB.netRevenueCurrency,
     territory: royaltyFromDB.territory,
     saleUserType: royaltyFromDB.saleUserType ? royaltyFromDB.saleUserType : "YT User",
@@ -119,8 +120,8 @@ export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
     [groupByProp.name]: dspReducer(accountingFromDB[groupByProp.id]),
     streams: formatThousandsPoint(accountingFromDB.streams),
     downloads: formatThousandsPoint(accountingFromDB.downloads),
-    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(parseFloat(accountingFromDB.revenuesEUR).toFixed(2))),
-    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(parseFloat(accountingFromDB.revenuesUSD).toFixed(2))),
+    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accountingFromDB.revenuesEUR, 2, '.'))),
+    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accountingFromDB.revenuesUSD, 2, '.'))),
   }
 }
 
@@ -137,8 +138,8 @@ export const getTotalesAccountingRow = accountingValues => {
 
   return {
     dsp: totals.dsp, streams: formatThousandsPoint(totals.streams), downloads: formatThousandsPoint(totals.downloads),
-    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(parseFloat(totals.netRevenueEUR).toFixed(2))),
-    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(parseFloat(totals.netRevenueUSD).toFixed(2)))
+    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(truncateFloat(totals.netRevenueEUR, 2, '.'))),
+    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(truncateFloat(totals.netRevenueUSD, 2, '.')))
   }
 }
 

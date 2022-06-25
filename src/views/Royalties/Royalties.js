@@ -13,9 +13,9 @@ import { userIsAdmin } from 'utils/users.utils';
 import { whiteColor } from 'assets/jss/material-dashboard-react.js';
 import { fugaGreen } from 'variables/colors';
 import { toWithOutError } from 'utils';
-import { getAlbumsByFieldRedux } from 'redux/actions/AlbumsActions';
 import AccountingBar from "components/Navbars/AccountingBar";
 import WaitingDialog from "components/Dialogs/WaitingDialog";
+import { getArtistByFieldRedux } from "redux/actions/ArtistsActions";
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const Royalties = () => {
 
   const isAdmin = userIsAdmin(rol);
   const albumsUpc = albums.map(album => album.upc.toString());
-  const artistsNames = artists.map(artist => artist.name); 
+  const artistsNames = artists.map(artist => artist.name);
 
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
@@ -40,23 +40,20 @@ const Royalties = () => {
   const [artistAccSearchValue, setArtistAccSearchValue] = useState("");
   // END SEARCH STUFF
 
+  const defaultAccParams = { field: "releaseArtist", values: isAdmin ? [] : artistsNames, groupBy: { id: 'dsp', name: "DSP's" } };
+  const defaultRoyaltiesParams = { field: "releaseArtist", values: isAdmin ? [] : artistsNames };
+
   const [loadingRoyalties, setLoadingRoyalties] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [royaltiesRows, setRoyaltiesRows] = useState([]);
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [searchParams, setSearchParams] = useState({ field: "upc", values: isAdmin ? [] : albumsUpc });
+  const [searchParams, setSearchParams] = useState(defaultRoyaltiesParams);
   const [royaltiesTableIsOpen, setRoyaltiesTableIsOpen] = useState(false);
 
-  const getAccInitParams = () => {
-    return isAdmin
-      ? { field: "upc", values: [], groupBy: { id: 'dsp', name: "DSP's" } }
-      : { field: "releaseArtist", values: artistsNames, groupBy: { id: 'dsp', name: "DSP's" } }
-  }
-
   const [accountingRows, setAccountingRows] = useState(getSkeletonAccountingRow(10));
-  const [filterAccountingParams, setFilterAccountingParams] = useState(getAccInitParams());
+  const [filterAccountingParams, setFilterAccountingParams] = useState(defaultAccParams);
   const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(true);
 
   // Royalties
@@ -126,46 +123,67 @@ const Royalties = () => {
   }
 
   const onSearchEmailHandler = async (email, caller) => {
+    if (!email) {
+      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
+      return;
+    }
+    let userArtists = isAdmin
+      ? await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)))
+      : artistsNames;
     setSkeletonRows(caller);
-    if (!email) { setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc }); return };
-    let userAlbums = isAdmin
-      ? await toWithOutError(dispatch(getAlbumsByFieldRedux('ownerEmail', email, 1000)))
-      : albumsUpc;
-    if (caller === "royalties") setSearchParams({ field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) });
-    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "upc", values: userAlbums.map(albumFromEmail => albumFromEmail.upc) })
+    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) })
   }
 
   const onSearchArtistHandler = async (artistName, caller) => {
     if (!isAdmin && !artists.map(artist => artist.name).includes(artistName.trim())) {
-      setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
       setOpenNotAdminWarning(true);
       return;
     }
     setSkeletonRows(caller);
-    if (!artistName) { setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc }); return };
+    if (!artistName) {
+      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
+      return
+    };
     if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: artistName.trim() });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: artistName.trim() });
   }
 
   const onSearchUPCHandler = async (upcsSeparatedByComa, caller) => {
     let upcsAsArray = upcsSeparatedByComa.toString().split(",");
-
     if (!isAdmin) {
       let includesAllUpcs = upcsAsArray.every(upc => albumsUpc.indexOf(upc) > -1);
       if (!includesAllUpcs) {
-        setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
         setOpenNotAdminWarning(true);
         return;
       }
     }
     setSkeletonRows(caller);
+    if (upcsAsArray.length === 0) {
+      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
+      return
+    };
     if (caller === "royalties") setSearchParams({ field: "upc", values: upcsAsArray });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "upc", values: upcsAsArray });
   }
 
   const onSearchISRCHandler = async (isrcsSeparatedByComa, caller) => {
-    setSkeletonRows(caller);
     let isrcsAsArray = isrcsSeparatedByComa.toString().split(",");
+    if (!isAdmin) {
+      // TENGO QUE PEDIR TODOS LOS ISRCS del user para verificar que no busque cosas que no son suyas...
+      let includesAllIsrcs = isrcsAsArray.every(isrc => albumsUpc.indexOf(isrc) > -1);
+      if (!includesAllIsrcs) {
+        caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
+        setOpenNotAdminWarning(true);
+        return;
+      }
+    }
+    setSkeletonRows(caller);
+    if (isrcsAsArray.length === 0) {
+      caller === "royalties" ? setSearchParams(defaultRoyaltiesParams) : setFilterAccountingParams(defaultAccParams);
+      return
+    };
+    
     if (caller === "royalties") setSearchParams({ field: "isrc", values: isrcsAsArray });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "isrc", values: isrcsAsArray });
   }
@@ -199,14 +217,14 @@ const Royalties = () => {
 
   const cleanRoyaltiesParams = () => {
     setRoyaltiesRows(getSkeletonRoyaltiesRow(rowsPerPage > 7 ? rowsPerPage : 7));
-    setSearchParams({ field: "upc", values: isAdmin ? [] : albumsUpc });
+    setSearchParams(defaultRoyaltiesParams);
     setEmailSearchValue(""); setUpcSearchValue(""); setIsrcSearchValue("");
     setArtistSearchValue("");
   }
 
   const cleanAccountingParams = () => {
     setAccountingRows(getSkeletonAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
-    setFilterAccountingParams({ groupBy: { id: "dsp", name: "DSP's" }, field: "upc", values: isAdmin ? [] : albumsUpc });
+    setFilterAccountingParams(defaultAccParams);
     setEmailAccSearchValue(""); setUpcAccSearchValue(""); setIsrcAccSearchValue("");
     setArtistAccSearchValue("");
   }

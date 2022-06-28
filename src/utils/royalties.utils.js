@@ -21,8 +21,9 @@ export const dspReducer = dspString => {
   return dspObject[dspString] || dspString;
 }
 
-export const sumEqualDSPNames = accRows => {
-  console.log("ACC ROWS: ", accRows);
+export const sumEqualDSPNames = (accRows, groupBy) => {
+  console.log("GROUP BY: ", groupBy);
+  if (groupBy.id !== "dsp") return accRows;
   let uniquesDsps = [...new Set(accRows.map(accRow => dspReducer(accRow.dsp)))];
   uniquesDsps = uniquesDsps.map(uniqueDsp => {
     let allDspRows = accRows.filter(accRow => dspReducer(accRow.dsp) === uniqueDsp);

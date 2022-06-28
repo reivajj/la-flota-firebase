@@ -4,20 +4,20 @@ import { dspReducer, sortAccountingRows, sumEqualDSPNames } from 'utils/royaltie
 
 export const accExample = [
   {
-      "streams": 1117291292,
-      "dsp": "Facebook Fingerprinting",
-      "revenuesUSD": 17092.190599899586,
-      "downloads": 0,
-      "revenuesEUR": 11.112620689118724
+    "streams": 1117291292,
+    "dsp": "Facebook Fingerprinting",
+    "revenuesUSD": 17092.190599899586,
+    "downloads": 0,
+    "revenuesEUR": 11.112620689118724
   },
   {
-      "streams": 969185482,
-      "dsp": "TikTok",
-      "revenuesUSD": 927.1497700001396,
-      "downloads": 0,
-      "revenuesEUR": 1.323852406537548
+    "streams": 969185482,
+    "dsp": "TikTok",
+    "revenuesUSD": 927.1497700001396,
+    "downloads": 0,
+    "revenuesEUR": 1.323852406537548
   },
-  
+
 ]
 
 const stringReducer = string => {
@@ -86,15 +86,15 @@ export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
 }
 
 export const getAccountingRows = (accRows, groupBy, maxRows) => {
-  let squashedAccRows = sumEqualDSPNames(accRows);
+  if (accRows === []) return [];
+  let squashedAccRows = sumEqualDSPNames(accRows, groupBy);
   let sortedAccRows = [...squashedAccRows.sort(sortAccountingRows)];
   return sortedAccRows.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, maxRows)
 }
 
 export const getTotalesAccountingRow = accountingValues => {
-  let totals = { netRevenueEUR: 0, netRevenueUSD: 0, streams: 0, downloads: 0 };
-  if (accountingValues.length === 0) return [totals];
-  totals = { dsp: "Totales", ...totals };
+  let totals = { dsp: "Totales", netRevenueEUR: 0, netRevenueUSD: 0, streams: 0, downloads: 0 };
+  if (accountingValues.length === 0) return totals;
   console.log(accountingValues);
   accountingValues.forEach(accVal => {
     totals.streams += dspReducer(accVal.dsp) === "iTunes" ? 0 : accVal.streams;

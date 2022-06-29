@@ -23,6 +23,8 @@ import WaitingDialog from "components/Dialogs/WaitingDialog";
 import { getArtistByFieldRedux } from "redux/actions/ArtistsActions";
 import { solicitarRegaliasUrl } from "variables/urls";
 import { Paid } from '@mui/icons-material';
+import { getAccountingDocFS } from "services/FirestoreServices";
+import { getAccDocId } from "utils/royalties.utils";
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -79,10 +81,14 @@ const Royalties = () => {
   useEffect(() => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
+      let accountingValues = [];
       let { groupBy, field, values } = filterAccountingParams;
-      // let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
-      let accountingRowsToShow = getAccountingRows(accExample, groupBy, 50);
-      let totals = getTotalesAccountingRow(accExample);
+      if (isAdmin && values.length === 0 && groupBy.id !== "assetTitle") {
+        accountingValues = await getAccountingDocFS(getAccDocId(isAdmin, groupBy.id, field, values), dispatch);
+      }
+      else accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
+      let accountingRowsToShow = getAccountingRows(accountingValues, groupBy, 50);
+      let totals = getTotalesAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingRowsToShow]);
       setLoadingRoyalties(false);
     }
@@ -284,4 +290,8 @@ const Royalties = () => {
 
 export default Royalties;
 
-const buttonColorStyle = { color: 'white', backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' } };
+const buttonColorStyle = {
+  color: 'white', backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' }, raisedPrimary: {
+    color: 'white',
+  },
+};

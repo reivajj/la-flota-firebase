@@ -368,3 +368,16 @@ export const createSubgenreInUserDocFS = async (subgenre, userId, dispatch) => {
     return "ERROR";
   };
 }
+
+//=======================================================ACCOUNTING===========================================================\\
+
+export const getAccountingDocFS = async (idDoc, dispatch) => {
+  let [errorGettingAccDoc, accountingDocSnap] = await to(getDoc(doc(db, "royaltiesAccounting", idDoc)));
+  if (errorGettingAccDoc) {
+    dispatch(createFireStoreError("Error al obtener las regalías. Intente nuevamente.", errorGettingAccDoc));
+    writeCloudLog("FS Error getting Accounting Doc", idDoc, errorGettingAccDoc, "error");
+    return "ERROR";
+  }
+  if (!accountingDocSnap.exists) return "NOT_FOUND";
+  return accountingDocSnap.data().rows;
+}

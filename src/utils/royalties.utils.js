@@ -10,12 +10,11 @@ export const dspReducer = dspString => {
     'Netease Cloud Music': 'Netease',
     'Facebook Fingerprinting': 'Facebook',
     'Facebook Audio Library': 'Instagram',
-    'Youtube Music': 'YouTube M.',
     'Youtube Ad Supported': 'Youtube Ad',
     'iHeart Radio US': 'iHeartRadio',
     'iTunes Match': 'iTunes',
-    'YouTube': 'YouTube M.',
-    'YouTube Red': 'YouTube M.',
+    'YouTube': 'YouTube Music',
+    'YouTube Red': 'YouTube Music',
     'Google Music (DK)': 'Google Music',
   }
   return dspObject[dspString] || dspString;
@@ -41,4 +40,8 @@ export const sumEqualDSPNames = (accRows, groupBy) => {
     ...uniqueAcc, downloads: uniqueAcc.streams + uniqueAcc.downloads, streams: 0
   } : uniqueAcc)
   return putAllItunesAsDownloads.filter(accFinalRow => accFinalRow.streams > 0 || accFinalRow.downloads > 0);
+}
+
+export const getAccDocId = (userIsAdmin, groupBy, field, values) => {
+  if (userIsAdmin) return `accounting-all-${groupBy}`;
 }

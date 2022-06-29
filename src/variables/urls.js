@@ -1,0 +1,1 @@
+export const solicitarRegaliasUrl = "https://www.laflota.com.ar/solicitar-regalias-v2/";

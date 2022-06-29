@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Backdrop, CircularProgress } from '@mui/material';
+import { Grid, Backdrop, CircularProgress, Button } from '@mui/material';
 
 import { resourceNotYoursText, waitForRoyalties } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
-import { accExample, accountingGroupByValues, getAccountingHeadersForUser, getAccountingRows, getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId } from "factory/royalties.factory";
+
+import {
+  accExample, accountingGroupByValues, getAccountingHeadersForUser, getAccountingRows,
+  getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId
+} from "factory/royalties.factory";
+
 import { getRoyaltiesForTableView, getAccountingGroupedByForTableView } from '../../services/BackendCommunication';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRoyaltyRowForUser } from '../../factory/royalties.factory';
@@ -16,6 +21,8 @@ import { toWithOutError } from 'utils';
 import AccountingBar from "components/Navbars/AccountingBar";
 import WaitingDialog from "components/Dialogs/WaitingDialog";
 import { getArtistByFieldRedux } from "redux/actions/ArtistsActions";
+import { solicitarRegaliasUrl } from "variables/urls";
+import { Paid } from '@mui/icons-material';
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -73,9 +80,9 @@ const Royalties = () => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
       let { groupBy, field, values } = filterAccountingParams;
-      let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
-      let accountingRowsToShow = getAccountingRows(accountingValues, groupBy, 50);
-      let totals = getTotalesAccountingRow(accountingValues);
+      // let accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
+      let accountingRowsToShow = getAccountingRows(accExample, groupBy, 50);
+      let totals = getTotalesAccountingRow(accExample);
       setAccountingRows([totals, ...accountingRowsToShow]);
       setLoadingRoyalties(false);
     }
@@ -190,7 +197,6 @@ const Royalties = () => {
   const artistAccSearchProps = { shortName: "Artista", name: "Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistAccSearchValue, setValue: setArtistAccSearchValue };
 
   const handleChangeGroupBy = groupByName => {
-    console.log(groupByName);
     setAccountingRows(getSkeletonAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
     setFilterAccountingParams({ ...filterAccountingParams, groupBy: { id: groupByNameToId(groupByName), name: groupByName || "DSP's" } })
   }
@@ -244,6 +250,12 @@ const Royalties = () => {
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
 
+          <Grid item xs={12} paddingBottom={2}>
+            <Button variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
+              Solicitar Regalías
+            </Button>
+          </Grid>
+
           <Grid item xs={12} padding={0} >
             <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
               appBarSx={appBarSx} appBarTitle='Ingresos' mainSearchColor={fugaGreen} isOpen={accountingTableIsOpen}
@@ -271,3 +283,5 @@ const Royalties = () => {
 }
 
 export default Royalties;
+
+const buttonColorStyle = { color: 'white', backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' } };

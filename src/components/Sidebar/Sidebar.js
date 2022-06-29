@@ -37,7 +37,6 @@ const Sidebar = props => {
     const isAdmin = userIsAdmin(currentUser.rol);
     if (path === '/dashboard' && isAdmin) return false;
     if (path === '/dashboard-admin' && !isAdmin) return false;
-    // if (path === '/regalias' && !isAdmin) return false;
     if (path === '/users' && (!isAdmin || userIsRRSS(currentUser.rol))) return false;
     if (path === '/test' && !userIsDev(currentUser.rol)) return false
     return true;

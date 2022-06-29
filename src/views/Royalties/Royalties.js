@@ -192,12 +192,12 @@ const Royalties = () => {
     }
   }
 
-  const emailSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim(), setValue: setEmailSearchValue };
+  const emailSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailSearchValue.trim().toLowerCase(), setValue: setEmailSearchValue };
   const upcSearchProps = { shortName: "UPC's", name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcSearchValue.trim(), setValue: setUpcSearchValue };
   const isrcSearchProps = { shortName: "ISRC's", name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcSearchValue.trim(), setValue: setIsrcSearchValue };
   const artistSearchProps = { shortName: "Artista", name: "Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistSearchValue, setValue: setArtistSearchValue };
 
-  const emailAccSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailAccSearchValue.trim(), setValue: setEmailAccSearchValue };
+  const emailAccSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailAccSearchValue.trim().toLowerCase(), setValue: setEmailAccSearchValue };
   const upcAccSearchProps = { shortName: "UPC's", name: "UPC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchUPCHandler, value: upcAccSearchValue.trim(), setValue: setUpcAccSearchValue };
   const isrcAccSearchProps = { shortName: "ISRC's", name: "ISRC's separados por coma", handleEnterKeyPress, onSearchHandler: onSearchISRCHandler, value: isrcAccSearchValue.trim(), setValue: setIsrcAccSearchValue };
   const artistAccSearchProps = { shortName: "Artista", name: "Artista", handleEnterKeyPress, onSearchHandler: onSearchArtistHandler, value: artistAccSearchValue, setValue: setArtistAccSearchValue };

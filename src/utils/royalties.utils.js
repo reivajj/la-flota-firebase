@@ -1,6 +1,20 @@
-export const sortAccountingRows = (rowA, rowB) => {
+export const sortAccountingRowsByRevenue = (rowA, rowB) => {
   return (rowA.revenuesEUR + rowA.revenuesUSD) > (rowB.revenuesEUR + rowB.revenuesUSD)
     ? -1 : 1
+}
+
+export const sortAccountingRowsByMonthDesc = (rowA, rowB) => {
+  return rowA.reportedMonth > rowB.reportedMonth ? -1 : 1
+}
+
+const chooseSorter = (orderField, order) => {
+  if (orderField === "reportedMonth" && order === "desc") return sortAccountingRowsByMonthDesc;
+  if (orderField === "revenues" && order === "desc") return sortAccountingRowsByRevenue;
+  return sortAccountingRowsByRevenue;
+}
+
+export const sortAccountingRows = (accRows, orderByProp) => {
+  return accRows.sort(chooseSorter(orderByProp.field, orderByProp.order));
 }
 
 export const dspReducer = dspString => {
@@ -20,8 +34,13 @@ export const dspReducer = dspString => {
   return dspObject[dspString] || dspString;
 }
 
+export const reduceGroupByField = (groupByField, valueToShow) => {
+  if (groupByField === 'dsp') return dspReducer(valueToShow);
+  if (groupByField === 'reportedMonth') return valueToShow.slice(0,7);
+  return valueToShow;
+}
+
 export const sumEqualDSPNames = (accRows, groupBy) => {
-  console.log("GROUP BY: ", groupBy);
   if (groupBy.id !== "dsp") return accRows;
   let uniquesDsps = [...new Set(accRows.map(accRow => dspReducer(accRow.dsp)))];
   uniquesDsps = uniquesDsps.map(uniqueDsp => {
@@ -35,7 +54,6 @@ export const sumEqualDSPNames = (accRows, groupBy) => {
     })
     return dspAccFinal;
   })
-  console.log("DSPS ROWS: ", uniquesDsps);
   let putAllItunesAsDownloads = uniquesDsps.map(uniqueAcc => uniqueAcc.dsp === "iTunes" ? {
     ...uniqueAcc, downloads: uniqueAcc.streams + uniqueAcc.downloads, streams: 0
   } : uniqueAcc)

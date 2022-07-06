@@ -23,6 +23,8 @@ import MyUsers from './views/Users/MyUsers';
 import Test from './views/ViewTest/Test';
 import Subscription from './views/Subscription/Subscription';
 import Royalties from "views/Royalties/Royalties.js";
+import Payouts from 'views/Royalties/Payouts';
+import PayoutForm from "views/Royalties/PayoutForm";
 
 const Rutas = () => {
 
@@ -44,6 +46,12 @@ const Rutas = () => {
           <Route path="user" element={<UserProfile />} />
           <Route path="subscription" element={<Subscription />} />
           <Route path="regalias" element={<Royalties />} />
+
+          <Route path="retiros/" >
+            <Route path="" element={<Payouts />} />
+            <Route path="solicitud" element={<PayoutForm />} />
+          </Route>
+
           <Route path="typography" element={<Typography />} />
           <Route path="icons" element={<Icons />} />
           <Route path="notifications" element={<Notifications />} />

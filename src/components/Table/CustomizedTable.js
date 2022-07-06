@@ -33,7 +33,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const CustomizedTable = (props) => {
   const { rows, headers, headersHeight, columnsWidth, totalCount, handleChangePage, page,
-     handleChangeRowsPerPage, rowsPerPage, maxWidthText, maxLengthChars, rowsHeight, rowsAlign } = props;
+    handleChangeRowsPerPage, rowsPerPage, maxWidthText, maxLengthChars, rowsHeight, rowsAlign } = props;
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -49,8 +49,8 @@ const CustomizedTable = (props) => {
           <TableBody>
             {rows
               // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map(row => (
-                <StyledTableRow key={row.id}>
+              .map((row, index) => (
+                <StyledTableRow key={'row' + index}>
                   {Object.values(row).map((rowValue, index) => (
                     <StyledTableCell rowsBodyHeight={rowsHeight} align={rowsAlign}>
                       {rowValue && rowValue.length > maxLengthChars
@@ -72,6 +72,7 @@ const CustomizedTable = (props) => {
         count={totalCount}
         component="div"
         rowsPerPage={rowsPerPage}
+        labelRowsPerPage='Filas por página:'
         page={page}
         SelectProps={{
           inputProps: { 'aria-label': 'filas por página', },

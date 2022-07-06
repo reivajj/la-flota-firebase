@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { copyFormDataToJSON, to } from '../utils';
+import { copyFormDataToJSON, formatPeriodComma, formatThousandsPoint, to, truncateFloat } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 import { loginErrorStore } from 'redux/actions/AuthActions';
 import { writeCloudLog } from './LoggingService';
@@ -441,3 +441,50 @@ export const getAccountingGroupedByForTableView = async (groupByProp, fieldName,
   }
   return accountingResponse.data.response;
 }
+
+//=======================================================PAYOUTS=========================================================\\
+
+export const getPayoutsForTableView = async (field, value, limit, offset, dispatch) => {
+  let orderClause = "requestDate.DESC";
+  let whereClause = JSON.stringify(value ? { [field]: value } : {});
+  let queryParams = `?limit=${limit}&offset=${offset}&order=${orderClause}&where=${whereClause}`;
+
+  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${localUrl}payouts/${queryParams}`));
+  if (errorGettingPayouts) {
+    dispatch(createBackendError(errorGettingPayouts));
+    writeCloudLog("Error getting payouts from DB", { field, value, limit, offset }, errorGettingPayouts, "error");
+    return "ERROR";
+  }
+  return payoutsResponse.data.response;
+}
+
+export const getPayoutsAccountingForTableView = async (field, value, groupBy, orderByProp, dispatch) => {
+  let orderClause = `${orderByProp.field}.${orderByProp.order}`;
+  console.log("ORDER CLAUSE: ", orderClause);
+  let whereClause = JSON.stringify(value ? { [field]: value } : {});
+  let ops = JSON.stringify([{ op: "sum", field: "transferTotalUsd", name: "totalPayed" },
+  { op: "count", field: "userEmail", name: "cantPayouts" },
+  { op: "max", field: "requestDate", name: "lastPayAskedDay" }]);
+  let attNoOps = JSON.stringify([{ name: groupBy }]);
+
+  let queryParams = `?order=${orderClause}&where=${whereClause}&groupBy=${groupBy}&ops=${ops}&attributes=${attNoOps}`;
+
+  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${localUrl}payouts/groupBy/${queryParams}`));
+  if (errorGettingPayouts) {
+    dispatch(createBackendError(errorGettingPayouts));
+    writeCloudLog("Error getting payouts from DB", { field, value, groupBy }, errorGettingPayouts, "error");
+    return "ERROR";
+  }
+  return payoutsResponse.data.response;
+}
+
+export const getLastPayoutForUser = async (userEmail, dispatch) => {
+  let [errorGettingLastPayout, lastPayout] = await to(axios.get(`${localUrl}payouts/totalPayed/${userEmail}`));
+  if (errorGettingLastPayout) {
+    dispatch(createBackendError(errorGettingLastPayout));
+    writeCloudLog(`Error getting last payout for ${userEmail} from DB`, userEmail, errorGettingLastPayout, "error");
+    return "ERROR";
+  }
+  if (!lastPayout.response) return 0;
+  return lastPayout.data.response.historicTotalUsd;
+} 

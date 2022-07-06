@@ -1,6 +1,6 @@
 import { useEffect, useRef, useReducer } from 'react';
 
-export const useFetch = (url) => {
+export const useFetch = (url, addTimestamp) => {
 	const cache = useRef({});
   
 	const initialState = {
@@ -33,8 +33,8 @@ export const useFetch = (url) => {
 				dispatch({ type: 'FETCHED', payload: data });
 			} else {
 				try {
-					const response = await fetch(`${url}?timestamp=${new Date().getTime()}`);
-					const data = response;
+					const response = await fetch(`${url}${addTimestamp ? '?timestamp=' + new Date().getTime() : ""}`);
+          const data = response;
 					cache.current[url] = data;
 					if (cancelRequest) return;
 					dispatch({ type: 'FETCHED', payload: data });

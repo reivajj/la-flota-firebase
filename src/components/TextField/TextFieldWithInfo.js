@@ -6,8 +6,8 @@ import { errorFormat } from 'utils';
 
 const TextFieldWithInfo = (props) => {
 
-  const { name, sx, label, value, onChange, error, required, helperText, select, selectItems, selectKeyField
-    , selectValueField, validatorProps, fullWidth, multiline, autoFocus, onClickInfo, hrefInfo, targetHref, type, disabled } = props
+  const { name, sx, label, value, onChange, error, required, helperTextDown, helperText, select, selectItems, selectKeyField
+    , selectValueField, validatorProps, startAdormentObject, placeholder, fullWidth, multiline, autoFocus, onClickInfo, hrefInfo, targetHref, type, disabled } = props
 
   const endAddormentJSX = <InputAdornment position="end">
     <Tooltip title={helperText ? helperText : ""} >
@@ -22,7 +22,7 @@ const TextFieldWithInfo = (props) => {
       </IconButton>
     </Tooltip>
   </InputAdornment >
-  
+
   return (
     <>
       <TextField
@@ -33,15 +33,18 @@ const TextFieldWithInfo = (props) => {
         id={name}
         type={type ? type : ""}
         required={required}
+        helperText={helperTextDown ? helperTextDown : ""}
         margin="normal"
         disabled={disabled}
         label={label}
         error={error}
+        placeholder={placeholder ? placeholder : ""}
         value={value}
         onChange={onChange}
         select={select ? true : false}
         InputProps={{
-          endAdornment: helperText ? endAddormentJSX : ""
+          endAdornment: helperText ? endAddormentJSX : "",
+          startAdornment: startAdormentObject ? startAdormentObject : "",
         }}
         multiline={multiline}
       >

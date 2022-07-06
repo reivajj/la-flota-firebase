@@ -12,6 +12,7 @@ const initialState = {
   apellido: '', dni: '', imagen: '', stats: initialStats, usuarioActivo: false, generos: [],
   subgenerosPropios: [], plan: "charly-garcia", withdrawals: initialWithdrawals, actividadReciente: [],
   timestampWhenCreatedUser: '', lastTimeSignedInString: '', lastTimeSignedIn: '', isNewInFBSystem: false,
+  cuit: '',
 }
 
 const addNewSubgenero = (newSubgenero, oldSubgeneros) => {

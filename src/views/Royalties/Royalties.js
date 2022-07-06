@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Grid, Backdrop, CircularProgress, Button } from '@mui/material';
 
-import { resourceNotYoursText, waitForRoyalties } from '../../utils/textToShow.utils';
+import { resourceNotYoursText, waitForRoyalties, emptyRoyaltiesResult } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
 
 import {
-  accExample, accountingGroupByValues, getAccountingHeadersForUser, getAccountingRows,
+  accountingGroupByValues, getAccountingHeadersForUser, getAccountingRows,
   getRoyaltyHeadersForUser, getSkeletonAccountingRow, getSkeletonRoyaltiesRow, getTotalesAccountingRow, groupByNameToId
 } from "factory/royalties.factory";
 
@@ -49,9 +49,13 @@ const Royalties = () => {
   const [artistAccSearchValue, setArtistAccSearchValue] = useState("");
   // END SEARCH STUFF
 
-  const defaultAccParams = { field: "releaseArtist", values: isAdmin ? [] : artistsNames, groupBy: { id: 'dsp', name: "DSP's" } };
+  const defaultAccParams = {
+    field: "releaseArtist", values: isAdmin ? [] : artistsNames,
+    groupBy: { id: 'dsp', name: "DSP's" }, orderBy: { field: 'revenues', order: 'desc' }
+  };
   const defaultRoyaltiesParams = { field: "releaseArtist", values: isAdmin ? [] : artistsNames };
 
+  const [emptyResults, setEmptyResults] = useState(false);
   const [loadingRoyalties, setLoadingRoyalties] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [royaltiesRows, setRoyaltiesRows] = useState([]);
@@ -82,12 +86,12 @@ const Royalties = () => {
     const getAccountingInfo = async () => {
       setLoadingRoyalties(true);
       let accountingValues = [];
-      let { groupBy, field, values } = filterAccountingParams;
+      let { groupBy, field, values, orderBy } = filterAccountingParams;
       if (isAdmin && values.length === 0 && groupBy.id !== "assetTitle") {
         accountingValues = await getAccountingDocFS(getAccDocId(isAdmin, groupBy.id, field, values), dispatch);
       }
       else accountingValues = await getAccountingGroupedByForTableView(groupBy.id, field, values, dispatch);
-      let accountingRowsToShow = getAccountingRows(accountingValues, groupBy, 50);
+      let accountingRowsToShow = getAccountingRows(accountingValues, groupBy, 50, orderBy);
       let totals = getTotalesAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingRowsToShow]);
       setLoadingRoyalties(false);
@@ -139,6 +143,7 @@ const Royalties = () => {
   const onSearchEmailHandler = async (email, caller) => {
     if (!email) return;
     let userArtists = await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)));
+    if (userArtists === "EMPTY") { setEmptyResults(true); return }
     setSkeletonRows(caller);
     if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) });
     if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) })
@@ -204,7 +209,11 @@ const Royalties = () => {
 
   const handleChangeGroupBy = groupByName => {
     setAccountingRows(getSkeletonAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
-    setFilterAccountingParams({ ...filterAccountingParams, groupBy: { id: groupByNameToId(groupByName), name: groupByName || "DSP's" } })
+    setFilterAccountingParams({
+      ...filterAccountingParams,
+      groupBy: { id: groupByNameToId(groupByName), name: groupByName || "DSP's" },
+      orderBy: { field: groupByNameToId(groupByName), order: "desc" }
+    })
   }
 
   const groupByProps = { helper: "Agrupar según", values: accountingGroupByValues, handleChangeGroupBy, value: filterAccountingParams.groupBy }
@@ -253,6 +262,9 @@ const Royalties = () => {
 
         <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
           title={"Necesitas permisos de Administrador"} contentTexts={resourceNotYoursText} />
+
+        <InfoDialog isOpen={emptyResults} handleClose={() => setEmptyResults(false)}
+          title={"Sin resultados"} contentTexts={emptyRoyaltiesResult} />
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
 

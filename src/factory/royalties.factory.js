@@ -1,24 +1,7 @@
 import { Skeleton } from '@mui/material';
-import { truncateFloat } from 'utils';
-import { dspReducer, sortAccountingRows, sumEqualDSPNames } from 'utils/royalties.utils';
-
-export const accExample = [
-  {
-    "streams": 1117291292,
-    "dsp": "Facebook Fingerprinting",
-    "revenuesUSD": 17092.190599899586,
-    "downloads": 0,
-    "revenuesEUR": 11.112620689118724
-  },
-  {
-    "streams": 969185482,
-    "dsp": "TikTok",
-    "revenuesUSD": 927.1497700001396,
-    "downloads": 0,
-    "revenuesEUR": 1.323852406537548
-  },
-
-]
+import { formatPeriodComma, truncateFloat } from 'utils';
+import { dspReducer, reduceGroupByField, sortAccountingRows, sumEqualDSPNames } from 'utils/royalties.utils';
+import { formatThousandsPoint } from '../utils';
 
 const stringReducer = string => {
   return string.length > 143
@@ -37,6 +20,7 @@ export const getRoyaltyHeadersForUser = [
 export const groupByNameToId = name => {
   let nameToIdReducer = {
     "DSP's": 'dsp',
+    'Mes del Reporte': 'reportedMonth',
     'Territorios': 'territory',
     'Artistas': 'releaseArtist',
     'Tracks': 'assetTitle',
@@ -51,7 +35,7 @@ export const getAccountingHeadersForUser = groupByProp => [
   { name: "Regalías (USD)", width: "25%" },
 ]
 
-export const accountingGroupByValues = ["DSP's", "Artistas", "Tracks", "Territorios", "Lanzamientos"];
+export const accountingGroupByValues = ["DSP's", "Mes del Reporte", "Artistas", "Tracks", "Territorios", "Lanzamientos"];
 
 export const createRoyaltyRowForUser = royaltyFromDB => {
   return {
@@ -72,12 +56,9 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
   }
 }
 
-const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : 0;
-const formatPeriodComma = number => number ? number.toString().replace(".", ",") : 0;
-
 export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   return {
-    [groupByProp.name]: dspReducer(accountingFromDB[groupByProp.id]),
+    [groupByProp.name]: reduceGroupByField(groupByProp.id, accountingFromDB[groupByProp.id]),
     streams: formatThousandsPoint(accountingFromDB.streams),
     downloads: formatThousandsPoint(accountingFromDB.downloads),
     netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accountingFromDB.revenuesEUR, 2, '.'))),
@@ -85,10 +66,10 @@ export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
   }
 }
 
-export const getAccountingRows = (accRows, groupBy, maxRows) => {
+export const getAccountingRows = (accRows, groupBy, maxRows, orderByProp) => {
   if (accRows === []) return [];
   let squashedAccRows = sumEqualDSPNames(accRows, groupBy);
-  let sortedAccRows = [...squashedAccRows.sort(sortAccountingRows)];
+  let sortedAccRows = sortAccountingRows(squashedAccRows, orderByProp);
   return sortedAccRows.map(accountingRow => createAccountingRowForUser(accountingRow, groupBy)).slice(0, maxRows)
 }
 
@@ -116,7 +97,7 @@ const loadingSkeleton = () => (
 
 export const getSkeletonRoyaltiesRow = rowsPerPage => {
 
-  return [...Array(rowsPerPage)].map((index) => {
+  return [...Array(rowsPerPage)].map(() => {
     return {
       saleStartDate: loadingSkeleton(),
       releaseArtist: loadingSkeleton(),
@@ -131,7 +112,7 @@ export const getSkeletonRoyaltiesRow = rowsPerPage => {
       saleUserType: loadingSkeleton(),
       saleType: loadingSkeleton(),
       assetQuantity: loadingSkeleton(),
-      id: index,
+      id: loadingSkeleton(),
     }
   })
 }

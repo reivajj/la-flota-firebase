@@ -92,3 +92,9 @@ export const USERS_EDIT_BY_ID = "users_edit_by_id";
 //Royalties
 export const ROYALTIES_ADD = "royalties_add";
 export const ROYALTIES_SIGN_OUT = "royalties_sign_out";
+
+//Payouts
+export const PAYOUTS_ADD = "payouts_add";
+export const PAYOUTS_SIGN_OUT = "payouts_sign_out";
+export const PAYOUTS_DELETE_BY_ID = "payouts_delete_by_id";
+export const PAYOUTS_EDIT_BY_ID = "payouts_edit_by_id";

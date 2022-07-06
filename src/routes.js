@@ -9,6 +9,8 @@ import DashboardAdmin from './views/Dashboard/DashboardAdmin';
 import MyUsers from './views/Users/MyUsers';
 import Test from './views/ViewTest/Test';
 import Subscription from './views/Subscription/Subscription';
+import Royalties from 'views/Royalties/Royalties.js';
+import Payouts from "views/Royalties/Payouts";
 
 const dashboardRoutes = [
   {
@@ -50,7 +52,14 @@ const dashboardRoutes = [
     path: "/regalias",
     name: "Regalías",
     icon: Paid,
-    component: MyAlbums,
+    component: Royalties,
+    layout: "/admin"
+  },
+  {
+    path: "/retiros",
+    name: "Retiros",
+    icon: Paid,
+    component: Payouts,
     layout: "/admin"
   },
   {

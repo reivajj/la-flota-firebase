@@ -63,3 +63,22 @@ export const truncateFloat = (number, decimals, separator) => {
   let decimalsTruncated = number.toString().split(separator)[1].slice(0, decimals);
   return parseFloat(`${number.toString().split(separator)[0]}${separator}${decimalsTruncated}`);
 }
+
+export const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : 0;
+export const formatPeriodComma = number => number ? number.toString().replace(".", ",") : 0;
+
+export const addToObjectInPosition = (obj, key, value, index) => {
+  var temp = {};
+  var i = 0;
+
+  for (var prop in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+      if (i === index && key && value) temp[key] = value;
+      temp[prop] = obj[prop];
+      i++;
+    }
+  }
+
+  if (!index && key) Object.assign(temp, { [key]: value });
+  return temp
+}

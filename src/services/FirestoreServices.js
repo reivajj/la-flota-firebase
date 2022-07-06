@@ -3,7 +3,7 @@ import {
   getFirestore, getDoc, updateDoc, doc, setDoc, arrayUnion, query, collection,
   getDocs, where, increment, deleteDoc, limit, writeBatch, orderBy
 } from "firebase/firestore";
-import { to } from 'utils';
+import { to, truncateFloat, formatPeriodComma, formatThousandsPoint } from 'utils';
 import { createFireStoreError } from 'redux/actions/ErrorHandlerActions';
 import { createUserDocItem } from 'factory/users.factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -381,3 +381,31 @@ export const getAccountingDocFS = async (idDoc, dispatch) => {
   if (!accountingDocSnap.exists) return "NOT_FOUND";
   return accountingDocSnap.data().rows;
 }
+
+export const getArtistsAccountingValuesFS = async (targetArtistsNames, dispatch) => {
+  let allAccountingArtistsValues = await getAccountingDocFS("accounting-all-releaseArtist", dispatch);
+  let resultRows = allAccountingArtistsValues.filter(accRow => targetArtistsNames.includes(accRow.releaseArtist));
+  let totalUsd = (resultRows.map(accRow => accRow.revenuesUSD).reduce((acc, value) => acc + value));
+  let totalEur = resultRows.map(accRow => accRow.revenuesEUR).reduce((acc, value) => acc + value);
+  return totalUsd;
+}
+
+export const getWithdrawalsToViewFS = async (field, values, limitToGet, offset, dispatch) => {
+  let queryRef = {};
+  if (values.length === 0) queryRef = query(collection(db, "withdrawals"), orderBy("requestDate", "desc"), limit(limitToGet))
+  else queryRef = query(collection(db, "withdrawals"), where(`${field}`, "==", values[0])
+    , orderBy("requestDate", "desc"), limit(limitToGet));
+
+  let [errorGettingWds, wdsSnap] = await to(getDocs(queryRef));
+  if (errorGettingWds) {
+    dispatch(createFireStoreError("Error al obtener los retiros. Intente nuevamente.", errorGettingWds));
+    writeCloudLog("FS Error getting withdraws Doc", { field, values, limitToGet, offset }, errorGettingWds, "error");
+    return "ERROR";
+  }
+
+  if (wdsSnap.empty) return { count: 0, rows: [] };
+
+  let results = [];
+  wdsSnap.forEach(wdsDoc => results.push(wdsDoc.data()))
+  return { count: 100, rows: results };
+} 

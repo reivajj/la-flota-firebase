@@ -112,7 +112,7 @@ const NewUserDialog = ({ isOpen, handleCloseDialog, userSelected }) => {
                 value={password}
                 onChange={setForm}
                 validatorProps={{
-                  restrictions: 'required|max:100|min:6', message: "Debes ingresar una contraseña que tenga al menos 6 carácteres y un máximo de 100."
+                  restrictions: lockedCredentials ? '' : 'required|max:100|min:6', message: "Debes ingresar una contraseña que tenga al menos 6 carácteres y un máximo de 100."
                   , validator: validator
                 }} />
             </Grid>

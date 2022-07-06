@@ -56,11 +56,11 @@ const AlbumTotalInfo = () => {
   });
 
   const urlFugaAlbum = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
-  const albumFetch = useAxios(urlFugaAlbum);
+  const albumFetch = useAxios(urlFugaAlbum, true);
   let albumFugaData = albumFetch.data; let albumFugaStatus = albumFetch.status;
 
   const urlFugaImageAlbum = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}/image/muse_list_view`;
-  let imageFetch = useFetch(urlFugaImageAlbum);
+  let imageFetch = useFetch(urlFugaImageAlbum, true);
   let imageFetchStatus = imageFetch.status; let imageFetchData = imageFetch.data;
 
   let audioTracksMissing = albumFugaStatus === "fetched" ? areMissingTracksFuga(albumFugaData.assets) : false;

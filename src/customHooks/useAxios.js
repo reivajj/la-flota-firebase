@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useEffect, useRef, useReducer } from 'react';
 
-export const useAxios = (url) => {
+export const useAxios = (url, addTimestamp) => {
 	const cache = useRef({});
 
 	const initialState = {
@@ -34,8 +34,8 @@ export const useAxios = (url) => {
 				dispatch({ type: 'FETCHED', payload: data });
 			} else {
 				try {
-					const response = await axios.get(`${url}?timestamp=${new Date().getTime()}`);
-					const data = response.data.response;
+					const response = await axios.get(`${url}${addTimestamp ? '?timestamp=' + new Date().getTime() : ""}`);
+          const data = response.data.response;
 					cache.current[url] = data;
 					if (cancelRequest) return;
 					dispatch({ type: 'FETCHED', payload: data });

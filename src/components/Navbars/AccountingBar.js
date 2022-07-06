@@ -60,7 +60,7 @@ const AccountingBar = (props) => {
           </Typography>}
 
           {groupByProps.values.length > 0 &&
-            <Tooltip key={'tooltip groupBy'} placement='top' title={"Puedes agrupar los resultados según las siguientes opciones"}>
+            <Tooltip key={'tooltip groupBy'} placement='right' title={"Puedes agrupar los resultados según las siguientes opciones"}>
               <Search key={'search groupBy'} mainSearchColor={mainSearchColor}>
                 <Select
                   key={'input groupBy'}

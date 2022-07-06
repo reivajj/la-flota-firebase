@@ -37,8 +37,10 @@ const getAllDataFromDBToStoreClient = async (userUid, userDataFromDB, dispatch) 
   const invitedArtists = await FirestoreServices.getElements(userUid, "artistsInvited", dispatch, 40);
   const activities = await FirestoreServices.getElements(userUid, "usersActivity", dispatch, 20)
   const collaborators = await FirestoreServices.getElements(userUid, "artistsCollaborators", dispatch, 20);
+  const payouts = await FirestoreServices.getElements(userUid, "payouts", dispatch, limit);
 
-  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, [], artists, labels, invitedArtists, collaborators, activities));
+  dispatch(UserDataActions.userDataSignIn(userDataFromDB, albums, [], artists, labels,
+    invitedArtists, collaborators, activities, payouts));
 }
 
 const getAllDataFromDBToStoreAdminDev = async (userUid, userDataFromDB, dispatch) => {

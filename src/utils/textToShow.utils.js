@@ -46,6 +46,8 @@ export const needAdminPermissionsText = ["No puedes realizar esta acción, no ti
 export const resourceNotYoursText = ["No puedes realizar esta búsqueda, el recurso que intentas buscar o al menos uno de ellos no te pertenece o no existe.",
   "Por favor corrobora que está bien escrito."]
 
+export const emptyRoyaltiesResult = ["No se encontraron regalías para este usuario.", "No dispone de Artistas en la App."]
+export const emptyPaysResult = ["No se encontraron pagos para este usuario."]
 
 export const infoSpotifyUri = [
   "Ingresa el código URi de Spotify.", <br />,
@@ -187,4 +189,6 @@ export const subtitleEditUPC = [
 export const subtitleEditFugaId = ["Útil para cuando creamos por nuestra cuenta un lanzamiento en FUGA ", <br />,
   "y el lanzamiento que se ve en la APP no esta enlazado a ese Lanzamiento."]
 
-export const waitForRoyalties = [<b>{"Estamos obteniendo tus ingresos desde nuestros servidores."}</b>]  
+export const waitForRoyalties = [<b>{"Estamos obteniendo tus ingresos desde nuestros servidores."}</b>];
+
+export const waitForPayouts = [<b>{"Estamos obteniendo tus pagos desde nuestros servidores."}</b>]  

@@ -1,21 +1,24 @@
 import React from 'react';
-import CircularProgress from '@mui/material/CircularProgress';
+import { CircularProgress, Tooltip, Button, Fab, Grid } from '@mui/material';
 import { green, red } from '@mui/material/colors';
-import { Button, Fab, Grid } from '@mui/material';
 import { Check, Replay, Delete } from '@mui/icons-material/';
 import { createTheme } from '@mui/material/styles';
-import { Tooltip } from '../../../node_modules/@mui/material/index';
-
-const getStyleFromStateButton = (buttonState, noFab) => {
-  if (buttonState === "success") return styles.buttonSuccess;
-  if (buttonState === "error" && !noFab) return styles.buttonErrorFab;
-  if (buttonState === "delete") return styles.buttonDelete;
-  if (buttonState === "error" && noFab) return styles.buttonErrorNoFab
-  return styles.buttonNone;
-}
 
 const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHandler, successIcon, noneIcon, color, noFab,
-  buttonFullWidth, buttonSx, buttonProgressSx, tooltipText }) => {
+  buttonFullWidth, buttonSx, backgroundColor, buttonProgressSx, tooltipText }) => {
+
+  const getStyleFromStateButton = (buttonState, noFab) => {
+    if (buttonState === "success") return styles.buttonSuccess;
+    if (buttonState === "error" && !noFab) return styles.buttonErrorFab;
+    if (buttonState === "delete") return styles.buttonDelete;
+    if (buttonState === "error" && noFab) return styles.buttonErrorNoFab
+    return buttonNoneSx;
+  }
+
+  const buttonNoneSx = {
+    backgroundColor: backgroundColor ? backgroundColor : theme.palette.secondary.main,
+    '&:hover': { backgroundColor: backgroundColor ? backgroundColor : theme.palette.secondary.main, }
+  }
 
   const getEndButtonIcon = () => {
     if (buttonState === "delete" && noFab) return <Delete />;
@@ -33,7 +36,6 @@ const ProgressButton = ({ textButton, loading, disabled, buttonState, onClickHan
             aria-label="save"
             color={color}
             sx={getStyleFromStateButton(buttonState, noFab)}
-            onClick={onClickHandler}
           >
             {(buttonState === "none" || buttonState === "delete") ? noneIcon
               : buttonState === "success"
@@ -87,12 +89,6 @@ const styles = {
     backgroundColor: green[500],
     '&:hover': {
       backgroundColor: green[700],
-    },
-  },
-  buttonNone: {
-    backgroundColor: theme.palette.secondary.main,
-    '&:hover': {
-      backgroundColor: theme.palette.secondary.main,
     },
   },
   buttonErrorFab: {

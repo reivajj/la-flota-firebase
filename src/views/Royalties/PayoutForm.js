@@ -58,7 +58,7 @@ const PayoutForm = () => {
     const getTotalRoyalties = async () => {
       let royalties = await getArtistsAccountingValuesFS(artistsNames, dispatch);
       let payed = await getLastPayoutForUser(userData.email, dispatch);
-      let available = (parseFloat(royalties) - parseFloat(payed)).toFixed(2);
+      let available = parseFloat(truncateFloat(parseFloat(royalties) - parseFloat(payed), 2, '.'));
       setTotalRoyaltiesAndPayed({ payed, royalties, loading: false, available });
       setForm({ target: { name: 'transferTotalUsd', value: available } });
     }
@@ -116,11 +116,6 @@ const PayoutForm = () => {
     Si no lo sabés hacé click acá.
   </Link>
 
-  const exchangeRate = <Link sx={{ fontSize: '0.75rem', marginLeft: '13px' }} target="_blank"
-    href="https://www.exchange-rates.org/converter/USD/ARS/1" variant="body2" underline="hover">
-    Cotización del dólar a pesos argentinos.
-  </Link>
-
   let borderHeight = 7;
   const cardStylePesos = {
     width: medioDePago.id === "ars" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
@@ -156,6 +151,8 @@ const PayoutForm = () => {
     const onlyNums = event.target.value.replace(/[^0-9]/g, '');
     setForm({ target: { name: 'transferTotalUsd', value: onlyNums } });
   }
+
+  const helperTextAvailable = totalRoyaltiesAndPayed.available < 10 ? "No puede retirar un monto menor a 10 USD" : "Ingresa la cantidad de Dólares (USD) a retirar."
 
   return (
     <Grid container justifyContent="center">
@@ -193,7 +190,7 @@ const PayoutForm = () => {
 
               <Grid item xs={4} textAlign="center" paddingBottom={4} paddingTop={2}>
                 <Typography sx={moneyTextStyle} >
-                  {`Disponible a Retirar: USD ${formatThousandsPoint(formatPeriodComma(truncateFloat(totalRoyaltiesAndPayed.available)))}`}
+                  {`Disponible a Retirar: USD ${formatThousandsPoint(formatPeriodComma(truncateFloat(totalRoyaltiesAndPayed.available, 2, '.')))}`}
                 </Typography>
               </Grid>
 
@@ -201,9 +198,10 @@ const PayoutForm = () => {
                 <TextFieldWithInfo
                   name="transferTotalUsd"
                   required
-                  error={parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available)}
+                  disabled={totalRoyaltiesAndPayed.available < 10}
+                  error={(parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available))}
                   label="Dolares a Retirar"
-                  helperTextDown="Ingresa la cantidad de Dólares (USD) a retirar."
+                  helperTextDown={helperTextAvailable}
                   value={transferTotalUsd}
                   onChange={handleUsdToWithdraw}
                   startAdormentObject={<InputAdornment position="start">USD</InputAdornment>}
@@ -364,7 +362,7 @@ const PayoutForm = () => {
                       }}
                     />
                   </Grid>
-                  
+
                   <Grid item xs={12} textAlign="center" paddingBottom={2}>
                     <Typography sx={moneyTextStyle} >{`Cotización de USD a ARS: 
                     ${formatThousandsPoint(formatPeriodComma(truncateFloat(usdToArsRate, 2, '.')))}`}</Typography>

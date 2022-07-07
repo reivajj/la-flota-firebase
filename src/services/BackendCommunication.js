@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { copyFormDataToJSON, formatPeriodComma, formatThousandsPoint, to, truncateFloat } from '../utils';
+import { copyFormDataToJSON, to } from '../utils';
 import { createBackendError } from '../redux/actions/ErrorHandlerActions';
 import { loginErrorStore } from 'redux/actions/AuthActions';
 import { writeCloudLog } from './LoggingService';
@@ -449,7 +449,7 @@ export const getPayoutsForTableView = async (field, value, limit, offset, dispat
   let whereClause = JSON.stringify(value ? { [field]: value } : {});
   let queryParams = `?limit=${limit}&offset=${offset}&order=${orderClause}&where=${whereClause}`;
 
-  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${localUrl}payouts/${queryParams}`));
+  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/${queryParams}`));
   if (errorGettingPayouts) {
     dispatch(createBackendError(errorGettingPayouts));
     writeCloudLog("Error getting payouts from DB", { field, value, limit, offset }, errorGettingPayouts, "error");
@@ -469,7 +469,7 @@ export const getPayoutsAccountingForTableView = async (field, value, groupBy, or
 
   let queryParams = `?order=${orderClause}&where=${whereClause}&groupBy=${groupBy}&ops=${ops}&attributes=${attNoOps}`;
 
-  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${localUrl}payouts/groupBy/${queryParams}`));
+  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/groupBy/${queryParams}`));
   if (errorGettingPayouts) {
     dispatch(createBackendError(errorGettingPayouts));
     writeCloudLog("Error getting payouts from DB", { field, value, groupBy }, errorGettingPayouts, "error");
@@ -479,7 +479,7 @@ export const getPayoutsAccountingForTableView = async (field, value, groupBy, or
 }
 
 export const getLastPayoutForUser = async (userEmail, dispatch) => {
-  let [errorGettingLastPayout, lastPayout] = await to(axios.get(`${localUrl}payouts/totalPayed/${userEmail}`));
+  let [errorGettingLastPayout, lastPayout] = await to(axios.get(`${targetUrl}payouts/totalPayed/${userEmail}`));
   if (errorGettingLastPayout) {
     dispatch(createBackendError(errorGettingLastPayout));
     writeCloudLog(`Error getting last payout for ${userEmail} from DB`, userEmail, errorGettingLastPayout, "error");

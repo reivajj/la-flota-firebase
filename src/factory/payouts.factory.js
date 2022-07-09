@@ -3,25 +3,25 @@ import { truncateFloat } from 'utils';
 import { iconOpenActionsPayouts } from '../utils/payouts.utils';
 
 export const payoutDefaultValues = {
-  status: "Esperando confirmación", requestDate: "", transferDate: "", transferMonth: "",
+  status: "Esperando confirmación", requestDate: "", transferDate: null, transferMonth: "",
   currency: "ARS", transferTotalAskedCurrency: 0, currencyRateToUsd: 0, transferTotalUsd: 0,
   historicTotalUsd: 0, userCuit: "", id: "", userEmail: "", userId: "", alreadyPaidUsd: "",
-  comissionAskedCurrency: "", comissionCurrency: "", comissionUsd: "", userName: "", cupon: "",
-  userLastName: "", cbuCvuAlias: "", paypalEmail: "", paypalId: "", paypalFee: "",
-  payoneerEmail: "", payoneerFee: "", payoneerId: "", taxesUsd: 0, taxesOtherCurrency: 0, taxesCurrency: ""
+  comissionAskedCurrency: 0, comissionCurrency: "", comissionUsd: 0, userName: "", cupon: "",
+  userLastName: "", cbuCvuAlias: "", paypalEmail: "", paypalId: "", paypalFee: 0,
+  payoneerEmail: "", payoneerFee: 0, payoneerId: "", taxesUsd: 0, taxesOtherCurrency: 0, taxesCurrency: ""
 }
 
 export const getPayoutsHeadersForUser = [
   { name: "Opciones", width: "3%" }, { name: "Estado", width: "8%" }, { name: "Día Pedido", width: "10%" }, { name: "Día Pagado", width: "10%" },
-  { name: "Moneda", width: "5%" }, { name: "Tranferencia", width: "10%" }, { name: "Cotización (USD)", width: "10%" },
-  { name: "Tranferencia (USD)", width: "10%" }, { name: "Total ya pagado (USD)", width: "10%" },
+  { name: "Moneda", width: "5%" }, { name: "Transferencia", width: "10%" }, { name: "Cotización (USD)", width: "10%" },
+  { name: "Transferencia (USD)", width: "10%" }, { name: "Total ya pagado (USD)", width: "10%" },
   { name: "CUIT", width: "12%" }, { name: "ID Pago", width: "12%" }
 ]
 
 export const getPayoutsHeadersForAdmin = [
   { name: "Opciones", width: "3%" }, { name: "Email", width: "10%" }, { name: "Estado", width: "5%" }, { name: "Día Pedido", width: "10%" },
-  { name: "Día Pagado", width: "10%" }, { name: "Moneda", width: "5%" }, { name: "Tranferencia", width: "7%" },
-  { name: "Cotización (USD)", width: "7%" }, { name: "Tranferencia (USD)", width: "7%" },
+  { name: "Día Pagado", width: "10%" }, { name: "Moneda", width: "5%" }, { name: "Transferencia", width: "7%" },
+  { name: "Cotización (USD)", width: "7%" }, { name: "Transferencia (USD)", width: "7%" },
   { name: "Total ya pagado (USD)", width: "7%" }, { name: "CUIT", width: "8%" }, { name: "ID Pago", width: "10%" }
 ]
 
@@ -50,7 +50,7 @@ export const createPayoutRowForUser = payoutRowFromDB => {
 export const createPayoutRowForAdmin = payoutRowFromDB => {
   let payoutForAdmin = {
     options: iconOpenActionsPayouts(payoutRowFromDB.id, () => console.log("HOAL")),
-    userEmail: payoutRowFromDB.userEmail, ...createPayoutRowForUser(payoutRowFromDB)
+    userEmail: payoutRowFromDB.ownerEmail, ...createPayoutRowForUser(payoutRowFromDB)
   };
   return payoutForAdmin;
 }
@@ -68,8 +68,10 @@ const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=
 const formatPeriodComma = number => number ? number.toString().replace(".", ",") : 0;
 
 export const getPayoutAccountingRows = (wdRows, groupBy, maxRows, orderByProp) => {
-  if (wdRows === []) return [];
+  console.log("WD ROWS: ", wdRows);
+  if (!wdRows || wdRows === "EMPTY" || wdRows.length === 0) return [];
   // let sortedAccRows = sortAccountingRows(wdRows, orderByProp);
+  console.log("WD ROS: ", wdRows)
   return wdRows.map(accountingRow => createAccPayoutRowForAdmin(accountingRow, groupBy)).slice(0, maxRows)
 }
 

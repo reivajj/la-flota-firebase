@@ -7,12 +7,12 @@ export const payoutsAddStore = payouts => {
   return { type: ReducerTypes.PAYOUTS_ADD, payload: payouts }
 }
 
-export const payoutDeleteByIdStore = activityId => {
-  return { type: ReducerTypes.PAYOUTS_DELETE_BY_ID, payload: activityId }
+export const payoutDeleteByIdStore = payoutId => {
+  return { type: ReducerTypes.PAYOUTS_DELETE_BY_ID, payload: payoutId }
 }
 
-export const payoutEditByIdStore = activityId => {
-  return { type: ReducerTypes.PAYOUTS_EDIT_BY_ID, payload: activityId }
+export const payoutEditByIdStore = newPayout => {
+  return { type: ReducerTypes.PAYOUTS_EDIT_BY_ID, payload: newPayout }
 }
 
 export const payoutsSignOut = () => {

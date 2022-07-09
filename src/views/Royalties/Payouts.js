@@ -22,6 +22,7 @@ import {
 import { getPayoutsForTableView } from "services/BackendCommunication";
 import { getPayoutsAccountingForTableView } from '../../services/BackendCommunication';
 import { groupByNameToIdPayouts } from "utils/payouts.utils";
+import { getPayoutsToViewFS } from "services/FirestoreServices";
 
 const Payouts = () => {
   const dispatch = useDispatch();
@@ -36,8 +37,8 @@ const Payouts = () => {
   // END SEARCH STUFF
 
   const defaultAccParams = {
-    field: "userEmail", value: isAdmin ? "" : currentUserData.email, caller: "all",
-    groupBy: { id: 'userEmail', name: "Usuario" }, orderBy: { field: 'totalPayed', order: 'DESC' }
+    field: "ownerEmail", value: isAdmin ? "" : currentUserData.email, caller: "all",
+    groupBy: { id: 'ownerEmail', name: "Usuario" }, orderBy: { field: 'totalPayed', order: 'DESC' }
   };
 
   const [emptyResults, setEmptyResults] = useState(false);
@@ -55,18 +56,16 @@ const Payouts = () => {
 
   // Pagos individuales
   useEffect(() => {
-    const getRoyaltiesCountAndRows = async () => {
+    const getPayoutsCountAndRows = async () => {
       setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));
       let { field, value, caller } = filterPayoutsParams;
-      console.log("CALLER IN PAYOUTS: ", caller)
       if (caller === "accounting") return;
-      let { total, payouts } = await getPayoutsForTableView(field, value, rowsPerPage, rowsPerPage * page, dispatch);
-      console.log({ total, payouts });
-      setTotalCount(total);
+      let { count, payouts } = await getPayoutsToViewFS(field, value, rowsPerPage, rowsPerPage * page, dispatch);
+      console.log({ count, payouts });
       setPayoutsRows(payouts.map(wdRow => isAdmin ? createPayoutRowForAdmin(wdRow) : createPayoutRowForUser(wdRow)));
     }
 
-    getRoyaltiesCountAndRows();
+    getPayoutsCountAndRows();
   }, [page, rowsPerPage, filterPayoutsParams])
 
   // Total de cada usuario
@@ -75,14 +74,15 @@ const Payouts = () => {
       setAccountingRows(getSkeletonWdAccountingRow(5));
       let accountingValues = [];
       let { groupBy, field, value, orderBy, caller } = filterPayoutsParams;
-      console.log("CALLER IN ACC: ", caller)
+
       if (caller === "royalties") return;
-      if (isAdmin && value.length === 0) {
-        accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
-      }
-      else accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
+      accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
+
+      if (accountingValues === "EMPTY") accountingValues = [];
+      if (accountingValues === "ERROR") accountingValues = [];
       let accountingRowsToShow = getPayoutAccountingRows(accountingValues, groupBy, 50, orderBy);
       let totals = value ? [] : getTotalesWdAccountingRow(accountingValues);
+      setTotalCount(accountingValues.length > 0 ? isAdmin ? totals.cantPayouts : accountingValues[0].cantPayouts : 0);
       setAccountingRows([totals, ...accountingRowsToShow]);
     }
 
@@ -135,7 +135,7 @@ const Payouts = () => {
   const onSearchEmailHandler = async (email, caller) => {
     if (!email) return;
     setSkeletonRows(caller);
-    setFilterPayoutsParams({ ...filterPayoutsParams, caller, field: "userEmail", value: email })
+    setFilterPayoutsParams({ ...filterPayoutsParams, caller, field: "ownerEmail", value: email })
   }
 
   const handleEnterKeyPress = (event, searchProps, caller) => {

@@ -18,6 +18,12 @@ const PayoutsReducer = (state = initialState, action) => {
       const oldAndUniquesPayouts = filterPayoutsWithSameIdThanNewOne(state.payouts, action.payload);
       return { addingPayout: initialState.addingPayout, payouts: [...action.payload, ...oldAndUniquesPayouts] }
 
+    case ReducerTypes.PAYOUTS_DELETE_BY_ID:
+      return { ...state, payouts: state.payouts.filter(payout => payout.id !== action.payload) };
+
+    case ReducerTypes.PAYOUTS_EDIT_BY_ID:
+      return { ...state, payouts: [action.payload, ...state.payouts.filter(payout => payout.id !== action.payload.id)] }
+
     case ReducerTypes.PAYOUTS_SIGN_OUT:
       return initialState;
 

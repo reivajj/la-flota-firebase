@@ -460,10 +460,9 @@ export const getPayoutsForTableView = async (field, value, limit, offset, dispat
 
 export const getPayoutsAccountingForTableView = async (field, value, groupBy, orderByProp, dispatch) => {
   let orderClause = `${orderByProp.field}.${orderByProp.order}`;
-  console.log("ORDER CLAUSE: ", orderClause);
   let whereClause = JSON.stringify(value ? { [field]: value } : {});
   let ops = JSON.stringify([{ op: "sum", field: "transferTotalUsd", name: "totalPayed" },
-  { op: "count", field: "userEmail", name: "cantPayouts" },
+  { op: "count", field: "ownerEmail", name: "cantPayouts" },
   { op: "max", field: "requestDate", name: "lastPayAskedDay" }]);
   let attNoOps = JSON.stringify([{ name: groupBy }]);
 
@@ -487,4 +486,26 @@ export const getLastPayoutForUser = async (userEmail, dispatch) => {
   }
   if (!lastPayout.response) return 0;
   return lastPayout.data.response.historicTotalUsd;
-} 
+}
+
+export const createUserPayout = async (newPayout, dispatch) => {
+  let [errorCreatingPayout, newPayoutResponse] = await to(axios.post(`${targetUrl}payouts/`, newPayout));
+  if (errorCreatingPayout) {
+    dispatch(createBackendError(errorCreatingPayout));
+    writeCloudLog(`Error creating payout for ${newPayout.ownerEmail} from DB`, newPayout, errorCreatingPayout, "error");
+    return "ERROR";
+  }
+  if (!newPayoutResponse.response) return "ERROR";
+  return newPayoutResponse.data.response;
+}
+
+export const updateUserPayout = async (newPayoutValues, dispatch) => {
+  let [errorCreatingPayout, newPayoutResponse] = await to(axios.put(`${targetUrl}payouts/`, newPayoutValues));
+  if (errorCreatingPayout) {
+    dispatch(createBackendError(errorCreatingPayout));
+    writeCloudLog(`Error updating payout for ${newPayoutValues.ownerEmail} from DB`, newPayoutValues, errorCreatingPayout, "error");
+    return "ERROR";
+  }
+  if (!newPayoutResponse.response) return "ERROR";
+  return newPayoutResponse.data.response;
+}

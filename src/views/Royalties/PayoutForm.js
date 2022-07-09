@@ -364,7 +364,7 @@ const PayoutForm = () => {
                   </Grid>
 
                   <Grid item xs={12} textAlign="center" paddingBottom={2}>
-                    <Typography sx={moneyTextStyle} >{`Cotización de USD a ARS: 
+                    <Typography sx={moneyTextStyle} >{`Cotización USD/ARS: 
                     ${formatThousandsPoint(formatPeriodComma(truncateFloat(usdToArsRate, 2, '.')))}`}</Typography>
                   </Grid>
 
@@ -474,7 +474,7 @@ const cardCategoryWhiteStyles = {
   marginBottom: "0"
 }
 
-const subtitlesStyles = { fontSize: "30px", fontWeight: "bold" };
+const subtitlesStyles = { fontSize: "30px", fontWeight: "bold", color: fugaGreen };
 
 const moneyTextStyle = { fontSize: "20px", fontWeight: 400, textDecorationLine: 'underline' };
 

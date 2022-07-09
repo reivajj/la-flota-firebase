@@ -390,22 +390,22 @@ export const getArtistsAccountingValuesFS = async (targetArtistsNames, dispatch)
   return totalUsd;
 }
 
-export const getWithdrawalsToViewFS = async (field, values, limitToGet, offset, dispatch) => {
+export const getPayoutsToViewFS = async (field, value, limitToGet, offset, dispatch) => {
   let queryRef = {};
-  if (values.length === 0) queryRef = query(collection(db, "withdrawals"), orderBy("requestDate", "desc"), limit(limitToGet))
-  else queryRef = query(collection(db, "withdrawals"), where(`${field}`, "==", values[0])
+  if (value === "") queryRef = query(collection(db, "payouts"), orderBy("requestDate", "desc"), limit(limitToGet))
+  else queryRef = query(collection(db, "payouts"), where(`${field}`, "==", value)
     , orderBy("requestDate", "desc"), limit(limitToGet));
 
   let [errorGettingWds, wdsSnap] = await to(getDocs(queryRef));
   if (errorGettingWds) {
     dispatch(createFireStoreError("Error al obtener los retiros. Intente nuevamente.", errorGettingWds));
-    writeCloudLog("FS Error getting withdraws Doc", { field, values, limitToGet, offset }, errorGettingWds, "error");
+    writeCloudLog("FS Error getting withdraws Doc", { field, value, limitToGet, offset }, errorGettingWds, "error");
     return "ERROR";
   }
 
-  if (wdsSnap.empty) return { count: 0, rows: [] };
+  if (wdsSnap.empty) return { count: 0, payouts: [] };
 
   let results = [];
   wdsSnap.forEach(wdsDoc => results.push(wdsDoc.data()))
-  return { count: 100, rows: results };
+  return { count: 100, payouts: results };
 } 

@@ -191,4 +191,18 @@ export const subtitleEditFugaId = ["Útil para cuando creamos por nuestra cuenta
 
 export const waitForRoyalties = [<b>{"Estamos obteniendo tus ingresos desde nuestros servidores."}</b>];
 
-export const waitForPayouts = [<b>{"Estamos obteniendo tus pagos desde nuestros servidores."}</b>]  
+
+// PAYOUTS
+export const waitForPayouts = [<b>{"Estamos obteniendo tus pagos desde nuestros servidores."}</b>];
+
+export const payoutLessThanTen = ["No puedes realizar un retiro menor a 10 dolares.",
+  "Puede volver a intentar cuando hayas generado un monto superior.",
+  "Sí puedes usar las regalías como un Cupon de pago para renovar tu cuenta."];
+
+export const emailsNoEquals = ["Los mails de tu cuenta que elegiste como medio de pago, no coinciden.",
+  "Por favor, revisa, e intenta nuevamente."];
+
+export const payoutGenerated = ["Recuerda que las transferencias se realizan durante los próximos 5 días hábiles.",
+  "Te estará llegando un mail de confirmación."]
+
+export const completePayoutSubtitle = ["Completa con el ID del Pago."];

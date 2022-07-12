@@ -12,17 +12,17 @@ export const payoutDefaultValues = {
 }
 
 export const getPayoutsHeadersForUser = [
-  { name: "Opciones", width: "3%" }, { name: "Estado", width: "8%" }, { name: "Día Pedido", width: "10%" }, { name: "Día Pagado", width: "10%" },
+  { name: "Opciones", width: "3%" }, { name: "Estado", width: "8%" }, { name: "Día Solicitado", width: "10%" }, { name: "Día Pagado", width: "10%" },
   { name: "Moneda", width: "5%" }, { name: "Transferencia", width: "10%" }, { name: "Cotización (USD)", width: "10%" },
   { name: "Transferencia (USD)", width: "10%" }, { name: "Total ya pagado (USD)", width: "10%" },
-  { name: "CUIT", width: "12%" }, { name: "ID Pago", width: "12%" }
+  { name: "Total ya solicitado (USD)", width: "12%" }, { name: "ID Pago", width: "12%" }
 ]
 
 export const getPayoutsHeadersForAdmin = [
-  { name: "Opciones", width: "3%" }, { name: "Email", width: "10%" }, { name: "Estado", width: "5%" }, { name: "Día Pedido", width: "10%" },
+  { name: "Opciones", width: "3%" }, { name: "Email", width: "10%" }, { name: "Estado", width: "5%" }, { name: "Día Solicitado", width: "10%" },
   { name: "Día Pagado", width: "10%" }, { name: "Moneda", width: "5%" }, { name: "Transferencia", width: "7%" },
   { name: "Cotización (USD)", width: "7%" }, { name: "Transferencia (USD)", width: "7%" },
-  { name: "Total ya pagado (USD)", width: "7%" }, { name: "CUIT", width: "8%" }, { name: "ID Pago", width: "10%" }
+  { name: "Total ya pagado (USD)", width: "8%" }, { name: "Total ya solicitado (USD)", width: "8%" }, { name: "ID Pago", width: "9%" }
 ]
 
 export const getWdAccountingHeadersForUser = groupByProp => [
@@ -41,15 +41,15 @@ export const createPayoutRowForUser = payoutRowFromDB => {
     transferTotalAskedCurrency: payoutRowFromDB.currency !== "USD" ? payoutRowFromDB.transferTotalAskedCurrency : payoutRowFromDB.transferTotalUsd,
     currencyRate: payoutRowFromDB.currencyRateToUsd === 0 ? 1 : payoutRowFromDB.currencyRateToUsd,
     transferTotalUsd: payoutRowFromDB.transferTotalUsd,
+    alreadyPaidUsd: payoutRowFromDB.alreadyPaidUsd,
     historicTotalUsd: payoutRowFromDB.historicTotalUsd,
-    userCuit: payoutRowFromDB.userCuit,
     id: payoutRowFromDB.id,
   }
 }
 
-export const createPayoutRowForAdmin = payoutRowFromDB => {
+export const createPayoutRowForAdmin = (payoutRowFromDB, setOpenActionsDialog) => {
   let payoutForAdmin = {
-    options: iconOpenActionsPayouts(payoutRowFromDB.id, () => console.log("HOAL")),
+    options: iconOpenActionsPayouts(payoutRowFromDB.id, setOpenActionsDialog),
     userEmail: payoutRowFromDB.ownerEmail, ...createPayoutRowForUser(payoutRowFromDB)
   };
   return payoutForAdmin;
@@ -110,7 +110,7 @@ export const getSkeletonPayoutRow = rowsPerPage => {
       currencyRate: loadingSkeleton(),
       transferTotalUsd: loadingSkeleton(),
       historicTotalUsd: loadingSkeleton(),
-      userCuit: loadingSkeleton(),
+      alreadyPaidUsd: loadingSkeleton(),
       id: loadingSkeleton(),
     }
   })

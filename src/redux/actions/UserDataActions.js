@@ -8,7 +8,7 @@ import { artistsAddStore } from './ArtistsActions';
 import * as BackendCommunication from 'services/BackendCommunication.js';
 import { activitiesAddStore, activitiesSignOut } from './ActivitiesActions';
 import { usersAddStore, usersSignOut } from './UsersActions';
-import { payoutsAddStore } from './PayoutsActions';
+import { payoutsAddStore, payoutsSignOut } from './PayoutsActions';
 
 export const userDataAddInfoStore = userInfo => {
   return {
@@ -56,6 +56,7 @@ export const userDataSignOut = () => async dispatch => {
   dispatch(collaboratorsSignOut());
   dispatch(usersSignOut());
   dispatch(activitiesSignOut());
+  dispatch(payoutsSignOut());
 };
 
 export const userDataAddImage = (urlImage) => {

@@ -22,12 +22,14 @@ import {
 import { getPayoutsForTableView } from "services/BackendCommunication";
 import { getPayoutsAccountingForTableView } from '../../services/BackendCommunication';
 import { groupByNameToIdPayouts } from "utils/payouts.utils";
-import { getPayoutsToViewFS } from "services/FirestoreServices";
+import PayoutActionsDialog from "./PayoutActionsDialog";
+import { payoutsAddStore } from "redux/actions/PayoutsActions";
 
 const Payouts = () => {
   const dispatch = useDispatch();
   const currentUserData = useSelector(store => store.userData);
   const rol = currentUserData.rol;
+  const payoutsStore = useSelector(store => store.payouts.payouts);
 
   const isAdmin = userIsAdmin(rol);
 
@@ -53,16 +55,24 @@ const Payouts = () => {
   const [accountingRows, setAccountingRows] = useState(getSkeletonWdAccountingRow(10));
   const [filterPayoutsParams, setFilterPayoutsParams] = useState(defaultAccParams);
   const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(false);
+  const [openPayoutActionsDialog, setOpenPayoutActionsDialog] = useState({ open: false, payoutId: "" });
 
   // Pagos individuales
+  useEffect(() => {
+    if (payoutsStore.length > 0) {
+      setPayoutsRows(payoutsStore.map(wdRow => isAdmin
+        ? createPayoutRowForAdmin(wdRow, setOpenPayoutActionsDialog) : createPayoutRowForUser(wdRow)));
+    }
+  }, [payoutsStore])
+
   useEffect(() => {
     const getPayoutsCountAndRows = async () => {
       setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));
       let { field, value, caller } = filterPayoutsParams;
       if (caller === "accounting") return;
-      let { count, payouts } = await getPayoutsToViewFS(field, value, rowsPerPage, rowsPerPage * page, dispatch);
-      console.log({ count, payouts });
-      setPayoutsRows(payouts.map(wdRow => isAdmin ? createPayoutRowForAdmin(wdRow) : createPayoutRowForUser(wdRow)));
+      let { count, payouts } = await getPayoutsForTableView(field, value, rowsPerPage, rowsPerPage * page, dispatch);
+      setTotalCount(count);
+      dispatch(payoutsAddStore(payouts));
     }
 
     getPayoutsCountAndRows();
@@ -82,7 +92,6 @@ const Payouts = () => {
       if (accountingValues === "ERROR") accountingValues = [];
       let accountingRowsToShow = getPayoutAccountingRows(accountingValues, groupBy, 50, orderBy);
       let totals = value ? [] : getTotalesWdAccountingRow(accountingValues);
-      setTotalCount(accountingValues.length > 0 ? isAdmin ? totals.cantPayouts : accountingValues[0].cantPayouts : 0);
       setAccountingRows([totals, ...accountingRowsToShow]);
     }
 
@@ -158,14 +167,12 @@ const Payouts = () => {
   const groupByProps = { helper: "Agrupar según", values: payoutsGroupByValues, handleChangeGroupBy, value: filterPayoutsParams.groupBy }
 
   const cleanAccountingParams = () => {
-    console.log("CAlling Acc");
     setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
     setFilterPayoutsParams({ caller: "accounting", ...defaultAccParams });
     setEmailAccSearchValue("");
   }
 
   const cleanPayoutsParams = () => {
-    console.log("CAlling Pays");
     setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
     setFilterPayoutsParams({ caller: "royalties", ...defaultAccParams });
     setEmailSearchValue("");
@@ -189,6 +196,10 @@ const Payouts = () => {
       <Backdrop open={false}>
         <CircularProgress />
       </Backdrop>
+
+      <PayoutActionsDialog isOpen={openPayoutActionsDialog.open}
+        handleClose={() => setOpenPayoutActionsDialog({ open: false, payoutId: "" })}
+        payoutId={openPayoutActionsDialog.payoutId} />
 
       <WaitingDialog isOpen={loadingPayouts} title="Cargando Pagos" contentTexts={waitForPayouts}
         handleClose={handleCloserWaitingRoyalties} successImageSource="/images/success.jpg" size="sm" />

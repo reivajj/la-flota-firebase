@@ -83,7 +83,7 @@ export const getAlbumsPropsForUsersDataTable = albums => {
 const getStateInfo = (sx, state) => {
   if (state === "DELIVERED_NEED_APPLE_REVISION") return (
     <Grid>
-      <Typography sx={sx}>Ya se encuentra en las DSPs</Typography>
+      <Typography sx={sx}>En las DSPs</Typography>
       <Typography sx={{ color: "rgb(231, 190, 66)", fontSize: "1em", fontWeight: 600 }}>Apple en revisión</Typography>
     </Grid>
   )

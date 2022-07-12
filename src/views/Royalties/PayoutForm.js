@@ -3,7 +3,7 @@ import useForm from '../../customHooks/useForm';
 import { Grid, Typography, Divider, Link, Card, InputAdornment, CardMedia, ButtonBase } from "@mui/material";
 
 import { useDispatch, useSelector } from "react-redux";
-import { Paid, AccountBalance, AccountBalanceWallet } from '@mui/icons-material';
+import { Paid } from '@mui/icons-material';
 import SimpleReactValidator from 'simple-react-validator';
 import ReauthenticateDialog from "../../components/Dialogs/ReauthenticateDialog";
 
@@ -12,7 +12,6 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import { useForceUpdate, toWithOutError, truncateFloat, formatPeriodComma, formatThousandsPoint } from 'utils';
-import { userDataUpdateRedux } from "redux/actions/UserDataActions";
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { fugaGreen } from "variables/colors";
@@ -21,26 +20,35 @@ import { mediosDePagoWithInfo } from '../../variables/financial';
 import { getArtistsAccountingValuesFS } from "services/FirestoreServices";
 import { getLastPayoutForUser } from "services/BackendCommunication";
 import useWindowDimensions from '../../customHooks/useWindowDimensions';
+import { payoutCreateRequestRedux } from "redux/actions/PayoutsActions";
+import InfoDialog from 'components/Dialogs/InfoDialog';
+import { emailsNoEquals, payoutGenerated, payoutLessThanTen } from '../../utils/textToShow.utils';
+import SuccessDialog from 'components/Dialogs/SuccessDialog';
+import { useNavigate } from 'react-router-dom';
+import { userIsAdmin } from 'utils/users.utils';
 
 const PayoutForm = () => {
 
   const validator = useRef(new SimpleReactValidator());
   const forceUpdate = useForceUpdate();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const windowDimensions = useWindowDimensions();
   let windowWidth = windowDimensions.width;
-  let cardMediaWidth = windowWidth > 1200 ? 200 : 100;
+  let cardMediaWidth = windowWidth > 1200 ? 100 : 80;
 
   const userData = useSelector(store => store.userData);
-  const addingPayout = useSelector(store => store.payouts.addingPayout);
-  const userPayouts = useSelector(store => store.payouts.payouts);
+  const isAdmin = userIsAdmin(userData.rol);
+  // const addingPayout = useSelector(store => store.payouts.addingPayout);
+  // const userPayouts = useSelector(store => store.payouts.payouts);
   const errorHandler = useSelector(store => store.errorHandler);
   const artists = useSelector(store => store.artists.artists);
   const artistsNames = artists.map(artist => artist.name);
 
+  const [openAlertDialog, setOpenAlertDialog] = useState({ open: false, title: "", text: [""] });
   const [openChangeCredentialsDialog, setOpenChangeCredentialsDialog] = useState(false);
   const [openLoader, setOpenLoader] = useState(false);
-  const [medioDePago, setMedioDePago] = useState({ name: "ARS", id: "ars", account: 'bank' });
+  const [medioDePago, setMedioDePago] = useState({ name: "ARS", currency: "ars", account: 'bank' });
   const [confirmAccountValue, setConfirmAccountValue] = useState("");
   const [ownerAccount, setOwnerAccount] = useState(true);
   const [usdToArsRate, setUsdToArsRate] = useState(0);
@@ -57,9 +65,9 @@ const PayoutForm = () => {
   useEffect(() => {
     const getTotalRoyalties = async () => {
       let royalties = await getArtistsAccountingValuesFS(artistsNames, dispatch);
-      let payed = await getLastPayoutForUser(userData.email, dispatch);
+      let { payed, lastRequest } = await getLastPayoutForUser(userData.email, dispatch);
       let available = parseFloat(truncateFloat(parseFloat(royalties) - parseFloat(payed), 2, '.'));
-      setTotalRoyaltiesAndPayed({ payed, royalties, loading: false, available });
+      setTotalRoyaltiesAndPayed({ payed, royalties, loading: false, available, lastRequest });
       setForm({ target: { name: 'transferTotalUsd', value: available } });
     }
 
@@ -72,32 +80,54 @@ const PayoutForm = () => {
     telefono: userData.telefono || "",
     ciudad: userData.ciudad || "",
     userCuit: userData.cuit,
-    userEmail: userData.email,
+    ownerEmail: userData.email,
     stats: userData.stats,
-    userId: userData.id,
+    ownerId: userData.id,
     paypalEmail: "",
     payoneerEmail: "",
-    cbuOrCvu: "",
+    cbuCvuAlias: "",
     transferTotalUsd: 0,
-    transferTotalAskedCurrency: 0,
   };
 
   const [formData, setForm] = useForm(defaultData);
-  let { userName, userLastName, userCuit, telefono, paypalEmail, transferTotalAskedCurrency, payoneerEmail, cbuOrCvu, transferTotalUsd } = formData;
+  let { userName, userLastName, userCuit, telefono, paypalEmail, payoneerEmail, cbuCvuAlias, transferTotalUsd } = formData;
+
+  const handleCloseAlertDialog = () => setOpenAlertDialog({ open: false, title: "", text: [""] });
 
   const handleSubmit = async () => {
     if (checkFields()) {
       setOpenLoader(true);
-      let resultEdit = await toWithOutError(dispatch(userDataUpdateRedux({ ...formData })));
+      let resultEdit = await toWithOutError(dispatch(payoutCreateRequestRedux({
+        ...formData, currency: medioDePago.currency.toUpperCase(),
+        currencyRateToUsd: medioDePago.currency === "ars" ? usdToArsRate : 1,
+        transferTotalAskedCurrency: medioDePago.currency === "ars"
+          ? truncateFloat(parseFloat(transferTotalUsd) * parseFloat(usdToArsRate), 2, '.') : 0,
+        alreadyPaidUsd: parseFloat(totalRoyaltiesAndPayed.payed),
+        historicTotalUsd: truncateFloat(parseFloat(totalRoyaltiesAndPayed.payed) + parseFloat(transferTotalUsd))
+      })));
       setEditState(resultEdit);
       setOpenLoader(false);
     }
   }
 
+  const accountValuesAreNotEquals = confirmValue => {
+    if (medioDePago.account === "bank") return confirmValue !== cbuCvuAlias;
+    if (medioDePago.account === "paypal") return confirmValue !== paypalEmail;
+    if (medioDePago.account === "payoneer") return confirmValue !== payoneerEmail;
+    return true;
+  }
+
   const checkFields = () => {
     forceUpdate();
+    if (transferTotalUsd < 10) {
+      setOpenAlertDialog({ open: true, title: helperTextAvailable, text: payoutLessThanTen }); return;
+    }
+    if (accountValuesAreNotEquals(confirmAccountValue)) {
+      setOpenAlertDialog({ open: true, title: "Los emails no coinciden.", text: emailsNoEquals })
+    }
     if (validator.current.allValid()) return true;
     else {
+      if (medioDePago.account !== "bank" && !validator.current.fieldValid('cbuCvuAlias')) return true;
       console.log(validator.current);
       validator.current.showMessages();
       forceUpdate();
@@ -118,21 +148,21 @@ const PayoutForm = () => {
 
   let borderHeight = 7;
   const cardStylePesos = {
-    width: medioDePago.id === "ars" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
-    height: medioDePago.id === "ars" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
-    borderRadius: "1em", border: medioDePago.id === "ars" ? 7 : 0, borderColor: fugaGreen,
+    width: medioDePago.currency === "ars" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
+    height: medioDePago.currency === "ars" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
+    borderRadius: "1em", border: medioDePago.currency === "ars" ? 7 : 0, borderColor: fugaGreen,
   };
 
   const cardStyleUsd = {
-    width: medioDePago.id === "usd" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
-    height: medioDePago.id === "usd" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
-    borderRadius: "1em", border: medioDePago.id === "usd" ? 7 : 0, borderColor: fugaGreen,
+    width: medioDePago.currency === "usd" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
+    height: medioDePago.currency === "usd" ? cardMediaWidth - borderHeight * 2 : cardMediaWidth,
+    borderRadius: "1em", border: medioDePago.currency === "usd" ? 7 : 0, borderColor: fugaGreen,
   };
 
   const onClickCurrency = currency => {
     setMedioDePago({
       name: currency === "dolar" ? "USD" : "ARS",
-      id: currency === "dolar" ? "usd" : "ars",
+      currency: currency === "dolar" ? "usd" : "ars",
       account: currency === "dolar" ? "paypal" : "bank",
       accountName: currency === "dolar" ? "PayPal" : "bank",
     })
@@ -144,7 +174,7 @@ const PayoutForm = () => {
 
   const handleCbu = event => {
     const onlyNums = event.target.value.replace(/[^0-9]/g, '');
-    setForm({ target: { name: 'cbuOrCvu', value: onlyNums } });
+    setForm({ target: { name: 'cbuCvuAlias', value: onlyNums } });
   }
 
   const handleUsdToWithdraw = event => {
@@ -152,13 +182,23 @@ const PayoutForm = () => {
     setForm({ target: { name: 'transferTotalUsd', value: onlyNums } });
   }
 
-  const helperTextAvailable = totalRoyaltiesAndPayed.available < 10 ? "No puede retirar un monto menor a 10 USD" : "Ingresa la cantidad de Dólares (USD) a retirar."
+  const handleGoToDahsboard = () => isAdmin ? navigate("/admin/dashboard-admin") : navigate("/admin/dashboard")
+
+  const helperTextAvailable = totalRoyaltiesAndPayed.available < 10
+    ? "No puedes retirar un monto menor a 10 USD"
+    : "Ingresa la cantidad de Dólares (USD) a retirar.";
 
   return (
     <Grid container justifyContent="center">
 
       <ReauthenticateDialog isOpen={openChangeCredentialsDialog} setIsOpen={setOpenChangeCredentialsDialog}
         textName={userData.nombre} />
+
+      <SuccessDialog isOpen={editState === 'success'} title={"Tu solicitud se ha procesado correctamente."} contentTexts={payoutGenerated}
+        handleClose={handleGoToDahsboard} successImageSource="/images/success.jpg" size="sm" />
+
+      <InfoDialog isOpen={openAlertDialog.open} handleClose={handleCloseAlertDialog}
+        title={openAlertDialog.title} contentTexts={openAlertDialog.text} />
 
       <Grid item xs={12} md={11} lg={10}>
         <CardTemplate>
@@ -172,6 +212,13 @@ const PayoutForm = () => {
 
           <CardBody>
             <Grid container justifyContent="center">
+
+              <Grid item xs={12} textAlign="center" paddingTop={2}>
+                <Typography sx={lastRequestTextStyle} >
+                  {`Última Solicitud: ${totalRoyaltiesAndPayed.loading
+                    ? "..." : totalRoyaltiesAndPayed.lastRequest || "no tienes solicitudes."}`}
+                </Typography>
+              </Grid>
 
               <Grid item xs={4} textAlign="center" paddingTop={2}>
                 <Typography sx={moneyTextStyle} >
@@ -199,7 +246,7 @@ const PayoutForm = () => {
                   name="transferTotalUsd"
                   required
                   disabled={totalRoyaltiesAndPayed.available < 10}
-                  error={(parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available))}
+                  error={(parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available) || parseFloat(transferTotalUsd) < 10)}
                   label="Dolares a Retirar"
                   helperTextDown={helperTextAvailable}
                   value={transferTotalUsd}
@@ -217,7 +264,7 @@ const PayoutForm = () => {
               </Grid>
 
               <Grid item xs={8} textAlign="center" paddingBottom={2}>
-                <Typography sx={subtitlesStyles} >{`Moneda de retiro: ${medioDePago.id === 'ars' ? "ARS" : "USD"}`}</Typography>
+                <Typography sx={subtitlesStyles} >{`Moneda de retiro: ${medioDePago.currency === 'ars' ? "ARS" : "USD"}`}</Typography>
               </Grid>
 
               <Grid item xs={4} textAlign="center" paddingBottom={2}>
@@ -247,7 +294,7 @@ const PayoutForm = () => {
                         onClick={() => onClickCurrency('dolar')}
                         sx={{ height: "100%" }}
                         component="img"
-                        height="200"
+                        height={cardMediaWidth}
                         image={'/images/dolar.png'}
                         alt="dolares"
                       />
@@ -257,7 +304,7 @@ const PayoutForm = () => {
                 </Grid>
 
                 <Grid container item xs={4} sx={{ height: '100px' }}>
-                  {mediosDePagoWithInfo.filter(mp => mp.currency === medioDePago.id).map(medioDePagoConInfo =>
+                  {mediosDePagoWithInfo.filter(mp => mp.currency === medioDePago.currency).map(medioDePagoConInfo =>
                     <Grid item xs={12} textAlign="left">
                       <BasicCheckbox
                         label={medioDePagoConInfo.label}
@@ -283,16 +330,16 @@ const PayoutForm = () => {
                 </>
               }
 
-              {medioDePago.id === "usd" &&
+              {medioDePago.currency === "usd" &&
                 <Grid container item >
                   <Grid item xs={6} paddingRight={2}>
                     <TextFieldWithInfo
                       fullWidth
-                      name={medioDePago.id}
+                      name={medioDePago.account === "paypal" ? "paypalEmail" : "payoneerEmail"}
                       required
                       label={`Mail de ${medioDePago.accountName}`}
                       helperTextDown={`Ingresá el e-mail de tu cuenta de ${medioDePago.accountName} a donde recibirás tus regalías.`}
-                      value={medioDePago.id === "paypalEmail" ? paypalEmail : payoneerEmail}
+                      value={medioDePago.account === "paypal" ? paypalEmail : payoneerEmail}
                       onChange={setForm}
                       validatorProps={{ restrictions: 'required|email', message: "Ingresa un email válido.", validator: validator }}
                     />
@@ -301,7 +348,7 @@ const PayoutForm = () => {
                     <TextFieldWithInfo
                       fullWidth
                       required
-                      error={confirmAccountValue !== (medioDePago.id === "paypal" ? paypalEmail : payoneerEmail)}
+                      error={confirmAccountValue !== (medioDePago.account === "paypal" ? paypalEmail : payoneerEmail)}
                       name="confirmEmail"
                       label={`Confirmar Mail de ${medioDePago.accountName}`}
                       value={confirmAccountValue}
@@ -334,11 +381,11 @@ const PayoutForm = () => {
                   <Grid item xs={6} paddingRight={2}>
                     <TextFieldWithInfo
                       fullWidth
-                      name="cbuOrCvu"
+                      name="cbuCvuAlias"
                       required
                       label="CBU/CVU"
                       helperTextDown="Ingresá el CBU/CVU de la Cuenta Bancaria donde enviaremos el dinero. Son 22 números."
-                      value={cbuOrCvu}
+                      value={cbuCvuAlias}
                       onChange={handleCbu}
                       validatorProps={{
                         restrictions: 'required|numeric|min:22|max:22',
@@ -349,17 +396,17 @@ const PayoutForm = () => {
                   <Grid item xs={6} paddingRight={2}>
                     <TextFieldWithInfo
                       fullWidth
-                      error={confirmAccountValue !== cbuOrCvu}
-                      name="cbuOrCvu"
+                      error={confirmAccountValue !== cbuCvuAlias}
+                      name="cbuCvuAlias"
                       required
-                      helperTextDown={confirmAccountValue !== cbuOrCvu ? "Los CBU/CVU no coinciden." : ""}
+                      helperTextDown={confirmAccountValue !== cbuCvuAlias ? "Los CBU/CVU no coinciden." : ""}
                       label="Confirmar CBU/CVU"
                       value={confirmAccountValue}
                       onChange={handleConfirmAccountValue}
-                      validatorProps={{
+                      validatorProps={medioDePago.account === "bank" ? {
                         restrictions: 'required|numeric|min:22|max:22',
                         message: "Ingresa un CBU/CVU válido, debe tener 22 números.", validator: validator
-                      }}
+                      } : {}}
                     />
                   </Grid>
 
@@ -380,9 +427,11 @@ const PayoutForm = () => {
               </Grid>
 
               <Grid container item>
+
                 <Grid item xs={12} textAlign="center" paddingBottom={2}>
                   <Typography sx={subtitlesStyles} >Datos del Solicitante</Typography>
                 </Grid>
+
                 <Grid item xs={6} paddingRight={2}>
                   <TextFieldWithInfo
                     fullWidth
@@ -427,13 +476,13 @@ const PayoutForm = () => {
                   <TextFieldWithInfo
                     fullWidth
                     required
-                    name="cuit"
+                    name="userCuit"
                     label="CUIT"
                     value={userCuit}
                     placeholder="20-12345678-0"
                     helperTextDown={cuitHelperLink}
                     onChange={setForm}
-                    validatorProps={{ restrictions: 'required|min:1|max:20', message: "Ingresa un número de CUIT válido.", validator: validator }}
+                    validatorProps={{ restrictions: 'required', message: "Ingresa un número de CUIT válido.", validator: validator }}
                   />
                 </Grid>
               </Grid>
@@ -448,7 +497,7 @@ const PayoutForm = () => {
                 loading={openLoader}
                 buttonState={editState.toLowerCase()}
                 onClickHandler={handleSubmit}
-                disabled
+                disabled={false}
                 noneIcon={<Paid />}
                 color="secondary"
                 backgroundColor={fugaGreen}
@@ -465,19 +514,10 @@ const PayoutForm = () => {
 
 export default PayoutForm;
 
-const cardCategoryWhiteStyles = {
-  color: "rgba(255,255,255,.82)",
-  margin: "0",
-  fontSize: "14px",
-  fontWeight: "400",
-  marginTop: "0",
-  marginBottom: "0"
-}
-
+const cardCategoryWhiteStyles = { color: "rgba(255,255,255,.82)", margin: "0 0 0", fontSize: "14px", fontWeight: "400" }
 const subtitlesStyles = { fontSize: "30px", fontWeight: "bold", color: fugaGreen };
-
-const moneyTextStyle = { fontSize: "20px", fontWeight: 400, textDecorationLine: 'underline' };
-
+const moneyTextStyle = { fontSize: "18px", fontWeight: 400 };
+const lastRequestTextStyle = { fontSize: "22px", fontWeight: 500 };
 const cardTitleWhiteStyles = {
   color: "rgba(255,255,255,255)",
   marginTop: "0px",

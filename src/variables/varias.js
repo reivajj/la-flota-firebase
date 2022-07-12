@@ -68,7 +68,7 @@ export const ourListOfDeliveryStates = [
   { id: "PENDING", name: "Pendiente de revisión" },
   { id: "TRACKS_MISSING", name: "Faltan archivos de Audio" },
   { id: "PUBLISHED", name: "Aprobado, pronto para delivery" },
-  { id: "DELIVERED", name: "Ya se encuentra en las DSPs" },
+  { id: "DELIVERED", name: "En las DSPs" },
   { id: "TAKEN_DOWN", name: "Dado de baja en las DSPs" },
   { id: "DELETED", name: "Eliminado de las DSPs" },
   { id: "DELIVERED_NEED_APPLE_REVISION", name: "Ya se encuentra en las DSPs | Apple en revisión" }
@@ -78,7 +78,7 @@ export const ourAlbumStateWithEquivalence = {
   PENDING: "Pendiente de revisión",
   TRACKS_MISSING: "Faltan archivos de Audio",
   PUBLISHED: "Aprobado, pronto para delivery",
-  DELIVERED: "Ya se encuentra en las DSPs",
+  DELIVERED: "En las DSPs",
   TAKEN_DOWN: "Dado de baja en las DSPs",
   DELETED: "Eliminado de las DSPs",
   DELIVERED_NEED_APPLE_REVISION: "Ya se encuentra en las DSPs | Apple en revisión"

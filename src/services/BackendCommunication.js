@@ -455,7 +455,7 @@ export const getPayoutsForTableView = async (field, value, limit, offset, dispat
     writeCloudLog("Error getting payouts from DB", { field, value, limit, offset }, errorGettingPayouts, "error");
     return "ERROR";
   }
-  return payoutsResponse.data.response;
+  return { count: payoutsResponse.data.response.total, payouts: payoutsResponse.data.response.payouts };
 }
 
 export const getPayoutsAccountingForTableView = async (field, value, groupBy, orderByProp, dispatch) => {
@@ -484,28 +484,44 @@ export const getLastPayoutForUser = async (userEmail, dispatch) => {
     writeCloudLog(`Error getting last payout for ${userEmail} from DB`, userEmail, errorGettingLastPayout, "error");
     return "ERROR";
   }
-  if (!lastPayout.response) return 0;
-  return lastPayout.data.response.historicTotalUsd;
+  console.log("PAYOUT LAS:", lastPayout.data.response);
+  if (!lastPayout.data.response) return { payed: 0, lastRequest: "no tienes solicitudes." };
+
+  return { payed: lastPayout.data.response.historicTotalUsd, lastRequest: lastPayout.data.response.requestDate };
 }
 
-export const createUserPayout = async (newPayout, dispatch) => {
-  let [errorCreatingPayout, newPayoutResponse] = await to(axios.post(`${targetUrl}payouts/`, newPayout));
+export const createUserPayoutInDbAndFS = async (newPayout, dispatch) => {
+  let [errorCreatingPayout, newPayoutResponse] = await to(axios.post(`${targetUrl}payouts/`,
+    { payoutRecord: newPayout, sendNotification: true }));
   if (errorCreatingPayout) {
     dispatch(createBackendError(errorCreatingPayout));
     writeCloudLog(`Error creating payout for ${newPayout.ownerEmail} from DB`, newPayout, errorCreatingPayout, "error");
     return "ERROR";
   }
-  if (!newPayoutResponse.response) return "ERROR";
+  console.log(newPayoutResponse);
+  if (!newPayoutResponse.data.response) return "ERROR";
   return newPayoutResponse.data.response;
 }
 
-export const updateUserPayout = async (newPayoutValues, dispatch) => {
-  let [errorCreatingPayout, newPayoutResponse] = await to(axios.put(`${targetUrl}payouts/`, newPayoutValues));
+export const updateUserPayoutInDbAndFS = async (updatedPayout, dispatch) => {
+  let [errorCreatingPayout, newPayoutResponse] = await to(axios.put(`${targetUrl}payouts/`,
+    { payoutRecord: updatedPayout, sendNotification: true }));
   if (errorCreatingPayout) {
     dispatch(createBackendError(errorCreatingPayout));
-    writeCloudLog(`Error updating payout for ${newPayoutValues.ownerEmail} from DB`, newPayoutValues, errorCreatingPayout, "error");
+    writeCloudLog(`Error updating payout for ${updatedPayout.ownerEmail} from DB`, updatedPayout, errorCreatingPayout, "error");
     return "ERROR";
   }
-  if (!newPayoutResponse.response) return "ERROR";
+  if (!newPayoutResponse.data.response) return "ERROR";
   return newPayoutResponse.data.response;
+}
+
+export const deletePayoutInDbAndFS = async (payoutId, dispatch) => {
+  let [errorDeletingPayout, deleteResponse] = await to(axios.delete(`${targetUrl}payouts/${payoutId}`,))
+  if (errorDeletingPayout) {
+    dispatch(createBackendError(errorDeletingPayout));
+    writeCloudLog(`Error deleting payout for ${payoutId} from DB`, payoutId, errorDeletingPayout, "error");
+    return "ERROR";
+  }
+  if (!deleteResponse.data.response) return "ERROR";
+  return deleteResponse.data.response;
 }

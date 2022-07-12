@@ -407,5 +407,5 @@ export const getPayoutsToViewFS = async (field, value, limitToGet, offset, dispa
 
   let results = [];
   wdsSnap.forEach(wdsDoc => results.push(wdsDoc.data()))
-  return { count: 100, payouts: results };
+  return results;
 } 

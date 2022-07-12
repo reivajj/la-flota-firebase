@@ -218,5 +218,5 @@ AlbumActionsDialog.defaultProps = {
 AlbumActionsDialog.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
-  album: PropTypes.object.isRequired,
+  albumId: PropTypes.string.isRequired,
 }

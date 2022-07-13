@@ -204,9 +204,9 @@ const PayoutForm = () => {
         <CardTemplate>
 
           <CardHeader color="primary" style={{ background: fugaGreen }}>
-            <Typography sx={cardTitleWhiteStyles}>Solicita tus Regalías</Typography>
+            <Typography sx={cardTitleWhiteStyles}>Solicitar Regalías</Typography>
             <p style={cardCategoryWhiteStyles}>Todos los datos que proporciones deben ser correctos, por favor revisa el formulario antes de enviarlo.</p>
-            <p style={cardCategoryWhiteStyles}>Las transferencias se realizan durante los próximos 5 días hábiles.</p>
+            <p style={cardCategoryWhiteStyles}>Las transferencias se realizan durante los próximos 10 días hábiles.</p>
             <p style={cardCategoryWhiteStyles}>Si solicitas un cupón de crédito, el mismo te llegará por e-mail.</p>
           </CardHeader>
 

@@ -213,8 +213,8 @@ const Payouts = () => {
       <Grid item xs={12} sx={{ textAlign: "center" }}>
 
         <Grid item xs={12} paddingBottom={2}>
-          <Button variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
-            Solicitar Regalías
+          <Button disabled variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
+            En breve: Solicitar Regalías
           </Button>
         </Grid>
 

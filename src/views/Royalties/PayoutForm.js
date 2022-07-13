@@ -120,7 +120,7 @@ const PayoutForm = () => {
   const checkFields = () => {
     forceUpdate();
     if (transferTotalUsd < 10) {
-      setOpenAlertDialog({ open: true, title: helperTextAvailable, text: payoutLessThanTen }); return;
+      setOpenAlertDialog({ open: true, title: helperTextAvailable(), text: payoutLessThanTen }); return;
     }
     if (accountValuesAreNotEquals(confirmAccountValue)) {
       setOpenAlertDialog({ open: true, title: "Los emails no coinciden.", text: emailsNoEquals })
@@ -184,9 +184,20 @@ const PayoutForm = () => {
 
   const handleGoToDahsboard = () => isAdmin ? navigate("/admin/dashboard-admin") : navigate("/admin/dashboard")
 
-  const helperTextAvailable = totalRoyaltiesAndPayed.available < 10
-    ? "No puedes retirar un monto menor a 10 USD"
-    : "Ingresa la cantidad de Dólares (USD) a retirar.";
+  const helperTextAvailable = () => {
+    if (transferTotalUsd < 1 && medioDePago.account === "cupon") return "Si elegís cupón de crédito para pagar tu suscripción el monto no debe ser menor a 1 USD";
+    if (transferTotalUsd < 10 && medioDePago.account === "cupon") return "Ingresa la cantidad de Dólares (USD) a retirar.";
+    if (transferTotalUsd > totalRoyaltiesAndPayed.available) return "El monto ingresado es mayor al monto disponible."
+    if (transferTotalUsd < 10) return "No podés retirar un monto menor a 10 USD";
+    if (transferTotalUsd < 50 && medioDePago.account === "payoneer") return "Si elegís Payoneer el monto no debe ser menor a 50 USD";
+    return "Ingresa la cantidad de Dólares (USD) a retirar.";
+  }
+
+  const transferTotalNotValid = () => {
+    if (transferTotalUsd < 10 && medioDePago.account === "cupon") return false;
+    return (transferTotalUsd < 1 && medioDePago.account === "cupon") || (parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available))
+      || parseFloat(transferTotalUsd) < 10 || (transferTotalUsd < 50 && medioDePago.account === "payoneer")
+  }
 
   return (
     <Grid container justifyContent="center">
@@ -207,7 +218,7 @@ const PayoutForm = () => {
             <Typography sx={cardTitleWhiteStyles}>Solicitar Regalías</Typography>
             <p style={cardCategoryWhiteStyles}>Todos los datos que proporciones deben ser correctos, por favor revisa el formulario antes de enviarlo.</p>
             <p style={cardCategoryWhiteStyles}>Las transferencias se realizan durante los próximos 10 días hábiles.</p>
-            <p style={cardCategoryWhiteStyles}>Si solicitas un cupón de crédito, el mismo te llegará por e-mail.</p>
+            <p style={cardCategoryWhiteStyles}>Si solicitas un cupón de crédito, el mismo te llegará por email.</p>
           </CardHeader>
 
           <CardBody>
@@ -245,10 +256,11 @@ const PayoutForm = () => {
                 <TextFieldWithInfo
                   name="transferTotalUsd"
                   required
+                  sx={{ width: '300px' }}
                   disabled={totalRoyaltiesAndPayed.available < 10}
-                  error={(parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available) || parseFloat(transferTotalUsd) < 10)}
+                  error={transferTotalNotValid()}
                   label="Dolares a Retirar"
-                  helperTextDown={helperTextAvailable}
+                  helperTextDown={helperTextAvailable()}
                   value={transferTotalUsd}
                   onChange={handleUsdToWithdraw}
                   startAdormentObject={<InputAdornment position="start">USD</InputAdornment>}
@@ -337,8 +349,8 @@ const PayoutForm = () => {
                       fullWidth
                       name={medioDePago.account === "paypal" ? "paypalEmail" : "payoneerEmail"}
                       required
-                      label={`Mail de ${medioDePago.accountName}`}
-                      helperTextDown={`Ingresá el e-mail de tu cuenta de ${medioDePago.accountName} a donde recibirás tus regalías.`}
+                      label={`Email de ${medioDePago.accountName}`}
+                      helperTextDown={`Ingresá el email de tu cuenta de ${medioDePago.accountName} a donde recibirás tus regalías.`}
                       value={medioDePago.account === "paypal" ? paypalEmail : payoneerEmail}
                       onChange={setForm}
                       validatorProps={{ restrictions: 'required|email', message: "Ingresa un email válido.", validator: validator }}
@@ -350,7 +362,7 @@ const PayoutForm = () => {
                       required
                       error={confirmAccountValue !== (medioDePago.account === "paypal" ? paypalEmail : payoneerEmail)}
                       name="confirmEmail"
-                      label={`Confirmar Mail de ${medioDePago.accountName}`}
+                      label={`Confirmar Email de ${medioDePago.accountName}`}
                       value={confirmAccountValue}
                       helperTextDown="Confirma el Email."
                       onChange={handleConfirmAccountValue}

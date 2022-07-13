@@ -46,15 +46,15 @@ const Payouts = () => {
   const [emptyResults, setEmptyResults] = useState(false);
   const [loadingPayouts, setLoadingPayouts] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const [PayoutsRows, setPayoutsRows] = useState([]);
+  const [payoutsRows, setPayoutsRows] = useState([]);
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [PayoutsTableIsOpen, setPayoutsTableIsOpen] = useState(true);
+  const [payoutsTableIsOpen, setPayoutsTableIsOpen] = useState(false);
 
-  const [accountingRows, setAccountingRows] = useState(getSkeletonWdAccountingRow(10));
+  const [accountingRows, setAccountingRows] = useState(getSkeletonWdAccountingRow(2));
   const [filterPayoutsParams, setFilterPayoutsParams] = useState(defaultAccParams);
-  const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(false);
+  const [accountingTableIsOpen, setAccountingTableIsOpen] = useState(true);
   const [openPayoutActionsDialog, setOpenPayoutActionsDialog] = useState({ open: false, payoutId: "" });
 
   // Pagos individuales
@@ -63,13 +63,14 @@ const Payouts = () => {
       setPayoutsRows(payoutsStore.map(wdRow => isAdmin
         ? createPayoutRowForAdmin(wdRow, setOpenPayoutActionsDialog) : createPayoutRowForUser(wdRow)));
     }
+    else { setPayoutsRows([]); setEmptyResults(true) };
   }, [payoutsStore])
 
   useEffect(() => {
     const getPayoutsCountAndRows = async () => {
-      setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));
       let { field, value, caller } = filterPayoutsParams;
       if (caller === "accounting") return;
+      setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));
       let { count, payouts } = await getPayoutsForTableView(field, value, rowsPerPage, rowsPerPage * page, dispatch);
       setTotalCount(count);
       dispatch(payoutsAddStore(payouts));
@@ -81,17 +82,19 @@ const Payouts = () => {
   // Total de cada usuario
   useEffect(() => {
     const getAccountingInfo = async () => {
-      setAccountingRows(getSkeletonWdAccountingRow(5));
       let accountingValues = [];
       let { groupBy, field, value, orderBy, caller } = filterPayoutsParams;
-
       if (caller === "royalties") return;
+      console.log("ACC ROWS: ", accountingRows);
+      setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 0 ? accountingRows.length : 2));
       accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
 
       if (accountingValues === "EMPTY") accountingValues = [];
       if (accountingValues === "ERROR") accountingValues = [];
       let accountingRowsToShow = getPayoutAccountingRows(accountingValues, groupBy, 50, orderBy);
-      let totals = value ? [] : getTotalesWdAccountingRow(accountingValues);
+      let totals = value
+        ? accountingRowsToShow.length !== 0 ? [] : getTotalesWdAccountingRow([])
+        : getTotalesWdAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingRowsToShow]);
     }
 
@@ -99,7 +102,7 @@ const Payouts = () => {
   }, [filterPayoutsParams])
 
   const handleCollapseAccounting = () => setAccountingTableIsOpen(!accountingTableIsOpen);
-  const handleCollapseRoyalties = () => setPayoutsTableIsOpen(!PayoutsTableIsOpen);
+  const handleCollapseRoyalties = () => setPayoutsTableIsOpen(!payoutsTableIsOpen);
 
   const headersPayoutsName = isAdmin
     ? getPayoutsHeadersForAdmin.map(headerWithWidth => headerWithWidth.name)
@@ -123,7 +126,7 @@ const Payouts = () => {
 
   let appBarSx = { borderRadius: '0em', backgroundColor: whiteColor };
   let payoutsTableParams = {
-    rows: PayoutsRows, headers: headersPayoutsName, columnsWidth: headersPayoutsWidth,
+    rows: payoutsRows, headers: headersPayoutsName, columnsWidth: headersPayoutsWidth,
     totalCount, handleChangePage, page, handleChangeRowsPerPage, rowsPerPage,
     headersHeight: 65, maxLengthChars: 17, maxWidthText: 250, rowsAlign: 'center',
     rowsHeight: 60
@@ -155,7 +158,7 @@ const Payouts = () => {
   const emailAccSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailAccSearchValue.trim().toLowerCase(), setValue: setEmailAccSearchValue };
 
   const handleChangeGroupBy = groupByName => {
-    setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
+    // setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
     setFilterPayoutsParams({
       ...filterPayoutsParams,
       caller: 'accounting',
@@ -231,10 +234,10 @@ const Payouts = () => {
         <Grid item xs={12} paddingTop={2} >
           <SearchNavbar searchArrayProps={buscadoresRoyalties} cleanSearchResults={cleanSearchResults}
             appBarSx={appBarSx} appBarTitle='Retiros' mainSearchColor={fugaGreen}
-            isOpen={PayoutsTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
+            isOpen={payoutsTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
         </Grid>
 
-        {PayoutsTableIsOpen && <Grid item xs={12} sx={{ margin: 'auto' }}>
+        {payoutsTableIsOpen && <Grid item xs={12} sx={{ margin: 'auto' }}>
           <CustomizedTable {...payoutsTableParams} />
         </Grid>}
 

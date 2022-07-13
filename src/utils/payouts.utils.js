@@ -1,5 +1,6 @@
-import { IconButton } from '@mui/material';
+import { IconButton, Typography } from '@mui/material';
 import { Settings } from '@mui/icons-material/';
+import { fugaGreen, yellowPending } from 'variables/colors';
 
 export const iconOpenActionsPayouts = (elemId, setOpenActionsDialog) => {
   return <IconButton onClick={() => setOpenActionsDialog({ open: true, payoutId: elemId })}>
@@ -7,13 +8,17 @@ export const iconOpenActionsPayouts = (elemId, setOpenActionsDialog) => {
   </IconButton>
 }
 
+export const getPayoutStatus = payoutStatusId => {
+  return <Typography sx={{ color: payoutStatusId !== "REQUESTED" ? fugaGreen : yellowPending }} > {payoutStatusId !== "REQUESTED" ? "Completado" : "Solicitado"}</Typography >
+}
+
 export const groupByNameToIdPayouts = groupByName => {
   const reducer = {
-    "Usuario": "userEmail",
+    "Usuario": "ownerEmail",
     "Mes del Pago": "transferMonth",
     "Moneda": "currency"
   }
-  return reducer[groupByName] || "userEmail";
+  return reducer[groupByName] || "ownerEmail";
 }
 
 export const getPayIdField = payout => {

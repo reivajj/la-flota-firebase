@@ -1,6 +1,6 @@
 import { Skeleton } from '@mui/material';
 import { truncateFloat } from 'utils';
-import { iconOpenActionsPayouts } from '../utils/payouts.utils';
+import { getPayoutStatus, iconOpenActionsPayouts } from '../utils/payouts.utils';
 
 export const payoutDefaultValues = {
   status: "Esperando confirmación", requestDate: "", transferDate: null, transferMonth: "",
@@ -12,10 +12,10 @@ export const payoutDefaultValues = {
 }
 
 export const getPayoutsHeadersForUser = [
-  { name: "Opciones", width: "3%" }, { name: "Estado", width: "8%" }, { name: "Día Solicitado", width: "10%" }, { name: "Día Pagado", width: "10%" },
+  { name: "Estado", width: "8%" }, { name: "Día Solicitado", width: "10%" }, { name: "Día Pagado", width: "10%" },
   { name: "Moneda", width: "5%" }, { name: "Transferencia", width: "10%" }, { name: "Cotización (USD)", width: "10%" },
-  { name: "Transferencia (USD)", width: "10%" }, { name: "Total ya pagado (USD)", width: "10%" },
-  { name: "Total ya solicitado (USD)", width: "12%" }, { name: "ID Pago", width: "12%" }
+  { name: "Transferencia (USD)", width: "10%" }, { name: "Total ya pagado (USD)", width: "12%" },
+  { name: "Total ya solicitado (USD)", width: "13%" }, { name: "ID Pago", width: "12%" }
 ]
 
 export const getPayoutsHeadersForAdmin = [
@@ -34,7 +34,7 @@ export const payoutsGroupByValues = ["Usuario", "Mes del Pago", "Moneda"];
 
 export const createPayoutRowForUser = payoutRowFromDB => {
   return {
-    status: (payoutRowFromDB.status === "Migrated" || payoutRowFromDB.status === "Migrated DK") ? "Completado" : payoutRowFromDB.status,
+    status: getPayoutStatus(payoutRowFromDB.status),
     requestDate: payoutRowFromDB.requestDate,
     transferDate: payoutRowFromDB.transferDate || "Esperando pago.",
     currency: payoutRowFromDB.currency,
@@ -57,7 +57,8 @@ export const createPayoutRowForAdmin = (payoutRowFromDB, setOpenActionsDialog) =
 
 const createAccPayoutRowForAdmin = (accRow, groupByProp) => {
   return {
-    [groupByProp.name]: accRow[groupByProp.id],
+    [groupByProp.name]: groupByProp.id === "transferMonth"
+      ? accRow[groupByProp.id].slice(0, 7) : accRow[groupByProp.id],
     lastPayAskedDay: accRow.lastPayAskedDay,
     cantPayouts: formatThousandsPoint(accRow.cantPayouts),
     totalPayed: 'USD ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accRow.totalPayed, 2, '.'))),
@@ -68,15 +69,14 @@ const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=
 const formatPeriodComma = number => number ? number.toString().replace(".", ",") : 0;
 
 export const getPayoutAccountingRows = (wdRows, groupBy, maxRows, orderByProp) => {
-  console.log("WD ROWS: ", wdRows);
   if (!wdRows || wdRows === "EMPTY" || wdRows.length === 0) return [];
   // let sortedAccRows = sortAccountingRows(wdRows, orderByProp);
-  console.log("WD ROS: ", wdRows)
   return wdRows.map(accountingRow => createAccPayoutRowForAdmin(accountingRow, groupBy)).slice(0, maxRows)
 }
 
 export const getTotalesWdAccountingRow = accountingValues => {
   let totals = { email: "Totales", cantPayouts: 0, lastPayAskedDay: 0, totalPayed: 0 };
+  console.log("acc values in totlas: ", accountingValues);
   if (accountingValues.length === 0) return totals;
   console.log(accountingValues);
   accountingValues.forEach(accVal => {

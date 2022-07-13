@@ -6,6 +6,10 @@ export const lightBlue = "#3c8bd9";
 
 export const fugaGreen = "#56cc82";
 
+export const redWarning = "rgb(111, 2, 2)";
+
+export const yellowPending = "rgb(231, 190, 66)";
+
 export const materialColor = "#353a40";
 
 export const primaryColor = ["#9c27b0", "#ab47bc", "#8e24aa", "#af2cc5"];

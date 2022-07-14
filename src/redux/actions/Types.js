@@ -95,6 +95,7 @@ export const ROYALTIES_SIGN_OUT = "royalties_sign_out";
 
 //Payouts
 export const PAYOUTS_ADD = "payouts_add";
+export const PAYOUTS_ADD_AND_DELETE_OTHERS = "payouts_add_and_delete_others";
 export const PAYOUTS_SIGN_OUT = "payouts_sign_out";
 export const PAYOUTS_DELETE_BY_ID = "payouts_delete_by_id";
 export const PAYOUTS_EDIT_BY_ID = "payouts_edit_by_id";

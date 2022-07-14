@@ -11,7 +11,7 @@ import CardTemplate from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-import { useForceUpdate, toWithOutError, truncateFloat, formatPeriodComma, formatThousandsPoint } from 'utils';
+import { useForceUpdate, toWithOutError, truncateFloat, formatAllNumber } from 'utils';
 import ProgressButton from 'components/CustomButtons/ProgressButton';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 import { fugaGreen } from "variables/colors";
@@ -26,6 +26,7 @@ import { emailsNoEquals, payoutGenerated, payoutLessThanTen } from '../../utils/
 import SuccessDialog from 'components/Dialogs/SuccessDialog';
 import { useNavigate } from 'react-router-dom';
 import { userIsAdmin } from 'utils/users.utils';
+import { checkPayoutFormValidations } from "utils/payouts.utils";
 
 const PayoutForm = () => {
 
@@ -35,7 +36,7 @@ const PayoutForm = () => {
   const dispatch = useDispatch();
   const windowDimensions = useWindowDimensions();
   let windowWidth = windowDimensions.width;
-  let cardMediaWidth = windowWidth > 1200 ? 100 : 80;
+  let cardMediaWidth = windowWidth > 1200 ? 120 : 80;
 
   const userData = useSelector(store => store.userData);
   const isAdmin = userIsAdmin(userData.rol);
@@ -114,21 +115,19 @@ const PayoutForm = () => {
     if (medioDePago.account === "bank") return confirmValue !== cbuCvuAlias;
     if (medioDePago.account === "paypal") return confirmValue !== paypalEmail;
     if (medioDePago.account === "payoneer") return confirmValue !== payoneerEmail;
-    return true;
+    return false;
   }
 
   const checkFields = () => {
     forceUpdate();
-    if (transferTotalUsd < 10) {
-      setOpenAlertDialog({ open: true, title: helperTextAvailable(), text: payoutLessThanTen }); return;
+    if (transferTotalNotValid()) {
+      setOpenAlertDialog({ open: true, title: helperTextAvailable(), text: payoutLessThanTen }); return false;
     }
     if (accountValuesAreNotEquals(confirmAccountValue)) {
-      setOpenAlertDialog({ open: true, title: "Los emails no coinciden.", text: emailsNoEquals })
+      setOpenAlertDialog({ open: true, title: "Los emails no coinciden.", text: emailsNoEquals }); return false;
     }
-    if (validator.current.allValid()) return true;
+    if (checkPayoutFormValidations(medioDePago, validator)) return true;
     else {
-      if (medioDePago.account !== "bank" && !validator.current.fieldValid('cbuCvuAlias')) return true;
-      console.log(validator.current);
       validator.current.showMessages();
       forceUpdate();
       return false;
@@ -182,11 +181,12 @@ const PayoutForm = () => {
     setForm({ target: { name: 'transferTotalUsd', value: onlyNums } });
   }
 
-  const handleGoToDahsboard = () => isAdmin ? navigate("/admin/dashboard-admin") : navigate("/admin/dashboard")
+  const handleGoToDahsboard = () => isAdmin ? navigate("/admin/retiros") : navigate("/admin/dashboard")
 
   const helperTextAvailable = () => {
     if (transferTotalUsd < 1 && medioDePago.account === "cupon") return "Si elegís cupón de crédito para pagar tu suscripción el monto no debe ser menor a 1 USD";
     if (transferTotalUsd < 10 && medioDePago.account === "cupon") return "Ingresa la cantidad de Dólares (USD) a retirar.";
+    if (transferTotalUsd > 28 && medioDePago.account === "cupon") return "Si elegís cupón de crédito para pagar tu suscripción el monto debe ser menor a 28 USD.";
     if (transferTotalUsd > totalRoyaltiesAndPayed.available) return "El monto ingresado es mayor al monto disponible."
     if (transferTotalUsd < 10) return "No podés retirar un monto menor a 10 USD";
     if (transferTotalUsd < 50 && medioDePago.account === "payoneer") return "Si elegís Payoneer el monto no debe ser menor a 50 USD";
@@ -195,7 +195,7 @@ const PayoutForm = () => {
 
   const transferTotalNotValid = () => {
     if (transferTotalUsd < 10 && medioDePago.account === "cupon") return false;
-    return (transferTotalUsd < 1 && medioDePago.account === "cupon") || (parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available))
+    return ((transferTotalUsd < 1 || transferTotalUsd > 28) && medioDePago.account === "cupon") || (parseFloat(transferTotalUsd) > parseFloat(totalRoyaltiesAndPayed.available))
       || parseFloat(transferTotalUsd) < 10 || (transferTotalUsd < 50 && medioDePago.account === "payoneer")
   }
 
@@ -205,7 +205,7 @@ const PayoutForm = () => {
       <ReauthenticateDialog isOpen={openChangeCredentialsDialog} setIsOpen={setOpenChangeCredentialsDialog}
         textName={userData.nombre} />
 
-      <SuccessDialog isOpen={editState === 'success'} title={"Tu solicitud se ha procesado correctamente."} contentTexts={payoutGenerated}
+      <SuccessDialog isOpen={editState === 'success'} title={"¡Tu solicitud se ha procesado correctamente!"} contentTexts={payoutGenerated}
         handleClose={handleGoToDahsboard} successImageSource="/images/success.jpg" size="sm" />
 
       <InfoDialog isOpen={openAlertDialog.open} handleClose={handleCloseAlertDialog}
@@ -235,7 +235,7 @@ const PayoutForm = () => {
                 <Typography sx={moneyTextStyle} >
                   {`Regalías Totales: USD ${totalRoyaltiesAndPayed.loading
                     ? "..."
-                    : formatThousandsPoint(formatPeriodComma(truncateFloat(totalRoyaltiesAndPayed.royalties, 2, '.')))}`}
+                    : formatAllNumber(totalRoyaltiesAndPayed.royalties, 2, '.')}`}
                 </Typography>
               </Grid>
 
@@ -243,12 +243,12 @@ const PayoutForm = () => {
                 <Typography sx={moneyTextStyle} >
                   {`Regalías ya Solicitadas: USD ${totalRoyaltiesAndPayed.loading
                     ? "..."
-                    : formatThousandsPoint(formatPeriodComma(truncateFloat(totalRoyaltiesAndPayed.payed, 2, '.')))}`}</Typography>
+                    : formatAllNumber(totalRoyaltiesAndPayed.payed, 2, '.')}`}</Typography>
               </Grid>
 
               <Grid item xs={4} textAlign="center" paddingBottom={4} paddingTop={2}>
                 <Typography sx={moneyTextStyle} >
-                  {`Disponible a Retirar: USD ${formatThousandsPoint(formatPeriodComma(truncateFloat(totalRoyaltiesAndPayed.available, 2, '.')))}`}
+                  {`Disponible a Retirar: USD ${formatAllNumber(totalRoyaltiesAndPayed.available, 2, '.')}`}
                 </Typography>
               </Grid>
 
@@ -400,7 +400,7 @@ const PayoutForm = () => {
                       value={cbuCvuAlias}
                       onChange={handleCbu}
                       validatorProps={{
-                        restrictions: 'required|numeric|min:22|max:22',
+                        restrictions: medioDePago.account === "bank" ? 'required|numeric|min:22|max:22' : "",
                         message: "Ingresa un CBU/CVU válido, debe tener 22 números.", validator: validator
                       }}
                     />
@@ -415,21 +415,21 @@ const PayoutForm = () => {
                       label="Confirmar CBU/CVU"
                       value={confirmAccountValue}
                       onChange={handleConfirmAccountValue}
-                      validatorProps={medioDePago.account === "bank" ? {
-                        restrictions: 'required|numeric|min:22|max:22',
+                      validatorProps={{
+                        restrictions: medioDePago.account === "bank" ? 'required|numeric|min:22|max:22' : "",
                         message: "Ingresa un CBU/CVU válido, debe tener 22 números.", validator: validator
-                      } : {}}
+                      }}
                     />
                   </Grid>
 
                   <Grid item xs={12} textAlign="center" paddingBottom={2}>
                     <Typography sx={moneyTextStyle} >{`Cotización USD/ARS: 
-                    ${formatThousandsPoint(formatPeriodComma(truncateFloat(usdToArsRate, 2, '.')))}`}</Typography>
+                    ${formatAllNumber(usdToArsRate, 2, '.')}`}</Typography>
                   </Grid>
 
                   <Grid item xs={12} textAlign="center" paddingBottom={2}>
                     <Typography sx={moneyTextStyle} >{`Retiro en Pesos: 
-                    ${formatThousandsPoint(formatPeriodComma(truncateFloat(parseFloat(transferTotalUsd) * parseFloat(usdToArsRate), 2, '.')))}`}</Typography>
+                    ${formatAllNumber(parseFloat(transferTotalUsd) * parseFloat(usdToArsRate), 2, '.')}`}</Typography>
                   </Grid>
                 </>
               }

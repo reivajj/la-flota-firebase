@@ -29,7 +29,40 @@ export const getPayIdField = payout => {
 }
 
 export const getPayoutById = (payouts, payoutId) => {
+  if (!payouts || payouts.length === 0) return {};
   let payoutFounded = payouts.find(payout => payout.id === payoutId);
   if (!payoutFounded) return {};
   else return payoutFounded;
 }
+
+export const checkPayoutFormValidations = (medioDePago, validator) => {
+  if (validator.current.fieldValid('telefono') && validator.current.fieldValid('userLastName')
+    && validator.current.fieldValid('userName') && validator.current.fieldValid('userCuit')) {
+    if (medioDePago.account === "bank") return validator.current.fieldValid('cbuCvuAlias');
+    if (medioDePago.account === "paypal") return validator.current.fieldValid('paypalEmail');
+    if (medioDePago.account === "payoneer") return validator.current.fieldValid('payoneerEmail');
+    return true;
+  }
+  else return false;
+}
+
+export const getMethodPayFromPayout = payout => {
+  if (payout.payoneerEmail) return "Payoneer";
+  if (payout.paypalEmail) return "PayPal";
+  if (payout.cbuCvuAlias) return "Depósito";
+  if (payout.cupon) return "Cupón";
+  return "Sin información";
+}
+
+export const getPaymentId = payout => {
+  if (payout.payoneerEmail) return payout.payoneerId || payout.id;
+  if (payout.paypalEmail) return payout.paypalId || payout.id;
+  if (payout.cbuCvuAlias) return payout.otherPayId || payout.id;
+  if (payout.cupon) return payout.otherPayId || payout.id;
+  return payout.id;
+}
+
+export const getTotalsEmptyToShow = {
+  email: <b><em>{"Totales"}</em></b>, cantPayouts: <b><em>{0}</em></b>,
+  lastPayAskedDay: <b><em>{0}</em></b>, totalPayed: <b><em>{0}</em></b>
+};

@@ -77,7 +77,8 @@ const AccountingBar = (props) => {
               </Search>
             </Tooltip>}
 
-          <Divider sx={{ borderWidth: "2px" }} variant="middle" orientation="vertical" flexItem />
+          {searchArrayProps.length > 0 &&
+            <Divider sx={{ borderWidth: "2px" }} variant="middle" orientation="vertical" flexItem />}
 
           {searchArrayProps.map((searchProp, index) =>
             <Tooltip key={'tooltip' + index} title={searchProp.name}>

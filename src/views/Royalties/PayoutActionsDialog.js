@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
-  Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid
+  Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, DialogContentText
 } from '@mui/material';
 import { toWithOutError } from 'utils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,8 +12,8 @@ import { mainBlue, lightBlue, grayColor } from 'variables/colors';
 import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog';
 import { getPayoutById } from "utils/payouts.utils";
 import { payoutDeleteRedux } from "redux/actions/PayoutsActions";
-import { completePayoutSubtitle } from "utils/textToShow.utils";
-import { payoutCompleteRequestRedux } from '../../redux/actions/PayoutsActions';
+import { addMpIdSubtitle, completePayoutSubtitle } from "utils/textToShow.utils";
+import { payoutCompleteRequestRedux, payoutEditRedux } from '../../redux/actions/PayoutsActions';
 
 const PayoutActionsDialog = (props) => {
 
@@ -47,10 +47,18 @@ const PayoutActionsDialog = (props) => {
     initialValues: ""
   });
 
-  // const handleEditPayout = () => setOpenEditDialog({
-  //   open: true, title: "Edita", subtitle: completePayoutSubtitle, handleConfirm: (newValue) => handleConfirmEditPayout(newValue, 'payId'),
-  //   initialValues: ""
-  // });
+  const handleAddMpId = () => setOpenEditDialog({
+    open: true, title: "ID de Mercado Pago del Pago", subtitle: addMpIdSubtitle, handleConfirm: (mpId) => handleAddMpIdPayout(mpId),
+    initialValues: ""
+  });
+
+  const handleAddMpIdPayout = async mpId => {
+    setButtonState("loading");
+    let editResult = await toWithOutError(dispatch(payoutEditRedux({ ...payout, mpId })));
+    if (editResult === "ERROR") { setButtonState("error"); return; }
+    setButtonState("none");
+    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+  }
 
   const handleCompletePayout = async payId => {
     setButtonState("loading");
@@ -61,7 +69,7 @@ const PayoutActionsDialog = (props) => {
   }
 
   const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
-
+  console.log("PAYOUT: ", payout);
   return (
     <>
       <SuccessDialog isOpen={completePayoutState !== 'none' && completePayoutState !== 'processing'} title={successDialogTitle}
@@ -88,6 +96,49 @@ const PayoutActionsDialog = (props) => {
         </DialogTitle>
 
         <DialogContent>
+          <DialogContentText key={'subtitle'}>
+            <p style={{ fontSize: "20px" }}><b>Información del Pago</b></p>
+          </DialogContentText>
+
+          {payout.userName && <DialogContentText key={0}>
+            Nombre Usuario: <b>{`${payout.userName} ${payout.userLastName}`}</b>
+          </DialogContentText>}
+
+          {payout.userCuit && <DialogContentText key={1}>
+            CUIT: <b>{`${payout.userCuit}`}</b>
+          </DialogContentText>}
+
+          {payout.cbuCvuAlias && <DialogContentText key={1}>
+            CBU/CVU: <b>{`${payout.cbuCvuAlias}`}</b>
+          </DialogContentText>}
+
+          {payout.otherPayId && <DialogContentText key={1}>
+            {`${payout.cbuCvuAlias ? "COELSA ID: " : "Cupón ID: "}`} <b>{`${payout.otherPayId}`}</b>
+          </DialogContentText>}
+
+          {payout.paypalEmail && <DialogContentText key={2}>
+            Email de Paypal: <b>{`${payout.paypalEmail}`}</b>
+          </DialogContentText>}
+
+          {payout.paypalEmail && <DialogContentText key={2}>
+            ID de Paypal: <b>{`${payout.paypalId ? payout.paypalId : "no provisto"}`}</b>
+          </DialogContentText>}
+
+          {payout.payoneerEmail && <DialogContentText key={3}>
+            Email de Payoneer: <b>{`${payout.payoneerlEmail}`}</b>
+          </DialogContentText>}
+
+          {payout.payoneerEmail && <DialogContentText key={3}>
+            ID de Payoneer: <b>{`${payout.payoneerId ? payout.payoneerId : "no provisto"}`}</b>
+          </DialogContentText>}
+
+          <DialogContentText key={3}>
+            ID del pago en la APP: <b>{`${payout.id}`}</b>
+          </DialogContentText>
+
+          {payout.mpId && <DialogContentText key={4}>
+            Id de Mercado Pago: <b>{`${payout.mpId}`}</b>
+          </DialogContentText>}
 
           <Grid container direction="column" paddingTop={2}>
 
@@ -103,6 +154,20 @@ const PayoutActionsDialog = (props) => {
                 disabled={payout.status !== "REQUESTED"}
                 fullWidth>
                 {payout.status === "REQUESTED" ? "Completar Pago" : "Pago Realizado"}
+              </Button>
+            </Grid>
+
+            <Grid item xs={6} padding={1}>
+              <Button
+                onClick={handleAddMpId}
+                sx={{
+                  backgroundColor: !payout.mpId ? mainBlue : grayColor[11], color: 'white',
+                  '&:hover': { backgroundColor: !payout.mpId ? lightBlue : grayColor[11] }
+                }}
+                endIcon={<Edit />}
+                disabled={payout.mpId !== ""}
+                fullWidth>
+                {!payout.mpId ? "Agregar MP ID" : "MP ID Agregado"}
               </Button>
             </Grid>
 

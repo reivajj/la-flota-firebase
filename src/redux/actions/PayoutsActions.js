@@ -9,6 +9,11 @@ export const payoutsAddStore = payouts => {
   return { type: ReducerTypes.PAYOUTS_ADD, payload: payouts }
 }
 
+export const payoutsAddAndDeleteOthersStore = payouts => {
+  return { type: ReducerTypes.PAYOUTS_ADD_AND_DELETE_OTHERS, payload: payouts }
+}
+
+
 export const payoutDeleteByIdStore = payoutId => {
   return { type: ReducerTypes.PAYOUTS_DELETE_BY_ID, payload: payoutId }
 }
@@ -34,18 +39,27 @@ export const payoutCreateRequestRedux = newPayout => async dispatch => {
 }
 
 export const payoutCompleteRequestRedux = (updatedPayout, payId) => async dispatch => {
-
+  let sendNotification = true;
   updatedPayout.status = "COMPLETED";
   updatedPayout.alreadyPaidUsd = parseFloat(updatedPayout.alreadyPaidUsd) + parseFloat(updatedPayout.transferTotalUsd);
   updatedPayout.transferDate = new Date().toISOString().split('T')[0];
   updatedPayout.transferMonth = updatedPayout.transferDate.slice(0, 7) + '-01';
-  
+
   if (!updatedPayout.cupon) {
     let payIdField = getPayIdField(updatedPayout);
     updatedPayout[payIdField] = payId;
   }
 
-  let resultCreatePayout = await updateUserPayoutInDbAndFS(updatedPayout, dispatch);
+  let resultCreatePayout = await updateUserPayoutInDbAndFS(updatedPayout, sendNotification, dispatch);
+  if (resultCreatePayout === "ERROR") return "ERROR";
+
+  dispatch(payoutEditByIdStore(updatedPayout));
+  return "success";
+}
+
+export const payoutEditRedux = updatedPayout => async dispatch => {
+  let sendNotification = false;
+  let resultCreatePayout = await updateUserPayoutInDbAndFS(updatedPayout, sendNotification, dispatch);
   if (resultCreatePayout === "ERROR") return "ERROR";
 
   dispatch(payoutEditByIdStore(updatedPayout));
@@ -55,10 +69,10 @@ export const payoutCompleteRequestRedux = (updatedPayout, payId) => async dispat
 export const payoutDeleteRedux = payoutId => async dispatch => {
   let resultDeletePayout = await deletePayoutInDbAndFS(payoutId);
   if (resultDeletePayout === "ERROR") return "ERROR";
-  
+
   dispatch(payoutDeleteByIdStore(payoutId));
   return "success";
-} 
+}
 
 export const payoutsSignOut = () => {
   return { type: ReducerTypes.PAYOUTS_SIGN_OUT }

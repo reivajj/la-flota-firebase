@@ -1,6 +1,10 @@
+import { solicitarRegaliasUrl } from 'variables/urls';
+import { goToRetiros, goToRoyalties } from 'variables/urls';
+import { Button, Grid, } from '@mui/material';
+import { Paid, Visibility } from '@mui/icons-material';
+
 export const sortAccountingRowsByRevenue = (rowA, rowB) => {
-  return (rowA.revenuesEUR + rowA.revenuesUSD) > (rowB.revenuesEUR + rowB.revenuesUSD)
-    ? -1 : 1
+  return rowA.revenuesUSD > rowB.revenuesUSD ? -1 : 1
 }
 
 export const sortAccountingRowsByMonthDesc = (rowA, rowB) => {
@@ -8,6 +12,7 @@ export const sortAccountingRowsByMonthDesc = (rowA, rowB) => {
 }
 
 const chooseSorter = (orderField, order) => {
+  console.log({ order, orderField })
   if (orderField === "reportedMonth" && order === "desc") return sortAccountingRowsByMonthDesc;
   if (orderField === "revenues" && order === "desc") return sortAccountingRowsByRevenue;
   return sortAccountingRowsByRevenue;
@@ -36,7 +41,7 @@ export const dspReducer = dspString => {
 
 export const reduceGroupByField = (groupByField, valueToShow) => {
   if (groupByField === 'dsp') return dspReducer(valueToShow);
-  if (groupByField === 'reportedMonth') return valueToShow.slice(0,7);
+  if (groupByField === 'reportedMonth') return valueToShow.slice(0, 7);
   return valueToShow;
 }
 
@@ -45,11 +50,10 @@ export const sumEqualDSPNames = (accRows, groupBy) => {
   let uniquesDsps = [...new Set(accRows.map(accRow => dspReducer(accRow.dsp)))];
   uniquesDsps = uniquesDsps.map(uniqueDsp => {
     let allDspRows = accRows.filter(accRow => dspReducer(accRow.dsp) === uniqueDsp);
-    let dspAccFinal = { dsp: uniqueDsp, streams: 0, downloads: 0, revenuesEUR: 0, revenuesUSD: 0 };
+    let dspAccFinal = { dsp: uniqueDsp, streams: 0, downloads: 0, revenuesUSD: 0 };
     allDspRows.forEach(dspRow => {
       dspAccFinal.streams += dspRow.streams;
       dspAccFinal.downloads += dspRow.downloads;
-      dspAccFinal.revenuesEUR += dspRow.revenuesEUR;
       dspAccFinal.revenuesUSD += dspRow.revenuesUSD;
     })
     return dspAccFinal;
@@ -63,3 +67,19 @@ export const sumEqualDSPNames = (accRows, groupBy) => {
 export const getAccDocId = (userIsAdmin, groupBy, field, values) => {
   if (userIsAdmin) return `accounting-all-${groupBy}`;
 }
+
+export const getRetirosButtons = (buttonColorStyle, textSecondButton) => <Grid container item justifyContent='center'>
+  <Grid container item sx={{ width: 600 }} textAlign='center'>
+    <Grid item xs={6} paddingBottom={2}>
+      <Button variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
+        Solicitar Regalías
+      </Button>
+    </Grid>
+
+    <Grid item xs={6} paddingBottom={2}>
+      <Button variant="contained" sx={buttonColorStyle} href={textSecondButton === "Ver Regalías" ? goToRoyalties : goToRetiros} target="_blank" endIcon={<Visibility />}>
+        {textSecondButton}
+      </Button>
+    </Grid>
+  </Grid>
+</Grid>

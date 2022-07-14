@@ -1,5 +1,5 @@
 import { Skeleton } from '@mui/material';
-import { formatPeriodComma, truncateFloat } from 'utils';
+import { truncateFloat, formatAllNumber } from 'utils';
 import { dspReducer, reduceGroupByField, sortAccountingRows, sumEqualDSPNames } from 'utils/royalties.utils';
 import { formatThousandsPoint } from '../utils';
 
@@ -31,8 +31,7 @@ export const groupByNameToId = name => {
 
 export const getAccountingHeadersForUser = groupByProp => [
   { name: groupByProp.name, width: "25%" }, { name: "Streams", width: "15%" },
-  { name: "Descargas", width: "10%" }, { name: "Regalías (EUR)", width: "25%" },
-  { name: "Regalías (USD)", width: "25%" },
+  { name: "Descargas", width: "10%" }, { name: "Regalías (USD)", width: "25%" },
 ]
 
 export const accountingGroupByValues = ["DSP's", "Mes del Reporte", "Artistas", "Tracks", "Territorios", "Lanzamientos"];
@@ -46,7 +45,7 @@ export const createRoyaltyRowForUser = royaltyFromDB => {
     releaseTitle: stringReducer(royaltyFromDB.releaseTitle),
     isrc: royaltyFromDB.isrc,
     upc: royaltyFromDB.upc,
-    netRevenue: truncateFloat(royaltyFromDB.netRevenue, 4, '.'),
+    netRevenue: truncateFloat(royaltyFromDB.netRevenue, 6, '.'),
     netRevenueCurrency: royaltyFromDB.netRevenueCurrency,
     territory: royaltyFromDB.territory,
     saleUserType: royaltyFromDB.saleUserType ? royaltyFromDB.saleUserType : "YT User",
@@ -61,8 +60,7 @@ export const createAccountingRowForUser = (accountingFromDB, groupByProp) => {
     [groupByProp.name]: reduceGroupByField(groupByProp.id, accountingFromDB[groupByProp.id]),
     streams: formatThousandsPoint(accountingFromDB.streams),
     downloads: formatThousandsPoint(accountingFromDB.downloads),
-    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accountingFromDB.revenuesEUR, 2, '.'))),
-    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(truncateFloat(accountingFromDB.revenuesUSD, 2, '.'))),
+    netRevenueUSD: 'USD ' + formatAllNumber(accountingFromDB.revenuesUSD, 2, '.'),
   }
 }
 
@@ -74,20 +72,20 @@ export const getAccountingRows = (accRows, groupBy, maxRows, orderByProp) => {
 }
 
 export const getTotalesAccountingRow = accountingValues => {
-  let totals = { dsp: "Totales", netRevenueEUR: 0, netRevenueUSD: 0, streams: 0, downloads: 0 };
+  let totals = { dsp: "Totales", netRevenueUSD: 0, streams: 0, downloads: 0 };
   if (accountingValues.length === 0) return totals;
   console.log(accountingValues);
   accountingValues.forEach(accVal => {
     totals.streams += dspReducer(accVal.dsp) === "iTunes" ? 0 : accVal.streams;
     totals.downloads += dspReducer(accVal.dsp) === "iTunes" ? accVal.downloads + accVal.streams : accVal.downloads;
     totals.netRevenueUSD += accVal.revenuesUSD;
-    totals.netRevenueEUR += accVal.revenuesEUR;
   })
 
   return {
-    dsp: totals.dsp, streams: formatThousandsPoint(totals.streams), downloads: formatThousandsPoint(totals.downloads),
-    netRevenueEUR: 'EUR ' + formatThousandsPoint(formatPeriodComma(truncateFloat(totals.netRevenueEUR, 2, '.'))),
-    netRevenueUSD: 'USD ' + formatThousandsPoint(formatPeriodComma(truncateFloat(totals.netRevenueUSD, 2, '.')))
+    dsp: <b><em>{totals.dsp}</em></b>, 
+    streams: <b><em>{formatThousandsPoint(totals.streams)}</em></b>, 
+    downloads: <b><em>{formatThousandsPoint(totals.downloads)}</em></b>,
+    netRevenueUSD: <b><em>{'USD ' + formatAllNumber(totals.netRevenueUSD, 2, '.')}</em></b>
   }
 }
 

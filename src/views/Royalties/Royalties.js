@@ -21,10 +21,10 @@ import { toWithOutError } from 'utils';
 import AccountingBar from "components/Navbars/AccountingBar";
 import WaitingDialog from "components/Dialogs/WaitingDialog";
 import { getArtistByFieldRedux } from "redux/actions/ArtistsActions";
-import { solicitarRegaliasUrl } from "variables/urls";
+import { goToRetiros, solicitarRegaliasUrl } from "variables/urls";
 import { Paid } from '@mui/icons-material';
 import { getAccountingDocFS } from "services/FirestoreServices";
-import { getAccDocId } from "utils/royalties.utils";
+import { getAccDocId, getRetirosButtons } from "utils/royalties.utils";
 
 const Royalties = () => {
   const dispatch = useDispatch();
@@ -267,12 +267,8 @@ const Royalties = () => {
           title={"Sin resultados"} contentTexts={emptyRoyaltiesResult} />
 
         <Grid item xs={12} sx={{ textAlign: "center" }}>
-
-          <Grid item xs={12} paddingBottom={2}>
-            <Button disabled variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
-              En breve: Solicitar Regalías
-            </Button>
-          </Grid>
+          
+          {getRetirosButtons(buttonColorStyle, "Ver Retiros")}
 
           <Grid item xs={12} padding={0} >
             <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
@@ -303,7 +299,7 @@ const Royalties = () => {
 export default Royalties;
 
 const buttonColorStyle = {
-  color: 'white', backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' }, raisedPrimary: {
+  color: 'white', width: "200px", backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' }, raisedPrimary: {
     color: 'white',
   },
 };

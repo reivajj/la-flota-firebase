@@ -386,7 +386,6 @@ export const getArtistsAccountingValuesFS = async (targetArtistsNames, dispatch)
   let allAccountingArtistsValues = await getAccountingDocFS("accounting-all-releaseArtist", dispatch);
   let resultRows = allAccountingArtistsValues.filter(accRow => targetArtistsNames.includes(accRow.releaseArtist));
   let totalUsd = (resultRows.map(accRow => accRow.revenuesUSD).reduce((acc, value) => acc + value));
-  let totalEur = resultRows.map(accRow => accRow.revenuesEUR).reduce((acc, value) => acc + value);
   return totalUsd;
 }
 

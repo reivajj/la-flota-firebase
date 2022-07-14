@@ -57,11 +57,22 @@ export const deepEqual = function (x, y) {
   else return false;
 }
 
+export const formatAllNumber = (number, decimals, separator) => {
+  return formatThousandsPoint(formatPeriodComma(truncateFloat(number, decimals, separator)));
+}
+
 export const truncateFloat = (number, decimals, separator) => {
   if (!number) return 0;
-  if (number.toString().split(separator).length < 2) return number;
+  if (number.toString().split(separator).length < 2) return `${number.toString()}${separator}${'00'}`;
   let decimalsTruncated = number.toString().split(separator)[1].slice(0, decimals);
-  return parseFloat(`${number.toString().split(separator)[0]}${separator}${decimalsTruncated}`);
+
+  if (decimalsTruncated.length === 1) {
+    console.log("1 DECIMAL: ",)
+    return `${number.toString().split(separator)[0]}${separator}${decimalsTruncated}${'0'}`;
+  }
+
+
+  return `${number.toString().split(separator)[0]}${separator}${decimalsTruncated}`;
 }
 
 export const formatThousandsPoint = number => number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : 0;

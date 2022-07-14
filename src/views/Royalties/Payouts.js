@@ -16,14 +16,15 @@ import { solicitarRegaliasUrl } from "variables/urls";
 import { Paid } from '@mui/icons-material';
 import {
   createPayoutRowForUser, getSkeletonWdAccountingRow, getSkeletonPayoutRow, getPayoutAccountingRows,
-  getTotalesWdAccountingRow, getWdAccountingHeadersForUser, payoutsGroupByValues, getPayoutsHeadersForAdmin,
+  getTotalsPayoutsAccountingRow, getWdAccountingHeadersForUser, payoutsGroupByValues, getPayoutsHeadersForAdmin,
   getPayoutsHeadersForUser, createPayoutRowForAdmin
 } from "factory/payouts.factory";
 import { getPayoutsForTableView } from "services/BackendCommunication";
 import { getPayoutsAccountingForTableView } from '../../services/BackendCommunication';
 import { groupByNameToIdPayouts } from "utils/payouts.utils";
 import PayoutActionsDialog from "./PayoutActionsDialog";
-import { payoutsAddStore } from "redux/actions/PayoutsActions";
+import { payoutsAddAndDeleteOthersStore } from "redux/actions/PayoutsActions";
+import { getRetirosButtons } from 'utils/royalties.utils';
 
 const Payouts = () => {
   const dispatch = useDispatch();
@@ -32,6 +33,7 @@ const Payouts = () => {
   const payoutsStore = useSelector(store => store.payouts.payouts);
 
   const isAdmin = userIsAdmin(rol);
+  // const isAdmin = false;
 
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
@@ -43,14 +45,14 @@ const Payouts = () => {
     groupBy: { id: 'ownerEmail', name: "Usuario" }, orderBy: { field: 'totalPayed', order: 'DESC' }
   };
 
-  const [emptyResults, setEmptyResults] = useState(false);
+  // const [emptyResults, setEmptyResults] = useState(false);
   const [loadingPayouts, setLoadingPayouts] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [payoutsRows, setPayoutsRows] = useState([]);
   const [openNotAdminWarning, setOpenNotAdminWarning] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [payoutsTableIsOpen, setPayoutsTableIsOpen] = useState(false);
+  const [payoutsTableIsOpen, setPayoutsTableIsOpen] = useState(true);
 
   const [accountingRows, setAccountingRows] = useState(getSkeletonWdAccountingRow(2));
   const [filterPayoutsParams, setFilterPayoutsParams] = useState(defaultAccParams);
@@ -63,17 +65,19 @@ const Payouts = () => {
       setPayoutsRows(payoutsStore.map(wdRow => isAdmin
         ? createPayoutRowForAdmin(wdRow, setOpenPayoutActionsDialog) : createPayoutRowForUser(wdRow)));
     }
-    else { setPayoutsRows([]); setEmptyResults(true) };
+    else {
+      setPayoutsRows([]);
+    };
   }, [payoutsStore])
 
   useEffect(() => {
     const getPayoutsCountAndRows = async () => {
       let { field, value, caller } = filterPayoutsParams;
       if (caller === "accounting") return;
-      setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));
+      setPayoutsRows(getSkeletonPayoutRow(isAdmin ? rowsPerPage : 3));
       let { count, payouts } = await getPayoutsForTableView(field, value, rowsPerPage, rowsPerPage * page, dispatch);
       setTotalCount(count);
-      dispatch(payoutsAddStore(payouts));
+      dispatch(payoutsAddAndDeleteOthersStore(payouts));
     }
 
     getPayoutsCountAndRows();
@@ -85,16 +89,14 @@ const Payouts = () => {
       let accountingValues = [];
       let { groupBy, field, value, orderBy, caller } = filterPayoutsParams;
       if (caller === "royalties") return;
-      console.log("ACC ROWS: ", accountingRows);
       setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 0 ? accountingRows.length : 2));
       accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
 
-      if (accountingValues === "EMPTY") accountingValues = [];
-      if (accountingValues === "ERROR") accountingValues = [];
+      if (accountingValues === "EMPTY" || accountingValues === "ERROR") accountingValues = [];
       let accountingRowsToShow = getPayoutAccountingRows(accountingValues, groupBy, 50, orderBy);
       let totals = value
-        ? accountingRowsToShow.length !== 0 ? [] : getTotalesWdAccountingRow([])
-        : getTotalesWdAccountingRow(accountingValues);
+        ? accountingRowsToShow.length !== 0 ? [] : getTotalsPayoutsAccountingRow([])
+        : getTotalsPayoutsAccountingRow(accountingValues);
       setAccountingRows([totals, ...accountingRowsToShow]);
     }
 
@@ -158,7 +160,6 @@ const Payouts = () => {
   const emailAccSearchProps = { shortName: "Email", name: "Email", handleEnterKeyPress, onSearchHandler: onSearchEmailHandler, value: emailAccSearchValue.trim().toLowerCase(), setValue: setEmailAccSearchValue };
 
   const handleChangeGroupBy = groupByName => {
-    // setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
     setFilterPayoutsParams({
       ...filterPayoutsParams,
       caller: 'accounting',
@@ -170,14 +171,14 @@ const Payouts = () => {
   const groupByProps = { helper: "Agrupar según", values: payoutsGroupByValues, handleChangeGroupBy, value: filterPayoutsParams.groupBy }
 
   const cleanAccountingParams = () => {
-    setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
-    setFilterPayoutsParams({ caller: "accounting", ...defaultAccParams });
+    setFilterPayoutsParams({ ...defaultAccParams, caller: "accounting" });
+    setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : isAdmin ? 10 : 3));
     setEmailAccSearchValue("");
   }
 
   const cleanPayoutsParams = () => {
-    setAccountingRows(getSkeletonWdAccountingRow(accountingRows.length > 10 ? accountingRows.length : 10));
-    setFilterPayoutsParams({ caller: "royalties", ...defaultAccParams });
+    setFilterPayoutsParams({ ...defaultAccParams, caller: "royalties" });
+    setPayoutsRows(getSkeletonPayoutRow(accountingRows.length > 10 ? accountingRows.length : isAdmin ? 10 : 3));
     setEmailSearchValue("");
   }
 
@@ -210,26 +211,12 @@ const Payouts = () => {
       <InfoDialog isOpen={openNotAdminWarning} handleClose={() => setOpenNotAdminWarning(false)}
         title={"Necesitas permisos de Administrador"} contentTexts={resourceNotYoursText} />
 
-      <InfoDialog isOpen={emptyResults} handleClose={() => setEmptyResults(false)}
-        title={"Sin resultados"} contentTexts={emptyPaysResult} />
+      {/* <InfoDialog isOpen={emptyResults} handleClose={() => setEmptyResults(false)}
+        title={"Sin resultados"} contentTexts={emptyPaysResult} /> */}
 
       <Grid item xs={12} sx={{ textAlign: "center" }}>
 
-        <Grid item xs={12} paddingBottom={2}>
-          <Button disabled variant="contained" sx={buttonColorStyle} href={solicitarRegaliasUrl} target="_blank" endIcon={<Paid />}>
-            En breve: Solicitar Regalías
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} padding={0} >
-          <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
-            appBarSx={appBarSx} appBarTitle='Pagos' mainSearchColor={fugaGreen} isOpen={accountingTableIsOpen}
-            handleCollapseTable={handleCollapseAccounting} groupByProps={groupByProps} />
-        </Grid>
-
-        {accountingTableIsOpen && <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
-          <CustomizedTable {...accountingTableParams} />
-        </Grid>}
+      {getRetirosButtons(buttonColorStyle, "Ver Regalías")}
 
         <Grid item xs={12} paddingTop={2} >
           <SearchNavbar searchArrayProps={buscadoresRoyalties} cleanSearchResults={cleanSearchResults}
@@ -237,8 +224,18 @@ const Payouts = () => {
             isOpen={payoutsTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
         </Grid>
 
-        {payoutsTableIsOpen && <Grid item xs={12} sx={{ margin: 'auto' }}>
+        {payoutsTableIsOpen && <Grid item xs={12} paddingBottom={2} sx={{ margin: 'auto' }}>
           <CustomizedTable {...payoutsTableParams} />
+        </Grid>}
+
+        <Grid item xs={12} padding={0} >
+          <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
+            appBarSx={appBarSx} appBarTitle='Pagos' mainSearchColor={fugaGreen} isOpen={accountingTableIsOpen}
+            handleCollapseTable={handleCollapseAccounting} groupByProps={groupByProps} />
+        </Grid>
+
+        {accountingTableIsOpen && <Grid item xs={12} sx={{ margin: 'auto' }}>
+          <CustomizedTable {...accountingTableParams} />
         </Grid>}
 
       </Grid>
@@ -250,7 +247,7 @@ const Payouts = () => {
 export default Payouts;
 
 const buttonColorStyle = {
-  color: 'white', backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' }, raisedPrimary: {
+  color: 'white', width: "200px", backgroundColor: fugaGreen, '&:hover': { backgroundColor: fugaGreen, color: 'white' }, raisedPrimary: {
     color: 'white',
   },
 };

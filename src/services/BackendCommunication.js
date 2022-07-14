@@ -445,9 +445,10 @@ export const getAccountingGroupedByForTableView = async (groupByProp, fieldName,
 //=======================================================PAYOUTS=========================================================\\
 
 export const getPayoutsForTableView = async (field, value, limit, offset, dispatch) => {
-  let orderClause = "requestDate.DESC";
+  let orderClause = "lastUpdateTS.DESC";
   let whereClause = JSON.stringify(value ? { [field]: value } : {});
-  let queryParams = `?limit=${limit}&offset=${offset}&order=${orderClause}&where=${whereClause}`;
+  let timestamp = new Date().getTime();
+  let queryParams = `?limit=${limit}&offset=${offset}&order=${orderClause}&where=${whereClause}&timestamp=${timestamp}`;
 
   const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/${queryParams}`));
   if (errorGettingPayouts) {
@@ -465,8 +466,9 @@ export const getPayoutsAccountingForTableView = async (field, value, groupBy, or
   { op: "count", field: "ownerEmail", name: "cantPayouts" },
   { op: "max", field: "requestDate", name: "lastPayAskedDay" }]);
   let attNoOps = JSON.stringify([{ name: groupBy }]);
+  let timestamp = new Date().getTime();
 
-  let queryParams = `?order=${orderClause}&where=${whereClause}&groupBy=${groupBy}&ops=${ops}&attributes=${attNoOps}`;
+  let queryParams = `?order=${orderClause}&where=${whereClause}&groupBy=${groupBy}&ops=${ops}&attributes=${attNoOps}&timestamp=${timestamp}`;
 
   const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/groupBy/${queryParams}`));
   if (errorGettingPayouts) {
@@ -478,7 +480,8 @@ export const getPayoutsAccountingForTableView = async (field, value, groupBy, or
 }
 
 export const getLastPayoutForUser = async (userEmail, dispatch) => {
-  let [errorGettingLastPayout, lastPayout] = await to(axios.get(`${targetUrl}payouts/totalPayed/${userEmail}`));
+  let timestamp = new Date().getTime();
+  let [errorGettingLastPayout, lastPayout] = await to(axios.get(`${targetUrl}payouts/totalPayed/${userEmail}?timestamp=${timestamp}`));
   if (errorGettingLastPayout) {
     dispatch(createBackendError(errorGettingLastPayout));
     writeCloudLog(`Error getting last payout for ${userEmail} from DB`, userEmail, errorGettingLastPayout, "error");
@@ -503,9 +506,9 @@ export const createUserPayoutInDbAndFS = async (newPayout, dispatch) => {
   return newPayoutResponse.data.response;
 }
 
-export const updateUserPayoutInDbAndFS = async (updatedPayout, dispatch) => {
+export const updateUserPayoutInDbAndFS = async (updatedPayout, sendNotification, dispatch) => {
   let [errorCreatingPayout, newPayoutResponse] = await to(axios.put(`${targetUrl}payouts/`,
-    { payoutRecord: updatedPayout, sendNotification: true }));
+    { payoutRecord: updatedPayout, sendNotification }));
   if (errorCreatingPayout) {
     dispatch(createBackendError(errorCreatingPayout));
     writeCloudLog(`Error updating payout for ${updatedPayout.ownerEmail} from DB`, updatedPayout, errorCreatingPayout, "error");

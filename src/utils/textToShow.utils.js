@@ -202,7 +202,8 @@ export const payoutLessThanTen = ["No podés realizar un retiro menor a 10 dolar
 export const emailsNoEquals = ["Los mails de tu cuenta que elegiste como medio de pago, no coinciden.",
   "Por favor, revisa, e intenta nuevamente."];
 
-export const payoutGenerated = ["Recuerda que las transferencias se realizan durante los próximos 5 días hábiles.",
-  "Te estará llegando un mail de confirmación."]
+export const payoutGenerated = ["La transferencia se realizará durante los próximos 10 días."]
 
 export const completePayoutSubtitle = ["Completa con el ID del Pago."];
+export const addMpIdSubtitle = ["Completa con el ID de Mercado Pago del Pago.", 
+"Este ID sólo lo veremos nosotros, no el usuario."];

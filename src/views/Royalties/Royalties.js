@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Backdrop, CircularProgress, Button } from '@mui/material';
+import { Grid, Backdrop, CircularProgress } from '@mui/material';
 
 import { resourceNotYoursText, waitForRoyalties, emptyRoyaltiesResult } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
@@ -21,8 +21,6 @@ import { toWithOutError } from 'utils';
 import AccountingBar from "components/Navbars/AccountingBar";
 import WaitingDialog from "components/Dialogs/WaitingDialog";
 import { getArtistByFieldRedux } from "redux/actions/ArtistsActions";
-import { goToRetiros, solicitarRegaliasUrl } from "variables/urls";
-import { Paid } from '@mui/icons-material';
 import { getAccountingDocFS } from "services/FirestoreServices";
 import { getAccDocId, getRetirosButtons } from "utils/royalties.utils";
 
@@ -35,8 +33,8 @@ const Royalties = () => {
 
   const isAdmin = userIsAdmin(rol);
   const albumsUpc = albums.map(album => album.upc.toString());
-  const artistsNames = artists.map(artist => artist.name);
-
+  const artistsNames = artists.map(artist => artist.name.replace('ā', '?'));
+  
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
   const [upcSearchValue, setUpcSearchValue] = useState("");
@@ -145,8 +143,8 @@ const Royalties = () => {
     let userArtists = await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)));
     if (userArtists === "EMPTY") { setEmptyResults(true); return }
     setSkeletonRows(caller);
-    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) });
-    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) })
+    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name.replace('ā', '?')) });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name.replace('ā', '?')) })
   }
 
   const onSearchArtistHandler = async (artistName, caller) => {

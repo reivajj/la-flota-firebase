@@ -69,7 +69,6 @@ const PayoutActionsDialog = (props) => {
   }
 
   const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
-  console.log("PAYOUT: ", payout);
   return (
     <>
       <SuccessDialog isOpen={completePayoutState !== 'none' && completePayoutState !== 'processing'} title={successDialogTitle}

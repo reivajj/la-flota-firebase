@@ -9,7 +9,7 @@ export const iconOpenActionsPayouts = (elemId, setOpenActionsDialog) => {
 }
 
 export const getPayoutStatus = payoutStatusId => {
-  return <Typography sx={{ color: payoutStatusId !== "REQUESTED" ? fugaGreen : yellowPending }} > {payoutStatusId !== "REQUESTED" ? "Completado" : "Solicitado"}</Typography >
+  return <Typography sx={{ fontWeight: 600, color: payoutStatusId !== "REQUESTED" ? fugaGreen : yellowPending }} > {payoutStatusId !== "REQUESTED" ? "Completado" : "Solicitado"}</Typography >
 }
 
 export const groupByNameToIdPayouts = groupByName => {

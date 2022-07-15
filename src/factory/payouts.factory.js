@@ -45,8 +45,8 @@ export const createPayoutRowForUser = payoutRowFromDB => {
       ? formatAllNumber(payoutRowFromDB.transferTotalAskedCurrency, 2, '.') : formatAllNumber(payoutRowFromDB.transferTotalUsd, 2, '.'),
     currencyRate: payoutRowFromDB.currencyRateToUsd === 0 ? 1 : formatAllNumber(payoutRowFromDB.currencyRateToUsd, 2, '.'),
     transferTotalUsd: formatAllNumber(payoutRowFromDB.transferTotalUsd, 2, '.'),
-    alreadyPaidUsd: formatAllNumber(payoutRowFromDB.alreadyPaidUsd, 2, '.'),
     historicTotalUsd: formatAllNumber(payoutRowFromDB.historicTotalUsd, 2, '.'),
+    alreadyPaidUsd: formatAllNumber(payoutRowFromDB.alreadyPaidUsd, 2, '.'),
     methodPay: getMethodPayFromPayout(payoutRowFromDB),
     id: getPaymentId(payoutRowFromDB),
   }

@@ -33,7 +33,7 @@ const Royalties = () => {
 
   const isAdmin = userIsAdmin(rol);
   const albumsUpc = albums.map(album => album.upc.toString());
-  const artistsNames = artists.map(artist => artist.name.replace('ā', '?'));
+  const artistsNames = artists.map(artist => artist.name);
   
   // INIT SEARCH STUFF
   const [emailSearchValue, setEmailSearchValue] = useState("");
@@ -143,8 +143,8 @@ const Royalties = () => {
     let userArtists = await toWithOutError(dispatch(getArtistByFieldRedux('ownerEmail', email, 1000)));
     if (userArtists === "EMPTY") { setEmptyResults(true); return }
     setSkeletonRows(caller);
-    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name.replace('ā', '?')) });
-    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name.replace('ā', '?')) })
+    if (caller === "royalties") setSearchParams({ field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) });
+    if (caller === "accounting") setFilterAccountingParams({ ...filterAccountingParams, field: "releaseArtist", values: userArtists.map(artistFromEmail => artistFromEmail.name) })
   }
 
   const onSearchArtistHandler = async (artistName, caller) => {

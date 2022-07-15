@@ -4,13 +4,11 @@ import TableWithHeader from "../../components/Table/TableWithHeader";
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getArtistPropsForDataTable } from "utils/artists.utils";
-import { artistsCreateFromDGArtistsRedux } from '../../redux/actions/ArtistsActions';
 import { toWithOutError } from 'utils';
 import { userDataUpdateRedux } from '../../redux/actions/UserDataActions';
 import SuccessDialog from '../../components/Dialogs/SuccessDialog';
 import { bienvenidoDialogText } from '../../utils/textToShow.utils';
 import { getAlbumsPropsForUsersDataTable } from '../../utils/tables.utils';
-import DashboardAdmin from './DashboardAdmin';
 
 const DashboardBasicUser = () => {
 

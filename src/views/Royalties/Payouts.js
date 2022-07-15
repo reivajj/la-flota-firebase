@@ -218,7 +218,7 @@ const Payouts = () => {
 
       {getRetirosButtons(buttonColorStyle, "Ver Regalías")}
 
-        <Grid item xs={12} paddingTop={2} >
+        <Grid item xs={12} padding={0} >
           <SearchNavbar searchArrayProps={buscadoresRoyalties} cleanSearchResults={cleanSearchResults}
             appBarSx={appBarSx} appBarTitle='Retiros' mainSearchColor={fugaGreen}
             isOpen={payoutsTableIsOpen} handleCollapseTable={handleCollapseRoyalties} />
@@ -228,7 +228,7 @@ const Payouts = () => {
           <CustomizedTable {...payoutsTableParams} />
         </Grid>}
 
-        <Grid item xs={12} padding={0} >
+        <Grid item xs={12} paddingTop={2} >
           <AccountingBar searchArrayProps={buscadoresAccounting} cleanSearchResults={cleanSearchResults}
             appBarSx={appBarSx} appBarTitle='Pagos' mainSearchColor={fugaGreen} isOpen={accountingTableIsOpen}
             handleCollapseTable={handleCollapseAccounting} groupByProps={groupByProps} />

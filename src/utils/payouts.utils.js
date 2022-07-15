@@ -63,6 +63,6 @@ export const getPaymentId = payout => {
 }
 
 export const getTotalsEmptyToShow = {
-  email: <b><em>{"Totales"}</em></b>, cantPayouts: <b><em>{0}</em></b>,
-  lastPayAskedDay: <b><em>{0}</em></b>, totalPayed: <b><em>{0}</em></b>
+  email: <b>{"Totales"}</b>, cantPayouts: <b>{0}</b>,
+  lastPayAskedDay: <b>{0}</b>, totalPayed: <b>{0}</b>
 };

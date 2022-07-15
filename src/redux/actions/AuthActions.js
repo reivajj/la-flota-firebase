@@ -2,7 +2,10 @@ import * as ReducerTypes from 'redux/actions/Types';
 import * as UserDataActions from "../../redux/actions/UserDataActions";
 import firebaseApp from "../../firebaseConfig/firebase";
 
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut
+} from "firebase/auth";
 import { getFirestore, getDoc, doc, updateDoc } from "firebase/firestore";
 import { to } from 'utils';
 import * as FirestoreServices from "../../services/FirestoreServices";
@@ -121,6 +124,7 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
 
   if (!fromSignUp) {
     // Si vengo del SignUp quiere decir que ya estoy logueado
+    console.log("LOGUEANDOME: ");
     let [errorSignInFirebase] = await to(signInWithEmailAndPassword(auth, email, password));
     if (errorSignInFirebase) {
       const emailAndPasswordIsCorrect = await checkEmailAndPasswordInWpDB(email, password, dispatch);
@@ -131,6 +135,7 @@ export const signIn = async ({ email, password, fromSignUp }, dispatch) => {
   }
 
   let userDoc = await FirestoreServices.getUserDocFS(auth.currentUser.uid, dispatch);
+  console.log("LOGUEANDOME: ", userDoc);
   if (userDoc === "ERROR") dispatch(loginErrorStore({ error: "", errorMsg: "Error al buscar al Usuario. Intente nuevamente." }));
   if (!userDoc.exists) {
     dispatch(loginErrorStore({ error: "", errorMsg: "No existe el Usuario" }));

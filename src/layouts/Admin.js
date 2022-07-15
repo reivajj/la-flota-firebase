@@ -1,4 +1,4 @@
-import React, { useState, createRef } from "react";
+import React, { useState, createRef, useEffect } from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 // creates a beautiful scrollbar
 // import PerfectScrollbar from "perfect-scrollbar";
@@ -23,9 +23,10 @@ import { useSelector } from 'react-redux';
 const useStyles = makeStyles(styles);
 
 const AdminLayout = ({ ...rest }) => {
-  
+
   const location = useLocation();
   const auth = useSelector(store => store.auth);
+  const user = useSelector(store => store.userData);
 
   // styles
   const { children } = { ...rest };
@@ -41,8 +42,12 @@ const AdminLayout = ({ ...rest }) => {
     setMobileOpen(!mobileOpen);
   };
 
+  // let dateMinusMinute = new Date(user.lastTimeSignedIn - 60000);
+
   // PROTECTED ROUTES NOT REGISTERED
+  // para finalizar sesiones.
   if (!auth || !auth.user || !auth.user.id) return <Navigate to="/login" state={{ from: location }} />;
+  // if (user.lastTimeSignedIn < 1657888172755 || !auth || !auth.user || !auth.user.id) return <Navigate to="/login" state={{ from: location }} />;
 
   return (
     <div style={mainStyle}>

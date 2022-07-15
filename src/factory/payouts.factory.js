@@ -22,7 +22,7 @@ export const getPayoutsHeadersForAdmin = [
   { name: "Opciones", width: "3%" }, { name: "Email", width: "10%" }, { name: "Estado", width: "5%" }, { name: "Día Solicitado", width: "8%" },
   { name: "Día Pagado", width: "8%" }, { name: "Moneda", width: "4%" }, { name: "Transferencia (ARS)", width: "7%" },
   { name: "Cotización (USD)", width: "6%" }, { name: "Transferencia (USD)", width: "6%" },
-  { name: "Total Solicitado (USD)", width: "9%" }, { name: "Total Setirado (USD)", width: "8%" },
+  { name: "Total Solicitado (USD)", width: "9%" }, { name: "Total Retirado (USD)", width: "8%" },
   { name: "Modo de retiro", width: "8%" }, { name: "ID Pago", width: "8%" }
 ]
 
@@ -39,7 +39,7 @@ export const createPayoutRowForUser = payoutRowFromDB => {
     requestDate: payoutRowFromDB.requestDate,
     transferDate: payoutRowFromDB.transferDate || "Esperando pago.",
     currency: payoutRowFromDB.currency,
-    transferTotalAskedCurrency: payoutRowFromDB.currency !== "USD"
+    transferTotalAskedCurrency: payoutRowFromDB.currency !== "usd"
       ? formatAllNumber(payoutRowFromDB.transferTotalAskedCurrency, 2, '.') : formatAllNumber(payoutRowFromDB.transferTotalUsd, 2, '.'),
     currencyRate: payoutRowFromDB.currencyRateToUsd === 0 ? 1 : formatAllNumber(payoutRowFromDB.currencyRateToUsd, 2, '.'),
     transferTotalUsd: formatAllNumber(payoutRowFromDB.transferTotalUsd, 2, '.'),
@@ -86,10 +86,10 @@ export const getTotalsPayoutsAccountingRow = accountingValues => {
   })
 
   return {
-    email: <b><em>{totals.email}</em></b>,
-    lastPayAskedDay: <b><em>{accountingValues[accountingValues.length - 1].lastPayAskedDay}</em></b>,
-    cantPayouts: <b><em>{formatThousandsPoint(totals.cantPayouts)}</em></b>,
-    totalPayed: <b><em>{'USD ' + formatAllNumber(totals.totalPayed, 2, '.')}</em></b>,
+    email: <b>{totals.email}</b>,
+    lastPayAskedDay: <b>{accountingValues[accountingValues.length - 1].lastPayAskedDay}</b>,
+    cantPayouts: <b>{formatThousandsPoint(totals.cantPayouts)}</b>,
+    totalPayed: <b>{'USD ' + formatAllNumber(totals.totalPayed, 2, '.')}</b>,
   }
 }
 

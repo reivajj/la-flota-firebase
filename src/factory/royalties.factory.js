@@ -82,10 +82,10 @@ export const getTotalesAccountingRow = accountingValues => {
   })
 
   return {
-    dsp: <b><em>{totals.dsp}</em></b>, 
-    streams: <b><em>{formatThousandsPoint(totals.streams)}</em></b>, 
-    downloads: <b><em>{formatThousandsPoint(totals.downloads)}</em></b>,
-    netRevenueUSD: <b><em>{'USD ' + formatAllNumber(totals.netRevenueUSD, 2, '.')}</em></b>
+    dsp: <b>{totals.dsp}</b>, 
+    streams: <b>{formatThousandsPoint(totals.streams)}</b>, 
+    downloads: <b>{formatThousandsPoint(totals.downloads)}</b>,
+    netRevenueUSD: <b>{'USD ' + formatAllNumber(totals.netRevenueUSD, 2, '.')}</b>
   }
 }
 

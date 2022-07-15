@@ -22,6 +22,7 @@ const SignInSide = () => {
 
   const user = useSelector(store => store.auth.user);
   const email = useSelector(store => store.auth.email);
+  // const userData = useSelector(store => store.userData);
   const password = useSelector(store => store.auth.password);
   const errorMsgSignInStore = useSelector(store => store.auth.errorMsg);
 
@@ -31,7 +32,9 @@ const SignInSide = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    user && navigate("/admin/dashboard");
+    // console.log("USER DATA: ", userData);
+    // if (userData.lastTimeSignedIn > 1657887634432)
+      user && navigate("/admin/dashboard");
   }, [user]);
 
   const login = async () => {

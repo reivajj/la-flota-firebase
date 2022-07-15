@@ -470,7 +470,7 @@ export const getPayoutsAccountingForTableView = async (field, value, groupBy, or
 
   let queryParams = `?order=${orderClause}&where=${whereClause}&groupBy=${groupBy}&ops=${ops}&attributes=${attNoOps}&timestamp=${timestamp}`;
 
-  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/groupBy/${queryParams}`));
+  const [errorGettingPayouts, payoutsResponse] = await to(axios.get(`${targetUrl}payouts/accounting/${queryParams}`));
   if (errorGettingPayouts) {
     dispatch(createBackendError(errorGettingPayouts));
     writeCloudLog("Error getting payouts from DB", { field, value, groupBy }, errorGettingPayouts, "error");
@@ -487,7 +487,6 @@ export const getLastPayoutForUser = async (userEmail, dispatch) => {
     writeCloudLog(`Error getting last payout for ${userEmail} from DB`, userEmail, errorGettingLastPayout, "error");
     return "ERROR";
   }
-  console.log("PAYOUT LAS:", lastPayout.data.response);
   if (!lastPayout.data.response) return { payed: 0, lastRequest: "no tienes solicitudes." };
 
   return { payed: lastPayout.data.response.historicTotalUsd, lastRequest: lastPayout.data.response.requestDate };

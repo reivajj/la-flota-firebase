@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Backdrop, CircularProgress, Button } from '@mui/material';
+import { Grid, Backdrop, CircularProgress } from '@mui/material';
 
-import { resourceNotYoursText, emptyPaysResult, waitForPayouts } from '../../utils/textToShow.utils';
+import { resourceNotYoursText, waitForPayouts } from '../../utils/textToShow.utils';
 import InfoDialog from 'components/Dialogs/InfoDialog';
 import SearchNavbar from "components/Navbars/SearchNavbar";
 import CustomizedTable from "components/Table/CustomizedTable";
@@ -12,11 +12,10 @@ import { whiteColor } from 'assets/jss/material-dashboard-react.js';
 import { fugaGreen } from 'variables/colors';
 import AccountingBar from "components/Navbars/AccountingBar";
 import WaitingDialog from "components/Dialogs/WaitingDialog";
-import { solicitarRegaliasUrl } from "variables/urls";
-import { Paid } from '@mui/icons-material';
+
 import {
   createPayoutRowForUser, getSkeletonWdAccountingRow, getSkeletonPayoutRow, getPayoutAccountingRows,
-  getTotalsPayoutsAccountingRow, getWdAccountingHeadersForUser, payoutsGroupByValues, getPayoutsHeadersForAdmin,
+  getTotalsPayoutsAccountingRow, getPayoutsAccountingHeaders, payoutsGroupByValues, getPayoutsHeadersForAdmin,
   getPayoutsHeadersForUser, createPayoutRowForAdmin
 } from "factory/payouts.factory";
 import { getPayoutsForTableView } from "services/BackendCommunication";
@@ -93,10 +92,10 @@ const Payouts = () => {
       accountingValues = await getPayoutsAccountingForTableView(field, value, groupBy.id, orderBy, dispatch);
 
       if (accountingValues === "EMPTY" || accountingValues === "ERROR") accountingValues = [];
-      let accountingRowsToShow = getPayoutAccountingRows(accountingValues, groupBy, 50, orderBy);
+      let accountingRowsToShow = getPayoutAccountingRows(accountingValues.accWithOutPending, accountingValues.accOnlyPending, groupBy, 50, orderBy);
       let totals = value
         ? accountingRowsToShow.length !== 0 ? [] : getTotalsPayoutsAccountingRow([])
-        : getTotalsPayoutsAccountingRow(accountingValues);
+        : getTotalsPayoutsAccountingRow(accountingValues.accWithOutPending, accountingValues.accOnlyPending);
       setAccountingRows([totals, ...accountingRowsToShow]);
     }
 
@@ -112,8 +111,8 @@ const Payouts = () => {
   const headersPayoutsWidth = isAdmin
     ? getPayoutsHeadersForAdmin.map(headerWithWidth => headerWithWidth.width)
     : getPayoutsHeadersForUser.map(headerWithWidth => headerWithWidth.width);
-  const headersAccountingName = getWdAccountingHeadersForUser(filterPayoutsParams.groupBy).map(headerWithWidth => headerWithWidth.name);
-  const headersAccountingWidth = getWdAccountingHeadersForUser(filterPayoutsParams.groupBy).map(headerWithWidth => headerWithWidth.width);
+  const headersAccountingName = getPayoutsAccountingHeaders(filterPayoutsParams.groupBy).map(headerWithWidth => headerWithWidth.name);
+  const headersAccountingWidth = getPayoutsAccountingHeaders(filterPayoutsParams.groupBy).map(headerWithWidth => headerWithWidth.width);
 
   const handleChangePage = (event, newPage) => {
     setPayoutsRows(getSkeletonPayoutRow(rowsPerPage));

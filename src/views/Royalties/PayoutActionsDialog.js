@@ -28,7 +28,7 @@ const PayoutActionsDialog = (props) => {
   const [buttonState, setButtonState] = useState('none');
   const [completePayoutState, setCompletePayoutState] = useState('none');
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""] })
+  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""], initialValues: "", values: "" })
 
   let successDialogTitle = "Pago actualizado correctamente.";
   let successDialogText = ["Se le envío un Email al usuario para notificarlo."];
@@ -43,13 +43,13 @@ const PayoutActionsDialog = (props) => {
   }
 
   const handleAddPayId = () => setOpenEditDialog({
-    open: true, title: "ID del Pago", subtitle: completePayoutSubtitle, handleConfirm: (payId) => handleCompletePayout(payId),
-    initialValues: ""
+    open: true, title: "ID del Pago o Cupón", subtitle: completePayoutSubtitle, handleConfirm: (payId) => handleCompletePayout(payId),
+    initialValues: "", values: ""
   });
 
   const handleAddMpId = () => setOpenEditDialog({
     open: true, title: "ID de Mercado Pago del Pago", subtitle: addMpIdSubtitle, handleConfirm: (mpId) => handleAddMpIdPayout(mpId),
-    initialValues: ""
+    initialValues: "", values: ""
   });
 
   const handleAddMpIdPayout = async mpId => {
@@ -57,7 +57,7 @@ const PayoutActionsDialog = (props) => {
     let editResult = await toWithOutError(dispatch(payoutEditRedux({ ...payout, mpId })));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     setButtonState("none");
-    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+    setOpenEditDialog({ open: false, title: "", subtitle: "", values: "" });
   }
 
   const handleCompletePayout = async payId => {
@@ -65,10 +65,13 @@ const PayoutActionsDialog = (props) => {
     let editResult = await toWithOutError(dispatch(payoutCompleteRequestRedux(payout, payId)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     setButtonState("none");
-    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+    setOpenEditDialog({ open: false, title: "", subtitle: "", values: "" });
   }
 
-  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog({ open: false, title: "", subtitle: [""], values: "" });
+  }
+
   return (
     <>
       <SuccessDialog isOpen={completePayoutState !== 'none' && completePayoutState !== 'processing'} title={successDialogTitle}
@@ -80,9 +83,8 @@ const PayoutActionsDialog = (props) => {
         deleteAction={handleDelete} deleteButtonText={"Eliminar"} openLoader={loading} buttonState={'delete'}
       />
 
-      <EditOrAddFieldsDialog isOpen={openEditDialog.open} handleCloseDialog={handleCloseEditDialog} handleConfirm={openEditDialog.handleConfirm}
-        title={openEditDialog.title} subtitle={openEditDialog.subtitle} loading={buttonState === "loading"}
-        buttonState={buttonState} initialValues={openEditDialog.initialValues} type={""} optionsValues={openEditDialog.optionsValues} />
+      <EditOrAddFieldsDialog handleCloseDialog={handleCloseEditDialog} loading={buttonState === "loading"}
+        buttonState={buttonState} type={""} editOptions={openEditDialog} setEditOptions={setOpenEditDialog} />
 
       <Dialog
         maxWidth="sm"
@@ -99,43 +101,43 @@ const PayoutActionsDialog = (props) => {
             <p style={{ fontSize: "20px" }}><b>Información del Pago</b></p>
           </DialogContentText>
 
-          {payout.userName && <DialogContentText key={0}>
+          {payout.userName && <DialogContentText key={'user name'}>
             Nombre Usuario: <b>{`${payout.userName} ${payout.userLastName}`}</b>
           </DialogContentText>}
 
-          {payout.userCuit && <DialogContentText key={1}>
+          {payout.userCuit && <DialogContentText key={'cuit'}>
             CUIT: <b>{`${payout.userCuit}`}</b>
           </DialogContentText>}
 
-          {payout.cbuCvuAlias && <DialogContentText key={1}>
+          {payout.cbuCvuAlias && <DialogContentText key={'cbu'}>
             CBU/CVU: <b>{`${payout.cbuCvuAlias}`}</b>
           </DialogContentText>}
 
-          {payout.otherPayId && <DialogContentText key={1}>
+          {payout.otherPayId && <DialogContentText key={'coelsa-id'}>
             {`${payout.cbuCvuAlias ? "COELSA ID: " : "Cupón ID: "}`} <b>{`${payout.otherPayId}`}</b>
           </DialogContentText>}
 
-          {payout.paypalEmail && <DialogContentText key={2}>
+          {payout.paypalEmail && <DialogContentText key={'paypal-email'}>
             Email de Paypal: <b>{`${payout.paypalEmail}`}</b>
           </DialogContentText>}
 
-          {payout.paypalEmail && <DialogContentText key={2}>
+          {payout.paypalEmail && <DialogContentText key={'paypal-id'}>
             ID de Paypal: <b>{`${payout.paypalId ? payout.paypalId : "no provisto"}`}</b>
           </DialogContentText>}
 
-          {payout.payoneerEmail && <DialogContentText key={3}>
+          {payout.payoneerEmail && <DialogContentText key={'payoneer-email'}>
             Email de Payoneer: <b>{`${payout.payoneerlEmail}`}</b>
           </DialogContentText>}
 
-          {payout.payoneerEmail && <DialogContentText key={3}>
+          {payout.payoneerEmail && <DialogContentText key={'payoneer-id'}>
             ID de Payoneer: <b>{`${payout.payoneerId ? payout.payoneerId : "no provisto"}`}</b>
           </DialogContentText>}
 
-          <DialogContentText key={3}>
+          <DialogContentText key={'pay-id'}>
             ID del pago en la APP: <b>{`${payout.id}`}</b>
           </DialogContentText>
 
-          {payout.mpId && <DialogContentText key={4}>
+          {payout.mpId && <DialogContentText key={'mp-id'}>
             Id de Mercado Pago: <b>{`${payout.mpId}`}</b>
           </DialogContentText>}
 

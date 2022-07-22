@@ -10,20 +10,27 @@ import SelectDateInputDDMMYYYY from 'components/Input/SelectDateInputDDMMYYYY';
 import TextFieldWithInfo from 'components/TextField/TextFieldWithInfo';
 
 const EditOrAddFieldsDialog = (props) => {
+  const { handleCloseDialog, labelTextField, loading, buttonState, type, editOptions, setEditOptions } = props;
+  const { open, title, subtitle, initialValues, values, handleConfirm, optionsValues } = editOptions;
 
-  const { isOpen, handleCloseDialog, handleConfirm, title, subtitle, labelTextField, loading, buttonState, type, initialValues, optionsValues } = props;
-
-  const [value, setValue] = useState(initialValues || "");
   const [dateValues, setDateValues] = useState(initialValues ? { ...initialValues } : "");
+  const [fieldEdited, setFieldEdited] = useState(false);
   const addCircleIcon = <AddCircleOutline />;
+
 
   const handlerDateUpdate = (eventValue, typeOfDate) => setDateValues({ ...dateValues, [typeOfDate]: eventValue });
   const handleChangeValue = event => {
+    setFieldEdited(true);
     if (optionsValues && optionsValues.length > 0) {
       let newValueObject = optionsValues.find(valueObject => valueObject.name === event.target.value) || optionsValues[0];
-      setValue(newValueObject);
+      setEditOptions({ ...editOptions, values: newValueObject });
     }
-    else setValue(event.target.value)
+    else setEditOptions({ ...editOptions, values: event.target.value })
+  }
+
+  const getValue = () => {
+    if (optionsValues) return fieldEdited ? values.name : initialValues || "";
+    return fieldEdited ? values : initialValues || "";
   }
 
   return (
@@ -31,7 +38,7 @@ const EditOrAddFieldsDialog = (props) => {
       maxWidth={type === "date" ? "sm" : "xs"}
       fullWidth
       id="edit-or-add-dialog"
-      open={isOpen}
+      open={open}
       onClose={handleCloseDialog}>
       <DialogTitle id="edit-or-add-field-dialog-title">
         <Typography sx={{ fontSize: "1.5em", fontWeight: 500 }} component="span">{title}</Typography>
@@ -48,7 +55,7 @@ const EditOrAddFieldsDialog = (props) => {
             fullWidth
             required
             label={labelTextField ? labelTextField : ""}
-            value={optionsValues ? value.name || initialValues : value || initialValues || ""}
+            value={getValue()}
             onChange={handleChangeValue}
             select={(optionsValues && optionsValues.length > 0) ? true : false}
             autoFocus
@@ -82,7 +89,7 @@ const EditOrAddFieldsDialog = (props) => {
               textButton={"Confirmar"}
               loading={loading}
               buttonState={buttonState}
-              onClickHandler={() => handleConfirm(type === "date" ? dateValues : value)}
+              onClickHandler={() => handleConfirm(type === "date" ? dateValues : values)}
               noneIcon={addCircleIcon}
               noFab={true}
               buttonFullWidth={true} />

@@ -67,7 +67,6 @@ export const truncateFloat = (number, decimals, separator) => {
   let decimalsTruncated = number.toString().split(separator)[1].slice(0, decimals);
 
   if (decimalsTruncated.length === 1) {
-    console.log("1 DECIMAL: ",)
     return `${number.toString().split(separator)[0]}${separator}${decimalsTruncated}${'0'}`;
   }
 

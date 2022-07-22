@@ -45,11 +45,13 @@ export const NewTrackDialog = (props) => {
   const scrollToTop = () => topElementRef.current ? topElementRef.current.scrollIntoView() : null;
 
   const [trackMissing, setTrackMissing] = useState(false);
-  const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [buttonState, setButtonState] = useState("none");
   const [isrcInvalid, setIsrcInvalid] = useState(false);
   const [openLowQualityAudioDialog, setOpenLowQualityAudioDialog] = useState({ open: false, title: "", text: [""] });
+  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""], values: "" });
+
+  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""], values: "" });
 
   const handleCancelDialog = () => {
     setOpenNewTrackDialog(false);
@@ -140,9 +142,14 @@ export const NewTrackDialog = (props) => {
 
     setTrackData({ ...trackData, subgenreName, subgenre: createSubgenreResponse.id });
     setOpenLoaderSubgenreCreate(false);
-    setOpenAddSubgenre(false);
+    handleCloseEditDialog();
   }
 
+  const handleAddSubgenre = () => setOpenEditDialog({
+    open: true, title: "Crea un subgénero", subtitle: ["Puedes agregar el subgénero que desees."],
+    handleConfirm: (newValue) => handleCreateSubgenre(newValue),
+    initialValues: "", values: ""
+  });
 
   const handleChangePrimaryOtherArtist = (index, newPrimaryValue) => {
     const newArtists = cloneDeepLimited(trackData.artists);
@@ -176,9 +183,9 @@ export const NewTrackDialog = (props) => {
       <InfoDialog isOpen={openLowQualityAudioDialog.open} handleClose={() => setOpenLowQualityAudioDialog({ open: false, title: "", text: [""] })}
         title={openLowQualityAudioDialog.title} contentTexts={openLowQualityAudioDialog.text} />
 
-      <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
-        title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
-        buttonState={buttonState} />
+      <EditOrAddFieldsDialog handleCloseDialog={handleCloseEditDialog} labelTextField="Nuevo subgénero"
+        loading={openLoaderSubgenreCreate} buttonState={buttonState} editOptions={openEditDialog}
+        setEditOptions={setOpenEditDialog} />
 
       <DialogTitle id="form-dialog-title" sx={{ fontSize: "2em" }}>Crear Nueva Canción</DialogTitle>
       <DialogContent>
@@ -312,7 +319,7 @@ export const NewTrackDialog = (props) => {
               selectItems={currentUserData.subgenerosPropios || []}
               selectKeyField="id"
               selectValueField="name"
-              onClickAddElement={() => setOpenAddSubgenre(true)}
+              onClickAddElement={handleAddSubgenre}
               addPlaceholder="Crea tu propio subgénero"
             />
           </Grid>

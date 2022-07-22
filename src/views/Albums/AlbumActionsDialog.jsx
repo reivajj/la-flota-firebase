@@ -35,7 +35,7 @@ const AlbumActionsDialog = (props) => {
   const [buttonState, setButtonState] = useState('none');
   const [deliveryState, setDeliveryState] = useState('none');
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""] })
+  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""], values: "" })
 
   const handleDeliveryTo = async targetDelivery => {
     setLoading(true); setDeliveryState('processing');
@@ -66,18 +66,19 @@ const AlbumActionsDialog = (props) => {
   const handleEditDeliveryState = () => setOpenEditDialog({
     open: true, title: "Cambiar el estado de Delivery", subtitle: ["Solo se cambiará en la APP"],
     handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'state'),
-    initialValues: ourAlbumStateWithEquivalence[album.state] || "", optionsValues: ourListOfDeliveryStates
+    initialValues: ourAlbumStateWithEquivalence[album.state] || "", optionsValues: ourListOfDeliveryStates,
+    values: ""
   });
 
   const handleEditFugaId = () => setOpenEditDialog({
     open: true, title: "Enlazar con lanzamiento de Fuga", subtitle: subtitleEditFugaId,
     handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'fugaId'),
-    initialValues: album.fugaId || ""
+    initialValues: album.fugaId || "", values: ""
   });
 
   const handleEditUPC = () => setOpenEditDialog({
     open: true, title: "Editar UPC", subtitle: subtitleEditUPC, handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'upc'),
-    initialValues: album.upc
+    initialValues: album.upc, values: ""
   });
 
 
@@ -87,10 +88,10 @@ const AlbumActionsDialog = (props) => {
     let editResult = await toWithOutError(dispatch(albumsEditRedux(album, { [fieldName]: finalValue }, album.ownerEmail, false)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     setButtonState("none");
-    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+    setOpenEditDialog({ open: false, title: "", subtitle: "", values: "" });
   }
 
-  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
+  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""], values: "" });
 
   return (
     <>
@@ -102,9 +103,8 @@ const AlbumActionsDialog = (props) => {
         deleteAction={handleDelete} deleteButtonText={"Eliminar"} openLoader={loading} buttonState={'delete'}
       />
 
-      <EditOrAddFieldsDialog isOpen={openEditDialog.open} handleCloseDialog={handleCloseEditDialog} handleConfirm={openEditDialog.handleConfirm}
-        title={openEditDialog.title} subtitle={openEditDialog.subtitle} loading={buttonState === "loading"}
-        buttonState={buttonState} initialValues={openEditDialog.initialValues} type={""} optionsValues={openEditDialog.optionsValues} />
+      <EditOrAddFieldsDialog handleCloseDialog={handleCloseEditDialog} loading={buttonState === "loading"}
+        buttonState={buttonState} type={""} editOptions={openEditDialog} setEditOptions={setOpenEditDialog} />
 
       <Dialog
         maxWidth="sm"

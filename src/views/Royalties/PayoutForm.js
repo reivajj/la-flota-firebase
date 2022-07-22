@@ -214,7 +214,7 @@ const PayoutForm = () => {
       <Grid item xs={12} md={11} lg={10}>
         <CardTemplate>
 
-          <CardHeader color="primary" style={{ background: fugaGreen }}>
+          <CardHeader color="primary" style={{ background: fugaGreen, textAlign: "center" }}>
             <Typography sx={cardTitleWhiteStyles}>Solicitar Regalías</Typography>
             <p style={cardCategoryWhiteStyles}>Todos los datos que proporciones deben ser correctos, por favor revisa el formulario antes de enviarlo.</p>
             <p style={cardCategoryWhiteStyles}>Las transferencias se realizan durante los próximos 10 días hábiles.</p>

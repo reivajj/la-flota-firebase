@@ -23,7 +23,7 @@ import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog
 import { Edit } from '@mui/icons-material/';
 import useQuery from '../../customHooks/useQuery';
 import { useNavigate } from 'react-router';
-import { albumsEditRedux, albumsUploadCoverRedux } from '../../redux/actions/AlbumsActions';
+import { albumsEditRedux } from '../../redux/actions/AlbumsActions';
 import SuccessDialog from 'components/Dialogs/SuccessDialog';
 import { useFetch } from '../../customHooks/useFetch';
 import { userIsAdmin } from 'utils/users.utils';
@@ -52,7 +52,7 @@ const AlbumTotalInfo = () => {
   const [openErrorSearch, setOpenErrorSearch] = useState(false);
   const [isEditing, setIsEditing] = useState(queryString.edit);
   const [openEditDialog, setOpenEditDialog] = useState({
-    open: false, beginner: "", title: "", subtitle: [""]
+    open: false, beginner: "", title: "", subtitle: [""], values: ""
   });
 
   const urlFugaAlbum = dataAlbum.fugaId && `${targetUrl}albums/${dataAlbum.fugaId}`;
@@ -122,7 +122,7 @@ const AlbumTotalInfo = () => {
   //   {dataAlbum.label_name}
   // </Link>
 
-  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""] });
+  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""], values: "" });
 
   const handleConfirmEditAlbum = async (newValue, fieldName) => {
     setButtonState("loading");
@@ -130,18 +130,19 @@ const AlbumTotalInfo = () => {
       fieldName === "date" ? { ...newValue } : { [fieldName]: newValue }, userEmail, true)));
     if (editResult === "ERROR") { setButtonState("error"); return; }
     setButtonState("none");
-    setOpenEditDialog({ open: false, title: "", subtitle: "" });
+    setOpenEditDialog({ open: false, title: "", subtitle: "", values: "" });
   }
 
   const handleEditTitle = () => setOpenEditDialog({
     open: true, title: "Nuevo título", subtitle: [""], handleConfirm: (newValue) => handleConfirmEditAlbum(newValue, 'title'),
-    initialValues: dataAlbum.title
+    initialValues: dataAlbum.title, values: ""
   });
 
   const handleEditReleaseDate = () => setOpenEditDialog({
     open: true, type: "date", title: "Modifica la fecha de lanzamiento", subtitle: [""]
     , handleConfirm: (newDate) => handleConfirmEditAlbum(newDate, 'date')
     , initialValues: { dayOfMonth: dataAlbum.dayOfMonth, month: dataAlbum.month, year: dataAlbum.year }
+    , values: ""
   })
 
   const goToPrincipalArtist = () => navigate(`/admin/edit-artist/${dataAlbum.artistId}`);
@@ -170,9 +171,8 @@ const AlbumTotalInfo = () => {
         contentTexts={[[`Los cambios que has hecho se verán reflejados en las tiendas en los próximos días.`]]}
         handleClose={() => setButtonState("none")} successImageSource="/images/successArtists.jpg" />
 
-      <EditOrAddFieldsDialog isOpen={openEditDialog.open} handleCloseDialog={handleCloseEditDialog} handleConfirm={openEditDialog.handleConfirm}
-        title={openEditDialog.title} subtitle={openEditDialog.subtitle} loading={buttonState === "loading"}
-        buttonState={buttonState} initialValues={openEditDialog.initialValues} type={openEditDialog.type || ""} datesInfo={openEditDialog.datesInfo} />
+      <EditOrAddFieldsDialog handleCloseDialog={handleCloseEditDialog} loading={buttonState === "loading"}
+        buttonState={buttonState} type={openEditDialog.type || ""} editOptions={openEditDialog} setEditOptions={setOpenEditDialog} />
 
       <InfoDialog isOpen={openErrorSearch} handleClose={() => setOpenErrorSearch(false)}
         title={"Hubo un error al traer la información del lanzamiento."} contentTexts={["Por favor, intente nuevamente."]} />

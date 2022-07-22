@@ -15,7 +15,7 @@ import SelectDateInputDDMMYYYY from "components/Input/SelectDateInputDDMMYYYY";
 import { allFugaGenres } from "variables/genres";
 import TracksTable from "components/Table/TracksTable";
 import { NewTrackDialog } from "views/Tracks/NewTrackDialog";
-import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksAssetsToAlbumRedux, uploadAllTracksToAlbumRedux } from "redux/actions/TracksActions";
+import { deleteTrackInTracksUploading, tracksCleanUploadingTracks, uploadAllTracksAssetsToAlbumRedux } from "redux/actions/TracksActions";
 
 import ProgressButton from "components/CustomButtons/ProgressButton";
 import { Save, AddCircleOutline, Edit } from '@mui/icons-material/';
@@ -43,7 +43,6 @@ import EditOrAddFieldsDialog from '../../components/Dialogs/EditOrAddFieldDialog
 import { createSubgenreRedux } from "redux/actions/UserDataActions";
 import InfoDialog from '../../components/Dialogs/InfoDialog';
 import { createLabelRedux } from "redux/actions/LabelsActions";
-import { getActualYear } from 'utils/timeRelated.utils';
 import { checkIfAnyTrackIsExplicit } from "utils/tracks.utils";
 import { trackUploadProgress, getTracksAsDataTable } from '../../utils/tables.utils';
 import useScript from '../../customHooks/useScript';
@@ -106,8 +105,6 @@ const NewAlbum = ({ editing }) => {
   const [tracksDataTable, setTracksDataTable] = useState(getTracksAsDataTable(myTracks, handleEditTrack, handleDeleteTrack) || [[]]);
 
   const [openNewTrackDialog, setOpenNewTrackDialog] = useState(false);
-  const [openAddSubgenre, setOpenAddSubgenre] = useState(false);
-  const [openAddLabel, setOpenAddLabel] = useState(false);
   const [openLoaderLabelCreate, setOpenLoaderLabelCreate] = useState(false);
   const [openLoaderSubgenreCreate, setOpenLoaderSubgenreCreate] = useState(false);
   const [openInvalidValueDialog, setOpenInvalidValueDialog] = useState({ open: false, beginner: "", title: "", text: [""] });
@@ -116,6 +113,7 @@ const NewAlbum = ({ editing }) => {
   const [deliveryState, setDeliveryState] = useState('none');
   const [openSelectDSP, setOpenSelectDSP] = useState(false);
   const [openMissingFilesDialog, setOpenMissingFilesDialog] = useState({ open: false, title: "", text: [""] });
+  const [openEditDialog, setOpenEditDialog] = useState({ open: false, title: "", subtitle: [""], values: "" });
 
   const [creatingAlbumState, setCreatingAlbumState] = useState("none");
   const [buttonState, setButtonState] = useState("none");
@@ -132,6 +130,8 @@ const NewAlbum = ({ editing }) => {
     collaborators: [{ name: "", roles: ["COMPOSER"] }, { name: "", roles: ["LYRICIST"] }],
     preOrder: currentAlbumData.preOrder, audio_locale_name: "",
   });
+
+  const handleCloseEditDialog = () => setOpenEditDialog({ open: false, title: "", subtitle: [""], values: "" });
 
   const handleSelectDSPs = () => setOpenSelectDSP(true);
   let successDialogTitle = getDeliveredTitleDialog(deliveryState);
@@ -332,7 +332,7 @@ const NewAlbum = ({ editing }) => {
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, subgenre: createSubgenreResponse.id, subgenreName }));
     setTrackData({ ...trackData, subgenreName, subgenre: createSubgenreResponse.id });
     setOpenLoaderSubgenreCreate(false);
-    setOpenAddSubgenre(false);
+    handleCloseEditDialog();
   }
 
   const handleCreateLabel = async labelName => {
@@ -348,7 +348,7 @@ const NewAlbum = ({ editing }) => {
 
     dispatch(updateAddingAlbumRedux({ ...currentAlbumData, label_name: labelName, labelFugaId: createLabelResponse.fugaId }));
     setOpenLoaderLabelCreate(false);
-    setOpenAddLabel(false);
+    handleCloseEditDialog();
   }
 
   const handlerUPC = event => {
@@ -368,6 +368,19 @@ const NewAlbum = ({ editing }) => {
     dispatch(tracksCleanUploadingTracks());
     navigate(`/admin/albums/${albumId}`);
   }
+
+  const handleOpenAddSubgenre = () => setOpenEditDialog({
+    open: true, title: "Crea un subgénero", subtitle: ["Puedes agregar un nuevo sello."],
+    handleConfirm: (newValue) => handleCreateSubgenre(newValue),
+    initialValues: "", values: ""
+  });
+
+  const handleOpenCreateLabel = () => setOpenEditDialog({
+    open: true, title: "Crea un Sello", subtitle: ["Puedes agregar un nuevo sello."],
+    handleConfirm: (newValue) => handleCreateLabel(newValue),
+    initialValues: "", values: ""
+  });
+
 
   return userIsActive(userData.userStatus)
     ? (
@@ -391,13 +404,8 @@ const NewAlbum = ({ editing }) => {
           <InfoDialog isOpen={openInvalidValueDialog.open} handleClose={handleCloseInfoDialog}
             title={openInvalidValueDialog.title} contentTexts={openInvalidValueDialog.text} />
 
-          <EditOrAddFieldsDialog isOpen={openAddSubgenre} handleCloseDialog={() => setOpenAddSubgenre(false)} handleConfirm={handleCreateSubgenre}
-            title="Crea un subgénero" subtitle="Puedes agregar el subgénero que desees." labelTextField="Nuevo subgénero" loading={openLoaderSubgenreCreate}
-            buttonState={buttonState} />
-
-          <EditOrAddFieldsDialog isOpen={openAddLabel} handleCloseDialog={() => setOpenAddLabel(false)} handleConfirm={handleCreateLabel}
-            title="Crea un Sello" subtitle="Puedes agregar un nuevo sello." labelTextField="Nuevo sello." loading={openLoaderLabelCreate}
-            buttonState={buttonState} />
+          <EditOrAddFieldsDialog handleCloseDialog={handleCloseEditDialog} setEditOptions={setOpenEditDialog}
+            loading={openLoaderSubgenreCreate || openLoaderLabelCreate} buttonState={buttonState} editOptions={openEditDialog} />
 
           <Grid item xs={12} sx={{ width: "60%" }}>
             <CardHeader color="primary">
@@ -476,7 +484,7 @@ const NewAlbum = ({ editing }) => {
                   selectKeyField="name"
                   selectValueField="name"
                   validatorProps={{ restrictions: 'required|max:50', message: "Debes seleccionar un sello para el Lanzamiento.", validator: validator }}
-                  onClickAddElement={() => setOpenAddLabel(true)}
+                  onClickAddElement={handleOpenCreateLabel}
                   addPlaceholder="Crea un nuevo sello"
                 />
               </Grid>
@@ -659,7 +667,7 @@ const NewAlbum = ({ editing }) => {
                 selectItems={userData.subgenerosPropios || []}
                 selectKeyField="id"
                 selectValueField="name"
-                onClickAddElement={() => setOpenAddSubgenre(true)}
+                onClickAddElement={handleOpenAddSubgenre}
                 addPlaceholder="Crea tu propio subgénero"
               />
             </Grid>
@@ -740,6 +748,7 @@ const NewAlbum = ({ editing }) => {
               }
             </CardFooter>
           </Grid>
+
         </Card >
 
       </Grid >

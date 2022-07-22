@@ -58,7 +58,7 @@ export const getPaymentId = payout => {
   if (payout.payoneerEmail) return payout.payoneerId || payout.id;
   if (payout.paypalEmail) return payout.paypalId || payout.id;
   if (payout.cbuCvuAlias) return payout.otherPayId || payout.id;
-  if (payout.cupon) return payout.otherPayId || payout.id;
+  if (payout.cupon) return payout.cupon || payout.id;
   return payout.id;
 }
 
